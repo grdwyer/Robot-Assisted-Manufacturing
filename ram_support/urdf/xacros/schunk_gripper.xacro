@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="max_effort" value="300"/> <!-- Should be changed to match the robots specs -->
+  
+  <xacro:macro name="schunk_gripper" params="hardware_interface robot_name">
+    
+    <link name="${robot_name}_link_main_body">
+      
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/visual/main_body.dae"/>
+        </geometry>
+      </visual>
+      
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/collision/main_body.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    
+    <!-- joint between main body and left jaw -->
+    <joint name="${robot_name}_joint_left" type="prismatic">
+      <parent link="${robot_name}_link_main_body"/>
+      <child link="${robot_name}_link_left"/>
+      <origin xyz="0 0 0.1575" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="0.0" upper="0.005"
+             effort="${max_effort}" velocity="0.0833" />
+    </joint>
+    
+    <link name="${robot_name}_link_left">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/visual/jaw_left.dae"/>
+        </geometry>
+      </visual>
+      
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/collision/jaw_left.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    
+   <!-- joint between main body and right jaw -->
+    <joint name="${robot_name}_joint_right" type="prismatic">
+      <parent link="${robot_name}_link_main_body"/>
+      <child link="${robot_name}_link_right"/>
+      <origin xyz="0 0 0.1575" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="0.0" upper="0.005"
+             effort="${max_effort}" velocity="0.0833" />
+    </joint>
+    
+    <link name="${robot_name}_link_right">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/visual/jaw_right.dae"/>
+        </geometry>
+      </visual>
+      
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/collision/jaw_right.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    
+    <transmission name="${robot_name}_tran_right">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${robot_name}_joint_right">
+	<hardwareInterface>hardware_interface/${hardware_interface}</hardwareInterface>
+      </joint>
+      <actuator name="${robot_name}_motor_right">
+	<hardwareInterface>hardware_interface/${hardware_interface}</hardwareInterface>
+	<mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+
+    <transmission name="${robot_name}_tran_left">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${robot_name}_joint_left">
+	<hardwareInterface>hardware_interface/${hardware_interface}</hardwareInterface>
+      </joint>
+      <actuator name="${robot_name}_motor_left">
+	<hardwareInterface>hardware_interface/${hardware_interface}</hardwareInterface>
+	<mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+    
+  </xacro:macro>
+  
+</robot>
