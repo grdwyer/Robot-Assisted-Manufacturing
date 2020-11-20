@@ -8,17 +8,26 @@
 
     <xacro:include filename="$(find ram_support)/urdf/iiwa14.xacro"/>
     <xacro:include filename="$(find ram_support)/urdf/schunk_gripper.xacro"/>
+    <xacro:include filename="$(find ram_support)/urdf/optical_table.xacro"/>
 
     <xacro:arg name="iiwa_name" default="iiwa"/>
     <xacro:arg name="gripper_name" default="gripper"/>
     <xacro:arg name="hardware_interface" default="PositionJointInterface"/>
 
-    <joint name="$(arg iiwa_name)_world_joint" type="fixed">
+    <joint name="optical_table_world_joint" type="fixed">
         <parent link="world"/>
-        <child link="$(arg iiwa_name)_link_0"/>
+        <child link="optical_table"/>
         <origin xyz="0.0 0.0 0.006" rpy="0.0 0.0 ${pi/2}"/>
     </joint>
     
+    <xacro:optical_table />
+
+    <joint name="$(arg iiwa_name)_base_joint" type="fixed">
+        <parent link="optical_table_front_left_bolt"/>
+        <child link="$(arg iiwa_name)_link_0"/>
+        <origin xyz="0.0 0.0 0.006" rpy="0.0 0.0 ${pi/2}"/>
+    </joint>
+
     <xacro:iiwa14 hardware_interface="$(arg hardware_interface)" robot_name="$(arg iiwa_name)">
     </xacro:iiwa14>
 
