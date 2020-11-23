@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="milling_plate" params="tool_diameter tool_length">
+    
+    <link name="milling_plate">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://ram_support/meshes/tools/visual/mock_milling_plate.dae"/>
+        </geometry>
+      </visual>
+      
+      <collision>
+        <origin xyz="0 0 0.125" rpy="0 0 0"/>
+        <geometry>
+            <box size="0.25 0.25 0.25"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="milling_tool_base">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="${tool_diameter/2}" length="${tool_length/2}"/>
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="${tool_diameter/2}" length="${tool_length/2}"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="milling_plate_tool_joint" type="fixed">
+      <parent link="milling_plate"/>
+      <child link="milling_tool_base"/>
+      <origin xyz="0 0 0.25" rpy="0 0 0"/>
+    </joint>
+
+    <joint name="milling_tool_base_tip" type="fixed">
+      <parent link="milling_tool_base"/>
+      <child link="milling_tool_tip"/>
+      <origin xyz="0 0 ${tool_length}" rpy="0 0 0"/>
+    </joint>
+
+    <link name="milling_tool_tip"/>
+  </xacro:macro>
+  
+</robot>

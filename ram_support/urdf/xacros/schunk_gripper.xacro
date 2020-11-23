@@ -17,7 +17,7 @@
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://ram_support/meshes/schunk_gripper/collision/main_body.stl"/>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/collision/main_body.stl" scale="0.001 0.001 0.001"/>
         </geometry>
       </collision>
     </link>
@@ -26,8 +26,8 @@
     <joint name="${robot_name}_joint_left" type="prismatic">
       <parent link="${robot_name}_link_main_body"/>
       <child link="${robot_name}_link_left"/>
-      <origin xyz="0 0 0.1575" rpy="0 0 0"/>
-      <axis xyz="1 0 0"/>
+      <origin xyz="-0.0058 0 0.0341" rpy="${pi/2} 0 -${pi/2}"/>
+      <axis xyz="0 0 -1"/>
       <limit lower="0.0" upper="0.005"
              effort="${max_effort}" velocity="0.0833" />
     </joint>
@@ -36,14 +36,14 @@
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://ram_support/meshes/schunk_gripper/visual/jaw_left.dae"/>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/visual/left_gripper.dae"/>
         </geometry>
       </visual>
       
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://ram_support/meshes/schunk_gripper/collision/jaw_left.stl"/>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/collision/left_gripper.stl" scale="0.001 0.001 0.001"/>
         </geometry>
       </collision>
     </link>
@@ -52,8 +52,8 @@
     <joint name="${robot_name}_joint_right" type="prismatic">
       <parent link="${robot_name}_link_main_body"/>
       <child link="${robot_name}_link_right"/>
-      <origin xyz="0 0 0.1575" rpy="0 0 0"/>
-      <axis xyz="1 0 0"/>
+      <origin xyz="0.0058 0 0.0341" rpy="${pi/2} 0 ${pi/2}"/>
+      <axis xyz="0 0 -1"/>
       <limit lower="0.0" upper="0.005"
              effort="${max_effort}" velocity="0.0833" />
     </joint>
@@ -62,14 +62,14 @@
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://ram_support/meshes/schunk_gripper/visual/jaw_right.dae"/>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/visual/right_gripper.dae"/>
         </geometry>
       </visual>
       
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://ram_support/meshes/schunk_gripper/collision/jaw_right.stl"/>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/collision/right_gripper.stl" scale="0.001 0.001 0.001"/>
         </geometry>
       </collision>
     </link>

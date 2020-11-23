@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="iiwa_14_mounting_plate" params="robot_name">
+    <link name="${robot_name}_mounting_plate_front_left_bolt"/>
+
+    <joint name="${robot_name}_mounting_plate_front_left_bolt_joint" type="fixed">
+      <parent link="${robot_name}_mounting_plate_front_left_bolt"/>
+      <child link="${robot_name}_mounting_plate"/>
+      <origin xyz="0.1125 0.1125 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="${robot_name}_mounting_plate">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://ram_support/meshes/structure/visual/iiwa_14_mounting_plate.dae"/>
+        </geometry>
+      </visual>
+      
+      <collision>
+        <origin xyz="0 0 0.006" rpy="0 0 0"/>
+        <geometry>
+            <box size="0.275 0.275 0.012"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="${robot_name}_mounting_plate_centre_top_surface"/>
+
+    <joint name="${robot_name}_mounting_plate_centre_top_surface_joint" type="fixed">
+      <parent link="${robot_name}_mounting_plate"/>
+      <child link="${robot_name}_mounting_plate_centre_top_surface"/>
+      <origin xyz="0 0 0.012" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+  
+</robot>

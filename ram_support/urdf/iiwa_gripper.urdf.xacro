@@ -6,29 +6,48 @@
     
     <link name="world"/>
 
-    <xacro:include filename="$(find ram_support)/urdf/iiwa14.xacro"/>
-    <xacro:include filename="$(find ram_support)/urdf/schunk_gripper.xacro"/>
+    <xacro:include filename="$(find ram_support)/urdf/xacros/iiwa_14.xacro"/>
+    <xacro:include filename="$(find ram_support)/urdf/xacros/schunk_gripper.xacro"/>
+    <xacro:include filename="$(find ram_support)/urdf/xacros/optical_table.xacro"/>
+    <xacro:include filename="$(find ram_support)/urdf/xacros/iiwa_14_mounting_plate.xacro"/>
 
     <xacro:arg name="iiwa_name" default="iiwa"/>
     <xacro:arg name="gripper_name" default="gripper"/>
     <xacro:arg name="hardware_interface" default="PositionJointInterface"/>
 
-    <joint name="$(arg iiwa_name)_world_joint" type="fixed">
+    <joint name="optical_table_world_joint" type="fixed">
         <parent link="world"/>
-        <child link="$(arg iiwa_name)_link_0"/>
+        <child link="optical_table"/>
         <origin xyz="0.0 0.0 0.006" rpy="0.0 0.0 ${pi/2}"/>
     </joint>
     
+    <xacro:optical_table />
+
+    <joint name="$(arg iiwa_name)_mounting_plate_base_joint" type="fixed">
+        <parent link="optical_table_front_left_bolt"/>
+        <child link="$(arg iiwa_name)_mounting_plate_front_left_bolt"/>
+        <origin xyz="0.175 0.150 0.00" rpy="0.0 0.0 0"/>
+    </joint>
+
+    <xacro:iiwa_14_mounting_plate robot_name="$(arg iiwa_name)"/>
+
+    <joint name="$(arg iiwa_name)_base_joint" type="fixed">
+        <parent link="$(arg iiwa_name)_mounting_plate_centre_top_surface"/>
+        <child link="$(arg iiwa_name)_link_0"/>
+        <origin xyz="0 0 0" rpy="0.0 0.0 ${pi}"/>
+    </joint>
+
     <xacro:iiwa14 hardware_interface="$(arg hardware_interface)" robot_name="$(arg iiwa_name)">
     </xacro:iiwa14>
 
     <joint name="$(arg iiwa_name)_to_$(arg gripper_name)_joint" type="fixed">
         <parent link="$(arg iiwa_name)_link_ee"/>
         <child link="$(arg gripper_name)_link_main_body"/>
-        <origin xyz="0.0 0.0 0.006" rpy="0.0 0.0 0"/>
+        <origin xyz="0 0 0.006" rpy="0.0 0.0 ${pi/2}"/>
     </joint>
 
     <xacro:schunk_gripper hardware_interface="$(arg hardware_interface)" robot_name="$(arg gripper_name)">
     </xacro:schunk_gripper>
+
 
 </robot>
