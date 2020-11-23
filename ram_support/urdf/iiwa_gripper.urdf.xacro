@@ -23,6 +23,7 @@
     
     <xacro:optical_table />
 
+
     <joint name="$(arg iiwa_name)_mounting_plate_base_joint" type="fixed">
         <parent link="optical_table_front_left_bolt"/>
         <child link="$(arg iiwa_name)_mounting_plate_front_left_bolt"/>

@@ -9,7 +9,6 @@ import xacro
 def load_file(package_name, file_path):
     package_path = get_package_share_directory(package_name)
     absolute_file_path = os.path.join(package_path, file_path)
-
     try:
         with open(absolute_file_path, 'r') as file:
             return file.read()
@@ -31,20 +30,20 @@ def load_yaml(package_name, file_path):
 def generate_launch_description():
     # Component yaml files are grouped in separate namespaces
     package_path = get_package_share_directory('ram_support')
-    absolute_file_path = os.path.join(package_path, 'urdf/iiwa_gripper.urdf.xacro')
+    absolute_file_path = os.path.join(package_path, 'urdf/mock_iiwa_workcell.urdf.xacro')
     doc = xacro.process_file(absolute_file_path).toprettyxml(indent='  ')
-
-    # print(doc)
 
     robot_description = {'robot_description' : doc}
     # RViz
     rviz_config_file = get_package_share_directory('ram_support') + "/launch/view_urdf.rviz"
+
     rviz_node = Node(package='rviz2',
                      executable='rviz2',
                      name='rviz2',
                      output='log',
                      arguments=['-d', rviz_config_file],
-                     parameters=[robot_description])
+                     parameters=[robot_description]
+                     )
 
     # Static TF
     # static_tf = Node(package='tf2_ros',
@@ -52,6 +51,7 @@ def generate_launch_description():
     #                  name='static_transform_publisher',
     #                  output='log',
     #                  arguments=['0.0', '0.0', '0.0', '0.0', '0.0', '0.0', 'world', 'panda_link0'])
+
     joint_state_publisher_gui = Node(package='joint_state_publisher_gui',
                                      executable='joint_state_publisher_gui',
                                      name='joint_state_publisher_gui',
@@ -62,6 +62,7 @@ def generate_launch_description():
                                  executable='robot_state_publisher',
                                  name='robot_state_publisher',
                                  output='both',
-                                 parameters=[robot_description])
+                                 parameters=[robot_description]
+                                 )
 
     return LaunchDescription([robot_state_publisher, rviz_node, joint_state_publisher_gui])
