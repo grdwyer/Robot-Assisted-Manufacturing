@@ -41,11 +41,11 @@ def generate_launch_description():
     # print(robot_description_semantic_config)
 
     kinematics_yaml = load_yaml('ram_moveit_config', 'config/kinematics.yaml')
-    robot_description_kinematics = { 'robot_description_kinematics' : kinematics_yaml }
+    robot_description_kinematics = {'robot_description_kinematics': kinematics_yaml}
     # print(kinematics_yaml)
 
     # Planning Functionality
-    ompl_planning_pipeline_config = { 'move_group' : {
+    ompl_planning_pipeline_config = {'move_group': {
         'planning_plugin' : 'ompl_interface/OMPLPlanner',
         'request_adapters' : """default_planner_request_adapters/AddTimeOptimalParameterization default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints""" ,
         'start_state_max_bounds_error' : 0.1 } }
@@ -80,7 +80,7 @@ def generate_launch_description():
                                            planning_scene_monitor_parameters])
 
     # RViz
-    rviz_config_file = get_package_share_directory('ram_support') + "/launch/view_urdf.rviz"
+    rviz_config_file = get_package_share_directory('ram_support') + "/launch/moveit_motion_planning.rviz"
 
     rviz_node = Node(package='rviz2',
                      executable='rviz2',
@@ -110,11 +110,12 @@ def generate_launch_description():
                                   )
 
     # Warehouse mongodb server
-    mongodb_server_node = Node(package='warehouse_ros_mongo',
-                               executable='mongo_wrapper_ros.py',
-                               parameters=[{'warehouse_port': 33829},
-                                           {'warehouse_host': 'localhost'},
-                                           {'warehouse_plugin': 'warehouse_ros_mongo::MongoDatabaseConnection'}],
-                               output='screen')
+    # mongodb_server_node = Node(package='warehouse_ros_mongo',
+    #                            executable='mongo_wrapper_ros.py',
+    #                            parameters=[{'warehouse_port': 33829},
+    #                                        {'warehouse_host': 'localhost'},
+    #                                        {'warehouse_plugin': 'warehouse_ros_mongo::MongoDatabaseConnection'}],
+    #                            output='screen')
 
-    return LaunchDescription([ rviz_node, robot_state_publisher, run_move_group_node, fake_joint_driver_node, mongodb_server_node ])
+    # return LaunchDescription([rviz_node, robot_state_publisher, run_move_group_node, fake_joint_driver_node, mongodb_server_node])
+    return LaunchDescription([rviz_node, robot_state_publisher, run_move_group_node, fake_joint_driver_node])
