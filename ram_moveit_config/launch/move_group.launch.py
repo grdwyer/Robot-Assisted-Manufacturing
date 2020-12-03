@@ -80,7 +80,7 @@ def generate_launch_description():
                                            planning_scene_monitor_parameters])
 
     # RViz
-    rviz_config_file = get_package_share_directory('ram_support') + "/launch/moveit_motion_planning.rviz"
+    rviz_config_file = get_package_share_directory('ram_moveit_config') + "/launch/moveit_motion_planning.rviz"
 
     rviz_node = Node(package='rviz2',
                      executable='rviz2',
