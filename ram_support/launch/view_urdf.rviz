@@ -9,7 +9,7 @@ Panels:
         - /RobotModel1
         - /TF1
         - /TF1/Frames1
-      Splitter Ratio: 0.5
+      Splitter Ratio: 0.6058823466300964
     Tree Height: 793
   - Class: rviz_common/Selection
     Name: Selection
@@ -63,6 +63,23 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        a_implant:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        a_implant_tab_centre:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        a_implant_tab_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        a_implant_tab_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         cutting_plate:
           Alpha: 1
           Show Axes: false
@@ -73,6 +90,32 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
         cutting_tool_tip:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gripper_finger_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_finger_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_finger_tip_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gripper_finger_tip_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gripper_gripper_mount_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gripper_gripper_mount_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -197,11 +240,31 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        a_implant:
+          Value: false
+        a_implant_tab_centre:
+          Value: true
+        a_implant_tab_left:
+          Value: false
+        a_implant_tab_right:
+          Value: false
         cutting_plate:
           Value: false
         cutting_tool_base:
           Value: false
         cutting_tool_tip:
+          Value: false
+        gripper_finger_left:
+          Value: false
+        gripper_finger_right:
+          Value: false
+        gripper_finger_tip_left:
+          Value: true
+        gripper_finger_tip_right:
+          Value: true
+        gripper_gripper_mount_left:
+          Value: false
+        gripper_gripper_mount_right:
           Value: false
         gripper_link_left:
           Value: false
@@ -251,13 +314,20 @@ Visualization Manager:
           Value: false
         world:
           Value: false
-      Marker Scale: 0.10000000149011612
+      Marker Scale: 0.05000000074505806
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: false
       Tree:
         world:
+          a_implant:
+            a_implant_tab_centre:
+              {}
+            a_implant_tab_left:
+              {}
+            a_implant_tab_right:
+              {}
           optical_table:
             optical_table_back_left_bolt:
               {}
@@ -281,9 +351,15 @@ Visualization Manager:
                                     iiwa_link_ee:
                                       gripper_link_main_body:
                                         gripper_link_left:
-                                          {}
+                                          gripper_gripper_mount_left:
+                                            gripper_finger_left:
+                                              gripper_finger_tip_left:
+                                                {}
                                         gripper_link_right:
-                                          {}
+                                          gripper_gripper_mount_right:
+                                            gripper_finger_right:
+                                              gripper_finger_tip_right:
+                                                {}
             optical_table_front_right_bolt:
               cutting_plate:
                 cutting_tool_base:
@@ -334,25 +410,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 2.737872838973999
+      Distance: 0.5848851203918457
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.003954037092626095
-        Y: 0.6404229998588562
-        Z: 0.010288212448358536
+        X: -0.27565014362335205
+        Y: -0.18066884577274323
+        Z: 1.3831944465637207
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5053975582122803
+      Pitch: 0.16039778292179108
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz_default_plugins)
-      Yaw: 3.0985748767852783
+      Yaw: 1.5635751485824585
     Saved: ~
 Window Geometry:
   Displays:

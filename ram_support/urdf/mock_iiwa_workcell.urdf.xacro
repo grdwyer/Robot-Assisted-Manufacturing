@@ -12,6 +12,8 @@
     <xacro:include filename="$(find ram_support)/urdf/xacros/iiwa_14_mounting_plate.xacro"/>
     <xacro:include filename="$(find ram_support)/urdf/xacros/milling_plate.xacro"/>
     <xacro:include filename="$(find ram_support)/urdf/xacros/cutting_plate.xacro"/>
+    <xacro:include filename="$(find ram_support)/urdf/xacros/implant_grasp_fingers.xacro"/>
+    <xacro:include filename="$(find ram_support)/urdf/xacros/medpor_stock.xacro"/>
 
     <xacro:arg name="iiwa_name" default="iiwa"/>
     <xacro:arg name="gripper_name" default="gripper"/>
@@ -51,6 +53,8 @@
     <xacro:schunk_gripper hardware_interface="$(arg hardware_interface)" robot_name="$(arg gripper_name)">
     </xacro:schunk_gripper>
 
+    <xacro:implant_grasp_fingers gripper_name="$(arg gripper_name)"/>
+
     <joint name="milling_plate_base_joint" type="fixed">
         <parent link="optical_table_back_right_bolt"/>
         <child link="milling_plate"/>
@@ -67,5 +71,11 @@
 
     <xacro:cutting_plate />
 
+    <joint name="implant_a_joint" type="floating">
+        <parent link="world"/>
+        <child link="a_implant"/>
+    </joint>
+
+    <xacro:medpor_stock size="large" prefix="a"/>
 
 </robot>

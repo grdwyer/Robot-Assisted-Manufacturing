@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:macro name="medpor_stock" params="size prefix">
+        <xacro:if value="${size == 'large'}">
+            <link name="${prefix}_implant">
+                <visual>
+                    <origin xyz="0 0 0" rpy="0 0 0"/>
+                    <geometry>
+                        <mesh filename="package://ram_support/meshes/stock/visual/medpor_large.dae"/>
+                    </geometry>
+                </visual>
+
+                <collision>
+                    <origin xyz="0 0 0" rpy="0 0 0"/>
+                    <geometry>
+                        <mesh filename="package://ram_support/meshes/stock/collision/medpor_large.stl"/>
+                    </geometry>
+                </collision>
+            </link>
+
+            <link name="${prefix}_implant_tab_left"/>
+            <link name="${prefix}_implant_tab_centre"/>
+            <link name="${prefix}_implant_tab_right"/>
+
+            <joint name="${prefix}_implant_tab_left_joint" type="fixed">
+                <parent link="${prefix}_implant"/>
+                <child link="${prefix}_implant_tab_left"/>
+                <origin xyz="-0.009 0 0.0025" rpy="0 0 0"/>
+            </joint>
+
+            <joint name="${prefix}_implant_tab_centre_joint" type="fixed">
+                <parent link="${prefix}_implant"/>
+                <child link="${prefix}_implant_tab_centre"/>
+                <origin xyz="0 0 0.0025" rpy="0 0 0"/>
+            </joint>
+
+            <joint name="${prefix}_implant_tab_right_joint" type="fixed">
+                <parent link="${prefix}_implant"/>
+                <child link="${prefix}_implant_tab_right"/>
+                <origin xyz="0.009 0 0.0025" rpy="0 0 0"/>
+            </joint>
+        </xacro:if>
+    </xacro:macro>
+</robot>

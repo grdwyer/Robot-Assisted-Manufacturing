@@ -28,7 +28,7 @@
       <child link="${robot_name}_link_left"/>
       <origin xyz="-0.0058 0 0.0341" rpy="${pi/2} 0 -${pi/2}"/>
       <axis xyz="0 0 -1"/>
-      <limit lower="0.0" upper="0.005"
+      <limit lower="0.0008" upper="0.0058"
              effort="${max_effort}" velocity="0.0833" />
     </joint>
     
@@ -54,8 +54,9 @@
       <child link="${robot_name}_link_right"/>
       <origin xyz="0.0058 0 0.0341" rpy="${pi/2} 0 ${pi/2}"/>
       <axis xyz="0 0 -1"/>
-      <limit lower="0.0" upper="0.005"
+      <limit lower="0.0008" upper="0.0058"
              effort="${max_effort}" velocity="0.0833" />
+      <mimic joint="${robot_name}_joint_left"/>
     </joint>
     
     <link name="${robot_name}_link_right">
@@ -95,7 +96,7 @@
 	<mechanicalReduction>1</mechanicalReduction>
       </actuator>
     </transmission>
-    
+
   </xacro:macro>
   
 </robot>
