@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="3">
+
+  <name>ram_moveit_config</name>
+  <version>0.3.0</version>
+  <description>
+     An automatically generated package with all the configuration and launch files for using the iiwa_gripper with the MoveIt Motion Planning Framework
+  </description>
+  <author email="george.dwyer@ucl.ac.uk">George Dwyer</author>
+  <maintainer email="george.dwyer@ucl.ac.uk">George Dwyer</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <exec_depend>ram_support</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
+
