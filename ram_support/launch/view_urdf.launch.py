@@ -47,11 +47,17 @@ def generate_launch_description():
                      )
 
     # Static TF
-    static_tf = Node(package='tf2_ros',
-                     executable='static_transform_publisher',
-                     name='implant_transform_publisher',
-                     output='log',
-                     arguments=['-0.275', '0.3', '1.478', '0.0', '0.0', str(pi), 'world', 'a_implant'])
+    # static_tf = Node(package='tf2_ros',
+    #                  executable='static_transform_publisher',
+    #                  name='implant_transform_publisher',
+    #                  output='log',
+    #                  arguments=['-0.275', '0.3', '1.478', '0.0', '0.0', str(pi), 'world', 'a_implant'])
+
+    implant_handler = Node(package='ram_gripper_control',
+                           executable="implant_handler",
+                           name='implant_handler',
+                           output='screen'
+                           )
 
     joint_state_publisher_gui = Node(package='joint_state_publisher_gui',
                                      executable='joint_state_publisher_gui',
@@ -66,4 +72,4 @@ def generate_launch_description():
                                  parameters=[robot_description]
                                  )
 
-    return LaunchDescription([robot_state_publisher, rviz_node, joint_state_publisher_gui, static_tf])
+    return LaunchDescription([robot_state_publisher, rviz_node, joint_state_publisher_gui, implant_handler]) #static_tf

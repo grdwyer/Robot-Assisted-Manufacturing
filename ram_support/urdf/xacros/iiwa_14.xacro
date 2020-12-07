@@ -271,7 +271,7 @@
     <joint name="${robot_name}_joint_7" type="revolute">
       <parent link="${robot_name}_link_6"/>
       <child link="${robot_name}_link_7"/>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>3BS
       <axis xyz="0 0 1"/>
       <limit lower="${-174 * PI / 180}" upper="${174 * PI / 180}"
              effort="${max_effort}" velocity="${135 * PI / 180}" />

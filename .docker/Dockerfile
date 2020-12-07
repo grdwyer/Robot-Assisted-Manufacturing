@@ -29,7 +29,8 @@ RUN apt-get update && apt-get install -y \
     python3-vcstool \
     wget \
     ros-$ROSDISTRO-rqt \
-    ros-$ROSDISTRO-rviz2 
+    ros-$ROSDISTRO-rviz2 \
+    python3-pykdl
 
 RUN apt-get update && apt-get install -y \
     libbullet-dev \
