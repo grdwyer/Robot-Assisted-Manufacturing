@@ -5,9 +5,11 @@ import tf2_ros
 from tf2_ros import TransformBroadcaster, TransformListener, Buffer
 from geometry_msgs.msg import TransformStamped, Transform
 import builtin_interfaces
+import std_msgs.msg
 import tf2_kdl
 import tf2_py
 import PyKDL
+from rclpy.qos import QoSProfile, QoSDurabilityPolicy
 
 def to_msg_transform(frame):
     """Convert a PyKDL Vector to a geometry_msgs PointStamped message.
@@ -28,7 +30,9 @@ def to_msg_transform(frame):
     msg.rotation.w = quat[3]
     return msg
 
+
 tf2_ros.ConvertRegistration().add_to_msg(PyKDL.Frame, to_msg_transform)
+
 
 class ImplantHandler(Node):
     def __init__(self):
@@ -51,8 +55,16 @@ class ImplantHandler(Node):
 
         self.declare_parameter("base_frame", "world")
         self.declare_parameter("implant_frame", "a_implant")
+        self.declare_parameter("implant_description")
 
         self.tf_publisher_timer = self.create_timer(1/30.0, self.transform_publisher)
+
+        # Implant description publisher
+        qos = QoSProfile(depth = 1, durability = QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL)
+        self.publisher_implant_description = self.create_publisher(std_msgs.msg.String, 'implant_description', qos)
+        msg = std_msgs.msg.String()
+        msg.data = self.get_parameter("implant_description").get_parameter_value().string_value
+        self.publisher_implant_description.publish(msg)
 
     def callback_implant_transform(self, msg):
         """
@@ -61,6 +73,7 @@ class ImplantHandler(Node):
         :type msg: TransformStamped
         :return:
         """
+        self.get_logger().info("Received new transform for implant")
         self.implant_transform = msg
 
     async def transform_publisher(self):
@@ -72,7 +85,8 @@ class ImplantHandler(Node):
             from_frame = self.get_parameter("base_frame").get_parameter_value().string_value
 
             transform = await self.tf_buffer.lookup_transform_async(from_frame, to_frame, when)
-            self.get_logger().info('Got {}'.format(repr(transform)))
+            # self.get_logger().info('Got {}'.format(repr(transform)), throttle_duration_sec=1,
+            #     throttle_time_source_type=rclpy.clock.Clock())
         except tf2_ros.LookupException as e:
             self.get_logger().error('failed to get transform {}'.format(repr(e)))
 

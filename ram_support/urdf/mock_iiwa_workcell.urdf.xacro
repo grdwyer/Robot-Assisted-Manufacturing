@@ -71,18 +71,11 @@
 
     <xacro:cutting_plate />
 
-    <joint name="implant_a_joint" type="floating">
-        <parent link="world"/>
-        <child link="a_implant"/>
-    </joint>
-
     <link name="home_a_implant"/>
     <joint name="home_a_implant_joint" type="fixed">
         <parent link="optical_table_back_left_bolt"/>
         <child link="home_a_implant"/>
         <origin xyz="0.5 -0.2 0.01" rpy="0.0 0.0 0"/>
     </joint>
-
-    <xacro:medpor_stock size="large" prefix="a"/>
 
 </robot>

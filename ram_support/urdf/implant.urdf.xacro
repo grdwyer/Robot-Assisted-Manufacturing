@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="implant">
+    <xacro:include filename="$(find ram_support)/urdf/xacros/medpor_stock.xacro"/>
+
+    <xacro:medpor_stock size="large" prefix="a"/>
+
+</robot>
