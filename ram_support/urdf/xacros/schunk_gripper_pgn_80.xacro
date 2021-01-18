@@ -10,14 +10,14 @@
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://ram_support/meshes/schunk_gripper/visual/main_body.dae"/>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/pgn_80/visual/SCHUNK_PGN-plus-P_80-2_mainbody.dae"/>
         </geometry>
       </visual>
       
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://ram_support/meshes/schunk_gripper/collision/main_body.stl" scale="0.001 0.001 0.001"/>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/pgn_80/collision/SCHUNK_PGN-plus-P_80-2_mainbody.stl"/>
         </geometry>
       </collision>
     </link>
@@ -26,9 +26,8 @@
     <joint name="${robot_name}_joint_left" type="prismatic">
       <parent link="${robot_name}_link_main_body"/>
       <child link="${robot_name}_link_left"/>
-      <origin xyz="-0.0058 0 0.0341" rpy="${pi/2} 0 -${pi/2}"/>
-      <axis xyz="0 0 -1"/>
-      <limit lower="0.0008" upper="0.0058"
+      <origin xyz="0 0 0.0" rpy="0 0 0"/>
+      <limit lower="0.000" upper="0.005"
              effort="${max_effort}" velocity="0.0833" />
     </joint>
     
@@ -36,14 +35,14 @@
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://ram_support/meshes/schunk_gripper/visual/left_gripper.dae"/>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/pgn_80/visual/SCHUNK_PGN-plus-P_80-2_jaw.dae"/>
         </geometry>
       </visual>
       
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://ram_support/meshes/schunk_gripper/collision/left_gripper.stl" scale="0.001 0.001 0.001"/>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/pgn_80/collision/SCHUNK_PGN-plus-P_80-2_jaw.stl" />
         </geometry>
       </collision>
     </link>
@@ -52,9 +51,9 @@
     <joint name="${robot_name}_joint_right" type="prismatic">
       <parent link="${robot_name}_link_main_body"/>
       <child link="${robot_name}_link_right"/>
-      <origin xyz="0.0058 0 0.0341" rpy="${pi/2} 0 ${pi/2}"/>
-      <axis xyz="0 0 -1"/>
-      <limit lower="0.0008" upper="0.0058"
+      <origin xyz="0 0 0" rpy="0 0 ${pi}"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="0.000" upper="0.005"
              effort="${max_effort}" velocity="0.0833" />
       <mimic joint="${robot_name}_joint_left"/>
     </joint>
@@ -63,14 +62,14 @@
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://ram_support/meshes/schunk_gripper/visual/right_gripper.dae"/>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/pgn_80/visual/SCHUNK_PGN-plus-P_80-2_jaw.dae"/>
         </geometry>
       </visual>
       
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://ram_support/meshes/schunk_gripper/collision/right_gripper.stl" scale="0.001 0.001 0.001"/>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/pgn_80/collision/SCHUNK_PGN-plus-P_80-2_jaw.stl"/>
         </geometry>
       </collision>
     </link>

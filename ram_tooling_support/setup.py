@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'ram_gripper_control'
+package_name = 'ram_tooling_support'
 
 setup(
     name=package_name,
@@ -13,15 +13,13 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='George Dwyer',
+    maintainer='george',
     maintainer_email='george.dwyer@ucl.ac.uk',
     description='TODO: Package description',
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'implant_handler = ram_gripper_control.implant_handler_moveit:main',
-            'sim_gripper_controller = ram_gripper_control.sim_gripper_controller:main'
         ],
     },
 )

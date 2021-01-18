@@ -7,7 +7,7 @@
     <link name="world"/>
 
     <xacro:include filename="$(find ram_support)/urdf/xacros/iiwa_14.xacro"/>
-    <xacro:include filename="$(find ram_support)/urdf/xacros/schunk_gripper.xacro"/>
+    <xacro:include filename="$(find ram_support)/urdf/xacros/schunk_gripper_pgn_100.xacro"/>
     <xacro:include filename="$(find ram_support)/urdf/xacros/optical_table.xacro"/>
     <xacro:include filename="$(find ram_support)/urdf/xacros/iiwa_14_mounting_plate.xacro"/>
 

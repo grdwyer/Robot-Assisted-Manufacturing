@@ -18,10 +18,15 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 class SimGripperController(Node):
     def __init__(self):
         super().__init__('sim_gripper_controller')
+
         # two service servers with empty requests for open and close.
-        self.service_open = self.create_service(std_srvs.srv.Trigger, 'open', self.callback_open)
-        self.service_close = self.create_service(std_srvs.srv.Trigger, 'close', self.callback_close)
-        self.service_attach_implant = self.create_service(std_srvs.srv.Trigger, 'attach_implant', self.callback_attach_implant)
+        self.service_open = self.create_service(std_srvs.srv.Trigger, '{}/open'.format(self.get_name()),
+                                                self.callback_open)
+        self.service_close = self.create_service(std_srvs.srv.Trigger, '{}/close'.format(self.get_name()),
+                                                 self.callback_close)
+        self.service_attach_implant = self.create_service(std_srvs.srv.Trigger,
+                                                          '{}/attach_implant'.format(self.get_name()),
+                                                          self.callback_attach_implant)
 
         # publisher for implant handler
         self.publisher_implant_transform = self.create_publisher(TransformStamped, "implant_transform", 10)
@@ -38,15 +43,13 @@ class SimGripperController(Node):
         js = JointState()
         js.header.stamp = self.get_clock().now().to_msg()
         js.name.append("gripper_joint_left")
-        js.name.append("gripper_joint_right")
+        # js.name.append("gripper_joint_right")
 
         # TODO: use the urdf for the joint limits
         if self.gripper_open:
-            js.position.append(0.00)
-            js.position.append(0.00)
+            js.position.append(0.005)  # Switched zero position to be closed for PGN-80 (different to PGN-100 config)
         else:
-            js.position.append(0.005)
-            js.position.append(0.005)
+            js.position.append(0.00)
 
         self.publisher_joint_state.publish(js)
 

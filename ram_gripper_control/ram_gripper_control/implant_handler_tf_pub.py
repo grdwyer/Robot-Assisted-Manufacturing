@@ -11,6 +11,7 @@ import tf2_py
 import PyKDL
 from rclpy.qos import QoSProfile, QoSDurabilityPolicy
 
+
 def to_msg_transform(frame):
     """Convert a PyKDL Vector to a geometry_msgs PointStamped message.
     :param frame: The transform to convert.
@@ -60,7 +61,7 @@ class ImplantHandler(Node):
         self.tf_publisher_timer = self.create_timer(1/30.0, self.transform_publisher)
 
         # Implant description publisher
-        qos = QoSProfile(depth = 1, durability = QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL)
+        qos = QoSProfile(depth=1, durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL)
         self.publisher_implant_description = self.create_publisher(std_msgs.msg.String, 'implant_description', qos)
         msg = std_msgs.msg.String()
         msg.data = self.get_parameter("implant_description").get_parameter_value().string_value
@@ -103,11 +104,44 @@ class ImplantHandler(Node):
         implant_transform_msg.transform = to_msg_transform(base_trans * attach_trans)
         self.tf_publisher.sendTransform(implant_transform_msg)
 
+    def moveit_collision_object(self):
+        self.get_logger().info("publishing collision object to remove to the robot")
+        from moveit_msgs.msg import AttachedCollisionObject, CollisionObject
+        from shape_msgs.msg import Mesh, SolidPrimitive
+        from geometry_msgs.msg import Pose
+
+        collision_object = CollisionObject()
+        collision_object.header.frame_id = "gripper_link_left"
+        collision_object.id = "implant"
+
+        box = SolidPrimitive()
+        box.type = SolidPrimitive.BOX
+        box.dimensions.append(0.1)
+        box.dimensions.append(0.4)
+        box.dimensions.append(0.1)
+
+        box_pose = Pose()
+        box_pose.position.x = 0.4
+        box_pose.position.y = 0.0
+        box_pose.position.z = 0.1
+
+        collision_object.primitives.append(box)
+        collision_object.primitive_poses.append(box_pose)
+        collision_object.operation = CollisionObject.REMOVE
+
+        msg = AttachedCollisionObject()
+        msg.object = collision_object
+        msg.link_name = "gripper_link_left"
+        self.pub_moveit_collision = self.create_publisher(AttachedCollisionObject, "/attached_collision_object", 10)
+        self.pub_moveit_collision.publish(msg)
+        self.get_logger().info("Published")
+
 
 def main(args=None):
     rclpy.init(args=args)
 
     implant_handler = ImplantHandler()
+    implant_handler.moveit_collision_object()
     try:
         rclpy.spin(implant_handler)
     except KeyboardInterrupt:
