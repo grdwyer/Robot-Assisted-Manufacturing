@@ -69,7 +69,8 @@ RUN pip3 install -U \
     flake8-quotes \
     pytest-repeat \
     pytest-rerunfailures \
-    pytest
+    pytest \
+    pyassimp==4.1.3
 
 # Moveit 2 build process
 RUN mkdir -p /moveit_ws/src
