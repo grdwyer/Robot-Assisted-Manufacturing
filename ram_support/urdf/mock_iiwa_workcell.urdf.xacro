@@ -7,11 +7,12 @@
     <link name="world"/>
 
     <xacro:include filename="$(find ram_support)/urdf/xacros/iiwa_14.xacro"/>
-    <xacro:include filename="$(find ram_support)/urdf/xacros/schunk_gripper.xacro"/>
+    <xacro:include filename="$(find ram_support)/urdf/xacros/schunk_gripper_pgn_80.xacro"/>
     <xacro:include filename="$(find ram_support)/urdf/xacros/optical_table.xacro"/>
     <xacro:include filename="$(find ram_support)/urdf/xacros/iiwa_14_mounting_plate.xacro"/>
     <xacro:include filename="$(find ram_support)/urdf/xacros/milling_plate.xacro"/>
     <xacro:include filename="$(find ram_support)/urdf/xacros/cutting_plate.xacro"/>
+    <xacro:include filename="$(find ram_support)/urdf/xacros/medpor_stock.xacro"/>
 
     <xacro:arg name="iiwa_name" default="iiwa"/>
     <xacro:arg name="gripper_name" default="gripper"/>
@@ -51,13 +52,15 @@
     <xacro:schunk_gripper hardware_interface="$(arg hardware_interface)" robot_name="$(arg gripper_name)">
     </xacro:schunk_gripper>
 
-    <joint name="milling_plate_base_joint" type="fixed">
-        <parent link="optical_table_back_right_bolt"/>
-        <child link="milling_plate"/>
-        <origin xyz="-0.2 -0.2 0.00" rpy="0.0 0.0 0"/>
-    </joint>
+<!--    <xacro:implant_grasp_fingers gripper_name="$(arg gripper_name)"/>-->
 
-    <xacro:milling_plate tool_length="0.005" tool_diameter="0.002"/>
+<!--    <joint name="milling_plate_base_joint" type="fixed">-->
+<!--        <parent link="optical_table_back_right_bolt"/>-->
+<!--        <child link="milling_plate"/>-->
+<!--        <origin xyz="-0.2 -0.2 0.00" rpy="0.0 0.0 0"/>-->
+<!--    </joint>-->
+
+<!--    <xacro:milling_plate tool_length="0.005" tool_diameter="0.002"/>-->
 
     <joint name="cutting_plate_base_joint" type="fixed">
         <parent link="optical_table_front_right_bolt"/>
@@ -67,5 +70,11 @@
 
     <xacro:cutting_plate />
 
+    <link name="home_a_implant"/>
+    <joint name="home_a_implant_joint" type="fixed">
+        <parent link="optical_table_back_left_bolt"/>
+        <child link="home_a_implant"/>
+        <origin xyz="0.5 -0.2 0.01" rpy="0.0 0.0 0"/>
+    </joint>
 
 </robot>

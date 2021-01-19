@@ -1,15 +1,16 @@
 Panels:
   - Class: rviz_common/Displays
-    Help Height: 78
+    Help Height: 0
     Name: Displays
     Property Tree Widget:
       Expanded:
         - /Global Options1
         - /Status1
-        - /MotionPlanning1
         - /MotionPlanning1/Planning Request1
+        - /TF1/Frames1
+        - /RobotModel1
       Splitter Ratio: 0.5
-    Tree Height: 415
+    Tree Height: 523
   - Class: rviz_common/Selection
     Name: Selection
   - Class: rviz_common/Tool Properties
@@ -44,7 +45,282 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
-    - Acceleration_Scaling_Factor: 0.1
+    - Class: moveit_rviz_plugin/PlanningScene
+      Enabled: true
+      Move Group Namespace: ""
+      Name: PlanningScene
+      Planning Scene Topic: /monitored_planning_scene
+      Robot Description: robot_description
+      Scene Geometry:
+        Scene Alpha: 0.8999999761581421
+        Scene Color: 50; 230; 50
+        Scene Display Time: 0.20000000298023224
+        Show Scene Geometry: true
+        Voxel Coloring: Z-Axis
+        Voxel Rendering: Occupied Voxels
+      Scene Robot:
+        Attached Body Color: 150; 50; 150
+        Links:
+          All Links Enabled: true
+          Expand Joint Details: false
+          Expand Link Details: false
+          Expand Tree: false
+          Link Tree Style: Links in Alphabetic Order
+          cutting_plate:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cutting_tool_base:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          cutting_tool_tip:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          gripper_link_left:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          gripper_link_main_body:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          gripper_link_right:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          home_a_implant:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          iiwa_link_0:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          iiwa_link_1:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          iiwa_link_2:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          iiwa_link_3:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          iiwa_link_4:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          iiwa_link_5:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          iiwa_link_6:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          iiwa_link_7:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          iiwa_link_ee:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          iiwa_mounting_plate:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          iiwa_mounting_plate_centre_top_surface:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          iiwa_mounting_plate_front_left_bolt:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          optical_table:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          optical_table_back_left_bolt:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          optical_table_back_right_bolt:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          optical_table_front_left_bolt:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          optical_table_front_right_bolt:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          world:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+        Robot Alpha: 1
+        Show Robot Collision: false
+        Show Robot Visual: true
+      Value: true
+    - Class: moveit_rviz_plugin/Trajectory
+      Color Enabled: false
+      Enabled: true
+      Interrupt Display: false
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        cutting_plate:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cutting_tool_base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cutting_tool_tip:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gripper_link_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_link_main_body:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_link_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        home_a_implant:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        iiwa_link_0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        iiwa_link_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        iiwa_link_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        iiwa_link_3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        iiwa_link_4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        iiwa_link_5:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        iiwa_link_6:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        iiwa_link_7:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        iiwa_link_ee:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        iiwa_mounting_plate:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        iiwa_mounting_plate_centre_top_surface:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        iiwa_mounting_plate_front_left_bolt:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        optical_table:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        optical_table_back_left_bolt:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        optical_table_back_right_bolt:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        optical_table_front_left_bolt:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        optical_table_front_right_bolt:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        world:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+      Loop Animation: false
+      Name: Trajectory
+      Robot Alpha: 0.5
+      Robot Color: 150; 50; 150
+      Robot Description: robot_description
+      Show Robot Collision: false
+      Show Robot Visual: true
+      Show Trail: false
+      State Display Time: 0.05 s
+      Trail Step Size: 1
+      Trajectory Topic: /display_planned_path
+      Value: true
+    - Acceleration_Scaling_Factor: 1
       Class: moveit_rviz_plugin/MotionPlanning
       Enabled: true
       Move Group Namespace: ""
@@ -55,7 +331,7 @@ Visualization Manager:
       MoveIt_Planning_Attempts: 10
       MoveIt_Planning_Time: 5
       MoveIt_Use_Cartesian_Path: false
-      MoveIt_Use_Constraint_Aware_IK: false
+      MoveIt_Use_Constraint_Aware_IK: true
       MoveIt_Warehouse_Host: 127.0.0.1
       MoveIt_Warehouse_Port: 33829
       MoveIt_Workspace:
@@ -105,6 +381,10 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          home_a_implant:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           iiwa_link_0:
             Alpha: 1
             Show Axes: false
@@ -162,20 +442,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-          milling_plate:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          milling_tool_base:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          milling_tool_tip:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
           optical_table:
             Alpha: 1
             Show Axes: false
@@ -212,24 +478,24 @@ Visualization Manager:
         Trajectory Topic: /move_group/display_planned_path
       Planning Metrics:
         Payload: 1
-        Show Joint Torques: false
-        Show Manipulability: false
-        Show Manipulability Index: false
-        Show Weight Limit: false
+        Show Joint Torques: true
+        Show Manipulability: true
+        Show Manipulability Index: true
+        Show Weight Limit: true
         TextHeight: 0.07999999821186066
       Planning Request:
         Colliding Link Color: 255; 0; 0
         Goal State Alpha: 1
         Goal State Color: 250; 128; 0
-        Interactive Marker Size: 0
+        Interactive Marker Size: 0.3499999940395355
         Joint Violation Color: 255; 0; 255
         Planning Group: iiwa
-        Query Goal State: true
+        Query Goal State: false
         Query Start State: false
         Show Workspace: false
         Start State Alpha: 1
         Start State Color: 0; 255; 0
-      Planning Scene Topic: move_group/monitored_planning_scene
+      Planning Scene Topic: /monitored_planning_scene
       Robot Description: robot_description
       Scene Geometry:
         Scene Alpha: 0.8999999761581421
@@ -274,6 +540,10 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          home_a_implant:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           iiwa_link_0:
             Alpha: 1
             Show Axes: false
@@ -331,20 +601,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-          milling_plate:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          milling_tool_base:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          milling_tool_tip:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
           optical_table:
             Alpha: 1
             Show Axes: false
@@ -374,10 +630,126 @@ Visualization Manager:
         Show Robot Collision: false
         Show Robot Visual: true
       Value: true
-      Velocity_Scaling_Factor: 0.1
+      Velocity_Scaling_Factor: 1
+    - Class: rviz_default_plugins/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: false
+        cutting_plate:
+          Value: false
+        cutting_tool_base:
+          Value: true
+        cutting_tool_tip:
+          Value: true
+        gripper_link_left:
+          Value: false
+        gripper_link_main_body:
+          Value: false
+        gripper_link_right:
+          Value: false
+        home_a_implant:
+          Value: false
+        iiwa_link_0:
+          Value: false
+        iiwa_link_1:
+          Value: false
+        iiwa_link_2:
+          Value: false
+        iiwa_link_3:
+          Value: false
+        iiwa_link_4:
+          Value: false
+        iiwa_link_5:
+          Value: false
+        iiwa_link_6:
+          Value: false
+        iiwa_link_7:
+          Value: false
+        iiwa_link_ee:
+          Value: false
+        iiwa_mounting_plate:
+          Value: false
+        iiwa_mounting_plate_centre_top_surface:
+          Value: false
+        iiwa_mounting_plate_front_left_bolt:
+          Value: false
+        optical_table:
+          Value: false
+        optical_table_back_left_bolt:
+          Value: false
+        optical_table_back_right_bolt:
+          Value: false
+        optical_table_front_left_bolt:
+          Value: false
+        optical_table_front_right_bolt:
+          Value: false
+        world:
+          Value: false
+      Marker Scale: 0.10000000149011612
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: false
+      Tree:
+        world:
+          optical_table:
+            optical_table_back_left_bolt:
+              home_a_implant:
+                {}
+            optical_table_back_right_bolt:
+              {}
+            optical_table_front_left_bolt:
+              iiwa_mounting_plate_front_left_bolt:
+                iiwa_mounting_plate:
+                  iiwa_mounting_plate_centre_top_surface:
+                    iiwa_link_0:
+                      iiwa_link_1:
+                        iiwa_link_2:
+                          iiwa_link_3:
+                            iiwa_link_4:
+                              iiwa_link_5:
+                                iiwa_link_6:
+                                  iiwa_link_7:
+                                    iiwa_link_ee:
+                                      gripper_link_main_body:
+                                        gripper_link_left:
+                                          {}
+                                        gripper_link_right:
+                                          {}
+            optical_table_front_right_bolt:
+              cutting_plate:
+                cutting_tool_base:
+                  cutting_tool_tip:
+                    {}
+      Update Interval: 0
+      Value: true
+    - Alpha: 1
+      Class: rviz_default_plugins/RobotModel
+      Collision Enabled: false
+      Description File: ""
+      Description Source: Topic
+      Description Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /implant_description
+      Enabled: false
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: ""
+      Name: RobotModel
+      TF Prefix: ""
+      Update Interval: 0
+      Value: false
+      Visual Enabled: true
   Enabled: true
   Global Options:
-    Background Color: 255; 255; 255
+    Background Color: 240; 240; 240
     Fixed Frame: world
     Frame Rate: 30
   Name: root
@@ -418,43 +790,45 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 3.2589430809020996
+      Distance: 2.048931837081909
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.1340872347354889
-        Y: 0.4609247148036957
-        Z: 0.2592022716999054
+        X: -0.2858576476573944
+        Y: 0.7069720029830933
+        Z: 0.7500886917114258
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5053975582122803
+      Pitch: 0.5903975963592529
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz_default_plugins)
-      Yaw: 2.6885745525360107
+      Value: Orbit (rviz)
+      Yaw: 4.911766529083252
     Saved: ~
 Window Geometry:
-  "":
-    collapsed: false
-  " - Trajectory Slider":
-    collapsed: false
   Displays:
     collapsed: false
-  Height: 1016
+  Height: 1376
   Hide Left Dock: false
-  Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000001ca000003a2fc020000000afb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003b00000228000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb000000280020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000003f00fffffffbffffffff0100000269000001740000016900ffffff000000010000010f000003a2fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003b000003a2000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004420000003efc0100000002fb0000000800540069006d00650100000000000004420000000000000000fb0000000800540069006d0065010000000000000450000000000000000000000453000003a200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Hide Right Dock: true
+  MotionPlanning:
+    collapsed: false
+  MotionPlanning - Trajectory Slider:
+    collapsed: false
+  QMainWindow State: 000000ff00000000fd0000000400000000000001ca0000050afc020000000cfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003b00000246000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000003c005400720061006a006500630074006f007200790020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000003f00fffffffb000000280020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000000000000000fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000003f00fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e00670100000287000002be0000016900ffffff000000010000010f0000050afc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003b0000050a000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004420000003efc0100000002fb0000000800540069006d00650100000000000004420000000000000000fb0000000800540069006d00650100000000000004500000000000000000000002ea0000050a00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Tool Properties:
     collapsed: false
-  Views:
+  Trajectory - Trajectory Slider:
     collapsed: false
-  Width: 1848
-  X: 72
+  Views:
+    collapsed: true
+  Width: 1210
+  X: 2230
   Y: 27
