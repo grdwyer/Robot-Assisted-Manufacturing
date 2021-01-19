@@ -85,7 +85,7 @@ class StockHandler(Node):
 
     def create_moveit_collision_object(self):
         collision_object = CollisionObject()
-        collision_object.header.frame_id = self.get_parameter("base_frame").get_parameter_value().string_value
+        collision_object.header.frame_id = self.get_parameter("base_placement_frame").get_parameter_value().string_value
         collision_object.id = self.get_parameter("stock_frame").get_parameter_value().string_value
 
         # Used for initial test. Ignore it now will be deleted soon.
@@ -130,7 +130,7 @@ def main(args=None):
 
     stock_handler.get_logger().info("Currently set to just attach the stock directly at the implant")
     attach_msg = AttachedCollisionObject()
-    attach_msg.link_name = stock_handler.get_parameter("base_frame").get_parameter_value().string_value
+    attach_msg.link_name = stock_handler.get_parameter("base_attachment_frame").get_parameter_value().string_value
     attach_msg.object = collision_msg
     stock_handler.pub_moveit_attached_collision.publish(attach_msg)
 

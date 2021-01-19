@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'implant_handler = ram_gripper_control.implant_handler_moveit:main',
+            'implant_handler = ram_gripper_control.implant_handler_tf_pub:main',
             'sim_gripper_controller = ram_gripper_control.sim_gripper_controller:main'
         ],
     },

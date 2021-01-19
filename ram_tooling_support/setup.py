@@ -20,6 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'stock_handler = ram_tooling_support.moveit_stock_handler:main',
+            'toolpath_handler = ram_tooling_support.toolpath_handler:main'
         ],
     },
 )
