@@ -29,6 +29,19 @@ RUN apt-get update && apt-get install -y \
     python3-vcstool \
     wget \
     ros-$ROSDISTRO-rqt \
+    ros-foxy-rqt-topic \
+    ros-foxy-rqt-top \
+    ros-foxy-rqt-srv \
+    ros-foxy-rqt-shell \
+    ros-foxy-rqt-service-caller \
+    ros-foxy-rqt-publisher \
+    ros-foxy-rqt-reconfigure \
+    ros-foxy-rqt-plot \
+    ros-foxy-rqt-msg \
+    ros-foxy-rqt-graph \
+    ros-foxy-rqt-console \
+    ros-foxy-rqt-common-plugins \
+    ros-foxy-rqt-action \
     ros-$ROSDISTRO-rviz2 \
     python3-pykdl
 
