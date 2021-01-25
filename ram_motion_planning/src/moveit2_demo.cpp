@@ -44,6 +44,8 @@
 #include <moveit_msgs/msg/display_robot_state.hpp>
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
 #include <utility>
+#include <std_srvs/srv/set_bool.hpp>
+#include <std_srvs/srv/trigger.hpp>
 
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_cpp_demo");
 
@@ -54,76 +56,152 @@ public:
             : node_(std::move(node))
             , robot_state_publisher_(node_->create_publisher<moveit_msgs::msg::DisplayRobotState>("display_robot_state", 1))
     {
-    }
-
-    void run()
-    {
         RCLCPP_INFO(LOGGER, "Initialize MoveItCpp");
         moveit_cpp_ = std::make_shared<moveit::planning_interface::MoveItCpp>(node_);
         moveit_cpp_->getPlanningSceneMonitor()->providePlanningSceneService();  // let RViz display query PlanningScene
         moveit_cpp_->getPlanningSceneMonitor()->setPlanningScenePublishingFrequency(100);
 
         RCLCPP_INFO(LOGGER, "Initialize PlanningComponent");
-        moveit::planning_interface::PlanningComponent arm("iiwa", moveit_cpp_);
+        arm_ = std::make_unique<moveit::planning_interface::PlanningComponent>("iiwa", moveit_cpp_);
 
+        client_load_stock_ = node_->create_client<std_srvs::srv::SetBool>("/stock_handler/load_stock");
+        client_attach_stock_ = node_->create_client<std_srvs::srv::SetBool>("/stock_handler/attach_stock");
+        client_gripper_open_ = node_->create_client<std_srvs::srv::Trigger>("/sim_gripper_controller/open");
+        client_gripper_close_ = node_->create_client<std_srvs::srv::Trigger>("/sim_gripper_controller/close");
+
+    }
+
+    void load_stock(bool load){
+        auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
+        request->data = load;
+
+        auto result = client_load_stock_->async_send_request(request);
+        // Wait for the result.
+        if (rclcpp::spin_until_future_complete(node_, result) ==
+            rclcpp::FutureReturnCode::SUCCESS)
+        {
+            RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), result.get()->message);
+
+        } else {
+            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to call service load_stock");
+        }
+    }
+
+    void attach_stock(bool load){
+        auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
+        request->data = load;
+
+        auto result = client_attach_stock_->async_send_request(request);
+        // Wait for the result.
+        if (rclcpp::spin_until_future_complete(node_, result) ==
+            rclcpp::FutureReturnCode::SUCCESS)
+        {
+            RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), result.get()->message);
+
+        } else {
+            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to call service attach stock");
+        }
+    }
+
+    void gripper(bool open){
+        auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
+        std::shared_future<std_srvs::srv::Trigger::Response::SharedPtr> result;
+        if(open) {
+            result = client_gripper_open_->async_send_request(request);
+        } else{
+            result = client_gripper_close_->async_send_request(request);
+        }
+        // Wait for the result.
+        if (rclcpp::spin_until_future_complete(node_, result) ==
+            rclcpp::FutureReturnCode::SUCCESS)
+        {
+            RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), result.get()->message);
+
+        } else {
+            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to call service attach stock");
+        }
+    }
+
+    void run()
+    {
         // A little delay before running the plan
-        rclcpp::sleep_for(std::chrono::seconds(3));
 
-        // Create collision object, planning shouldn't be too easy
-        moveit_msgs::msg::CollisionObject collision_object;
-        collision_object.header.frame_id = "cutting_tool_tip";
-        collision_object.id = "box";
+        // Load stock
+        load_stock(true);
+        rclcpp::sleep_for(std::chrono::seconds(2));
 
-        shape_msgs::msg::SolidPrimitive box;
-        box.type = shape_msgs::msg::SolidPrimitive::BOX;
-        box.dimensions = { 0.1, 0.4, 0.1 };
-
-        geometry_msgs::msg::Pose box_pose;
-        box_pose.position.x = 0.1;
-        box_pose.position.y = 0.0;
-        box_pose.position.z = 0.5;
-
-        collision_object.primitives.push_back(box);
-        collision_object.primitive_poses.push_back(box_pose);
-        collision_object.operation = moveit_msgs::msg::CollisionObject::ADD;
-
-        // Add object to planning scene
-        {  // Lock PlanningScene
-            planning_scene_monitor::LockedPlanningSceneRW scene(moveit_cpp_->getPlanningSceneMonitor());
-            scene->processCollisionObjectMsg(collision_object);
-        }  // Unlock PlanningScene
-
-        // Set joint state goal
+        // move to grasp pose
         RCLCPP_INFO(LOGGER, "Set goal");
         geometry_msgs::msg::PoseStamped iiwa_pose;
+        iiwa_pose.header.frame_id = "optical_table_back_right_bolt";
+        iiwa_pose.header.stamp = this->node_->get_clock()->now();
+
+        iiwa_pose.pose.position.x = -0.475;
+        iiwa_pose.pose.position.y = -0.3;
+        iiwa_pose.pose.position.z = 0.001;
+
+        iiwa_pose.pose.orientation.y = 1.0;
+        iiwa_pose.pose.orientation.w = 6.12e-17;
+
+        arm_->setGoal(iiwa_pose, "gripper_jaw_centre");
+
+        const auto grip_solution = arm_->plan();
+        rclcpp::sleep_for(std::chrono::seconds(2));
+        if (grip_solution)
+        {
+            RCLCPP_INFO(LOGGER, "arm.execute()");
+            arm_->execute();
+        }
+        rclcpp::sleep_for(std::chrono::seconds(2));
+
+        // attach stock
+        attach_stock(true);
+        gripper(true);
+        rclcpp::sleep_for(std::chrono::seconds(1));
+
+        // move to cutter
+        RCLCPP_INFO(LOGGER, "To cutter");
         iiwa_pose.header.frame_id = "cutting_tool_tip";
         iiwa_pose.header.stamp = this->node_->get_clock()->now();
 
         iiwa_pose.pose.position.x = 0.0;
         iiwa_pose.pose.position.y = 0.0;
-        iiwa_pose.pose.position.z = 0.1;
+        iiwa_pose.pose.position.z = 0.01;
 
         iiwa_pose.pose.orientation.y = 1.0;
         iiwa_pose.pose.orientation.w = 6.12e-17;
-//        iiwa_pose.pose.orientation.y = -0.70711;
-//        moveit_msgs::msg::Constraints constraints;
 
-        arm.setGoal(iiwa_pose, "gripper_jaw_centre");
+        arm_->setGoal(iiwa_pose, "gripper_jaw_centre");
 
         // Run actual plan
         RCLCPP_INFO(LOGGER, "Plan to goal");
-        const auto plan_solution = arm.plan();
+        const auto plan_solution = arm_->plan();
+//        moveit_msgs::msg::RobotTrajectory traj;
+//        plan_solution.trajectory->getRobotTrajectoryMsg(traj);
+//        RCLCPP_INFO_STREAM(LOGGER, traj.joint_trajectory);
+        rclcpp::sleep_for(std::chrono::seconds(2));
         if (plan_solution)
         {
             RCLCPP_INFO(LOGGER, "arm.execute()");
-            arm.execute();
+            arm_->execute();
         }
+
+        rclcpp::sleep_for(std::chrono::seconds(3));
+
+        attach_stock(false);
+        load_stock(false);
     }
 
 private:
     rclcpp::Node::SharedPtr node_;
     rclcpp::Publisher<moveit_msgs::msg::DisplayRobotState>::SharedPtr robot_state_publisher_;
     moveit::planning_interface::MoveItCppPtr moveit_cpp_;
+    rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_load_stock_;
+    rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_attach_stock_;
+    rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_gripper_open_;
+    rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_gripper_close_;
+
+    std::unique_ptr<moveit::planning_interface::PlanningComponent> arm_;
 };
 
 int main(int argc, char** argv)
