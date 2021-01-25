@@ -27,7 +27,7 @@
       <parent link="${robot_name}_link_main_body"/>
       <child link="${robot_name}_link_left"/>
       <origin xyz="0 0 0.0" rpy="0 0 0"/>
-      <limit lower="0.000" upper="0.005"
+      <limit lower="0.000" upper="0.004"
              effort="${max_effort}" velocity="0.0833" />
     </joint>
     
@@ -53,7 +53,7 @@
       <child link="${robot_name}_link_right"/>
       <origin xyz="0 0 0" rpy="0 0 ${pi}"/>
       <axis xyz="1 0 0"/>
-      <limit lower="0.000" upper="0.005"
+      <limit lower="0.000" upper="0.004"
              effort="${max_effort}" velocity="0.0833" />
       <mimic joint="${robot_name}_joint_left"/>
     </joint>
@@ -73,6 +73,27 @@
         </geometry>
       </collision>
     </link>
+
+    <link name="${robot_name}_jaw_centre"/>
+    <joint name="${robot_name}_jaw_centre_joint" type="fixed">
+      <parent link="${robot_name}_link_main_body"/>
+      <child link="${robot_name}_jaw_centre"/>
+      <origin xyz="0 0 0.078850" rpy="0 0 0"/>
+    </joint>
+
+    <link name="${robot_name}_jaw_left"/>
+    <joint name="${robot_name}_jaw_left_joint" type="fixed">
+      <parent link="${robot_name}_link_left"/>
+      <child link="${robot_name}_jaw_left"/>
+      <origin xyz="0.000524 0 0.078850" rpy="0 0 0"/>
+    </joint>
+
+    <link name="${robot_name}_jaw_right"/>
+    <joint name="${robot_name}_jaw_right_joint" type="fixed">
+      <parent link="${robot_name}_link_right"/>
+      <child link="${robot_name}_jaw_right"/>
+      <origin xyz="0.000524 0 0.078850" rpy="0 0 ${pi}"/>
+    </joint>
     
     <transmission name="${robot_name}_tran_right">
       <type>transmission_interface/SimpleTransmission</type>

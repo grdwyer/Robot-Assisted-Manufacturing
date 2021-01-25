@@ -47,7 +47,7 @@ class SimGripperController(Node):
 
         # TODO: use the urdf for the joint limits
         if self.gripper_open:
-            js.position.append(0.005)  # Switched zero position to be closed for PGN-80 (different to PGN-100 config)
+            js.position.append(0.004)  # Switched zero position to be closed for PGN-80 (different to PGN-100 config)
         else:
             js.position.append(0.00)
 

@@ -112,13 +112,6 @@ def generate_launch_description():
                                  parameters=[robot_description])
     nodes.append(robot_state_publisher)
 
-    # implant_state_publisher = Node(package='robot_state_publisher',
-    #                                executable='robot_state_publisher',
-    #                                name='robot_state_publisher',
-    #                                output='both',
-    #                                parameters=[{'robot_description': implant_description_doc}])
-    # nodes.append(implant_state_publisher)
-
     # Fake joint driver
     iiwa_fake_joint_driver_node = Node(package='fake_joint_driver',
                                        executable='fake_joint_driver_node',
@@ -131,14 +124,6 @@ def generate_launch_description():
                                        output="screen"
                                        )
     nodes.append(iiwa_fake_joint_driver_node)
-
-    # implant_handler = Node(package='ram_gripper_control',
-    #                        executable="implant_handler",
-    #                        name='implant_handler',
-    #                        output='screen',
-    #                        parameters=[{'implant_description': implant_description_doc}]
-    #                        )
-    # nodes.append(implant_handler)
 
     sim_gripper_controller = Node(package="ram_gripper_control",
                                   executable="sim_gripper_controller",

@@ -24,7 +24,7 @@ class ToolPathHandler(Node):
         qos = QoSProfile(depth=1, durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL,
                          reliability=QoSReliabilityPolicy.RELIABLE)
         self.pub_marker = self.create_publisher(Marker, "/toolpath", 10)
-        self.declare_parameter("toolpath_frame", "tool_frame")
+        self.declare_parameter("toolpath_frame", "gripper_jaw_centre")
 
         self.timer = self.create_timer(1, self.timer_callback)
 
@@ -46,21 +46,21 @@ class ToolPathHandler(Node):
         msg.pose.orientation.w = 1.0
         # msg.pose.orientation.z = 0.70711
 
-        msg.scale.x = 0.1
+        msg.scale.x = 0.003
 
-        msg.color.a = 0.5
+        msg.color.a = 1.0
         msg.color.r = 1.0
 
         # msg.lifetime.sec = 1
         # msg.frame_locked = True
 
-        # start = make_point(-0.01, 0.01, 0)
-        # mid = make_point(0., 0.015, 0)
-        # end = make_point(0.01, 0.01, 0)
+        start = make_point(-0.01, 0.01, 0.001)
+        mid = make_point(0., 0.015, 0.001)
+        end = make_point(0.01, 0.01, 0.001)
         #
-        start = make_point(-1, 1, 1)
-        mid = make_point(0., 1.5, 1)
-        end = make_point(1, 1, 1)
+        # start = make_point(-1, 1, 1)
+        # mid = make_point(0., 1.5, 1)
+        # end = make_point(1, 1, 1)
 
         msg.points.append(start)
         msg.points.append(mid)

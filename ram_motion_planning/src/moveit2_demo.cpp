@@ -43,14 +43,15 @@
 #include <moveit/robot_state/conversions.h>
 #include <moveit_msgs/msg/display_robot_state.hpp>
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
+#include <utility>
 
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_cpp_demo");
 
 class MoveItCppDemo
 {
 public:
-    MoveItCppDemo(const rclcpp::Node::SharedPtr& node)
-            : node_(node)
+    explicit MoveItCppDemo(rclcpp::Node::SharedPtr  node)
+            : node_(std::move(node))
             , robot_state_publisher_(node_->create_publisher<moveit_msgs::msg::DisplayRobotState>("display_robot_state", 1))
     {
     }
@@ -70,21 +71,21 @@ public:
 
         // Create collision object, planning shouldn't be too easy
         moveit_msgs::msg::CollisionObject collision_object;
-        collision_object.header.frame_id = "iiwa_link_0";
+        collision_object.header.frame_id = "cutting_tool_tip";
         collision_object.id = "box";
 
         shape_msgs::msg::SolidPrimitive box;
-        box.type = box.BOX;
+        box.type = shape_msgs::msg::SolidPrimitive::BOX;
         box.dimensions = { 0.1, 0.4, 0.1 };
 
         geometry_msgs::msg::Pose box_pose;
-        box_pose.position.x = 0.4;
+        box_pose.position.x = 0.1;
         box_pose.position.y = 0.0;
-        box_pose.position.z = 0.8;
+        box_pose.position.z = 0.5;
 
         collision_object.primitives.push_back(box);
         collision_object.primitive_poses.push_back(box_pose);
-        collision_object.operation = collision_object.ADD;
+        collision_object.operation = moveit_msgs::msg::CollisionObject::ADD;
 
         // Add object to planning scene
         {  // Lock PlanningScene
@@ -95,18 +96,19 @@ public:
         // Set joint state goal
         RCLCPP_INFO(LOGGER, "Set goal");
         geometry_msgs::msg::PoseStamped iiwa_pose;
-        iiwa_pose.header.frame_id = "iiwa_link_0";
+        iiwa_pose.header.frame_id = "cutting_tool_tip";
         iiwa_pose.header.stamp = this->node_->get_clock()->now();
 
-        iiwa_pose.pose.position.x = -0.4;
+        iiwa_pose.pose.position.x = 0.0;
         iiwa_pose.pose.position.y = 0.0;
-        iiwa_pose.pose.position.z = 0.6;
+        iiwa_pose.pose.position.z = 0.1;
 
-        iiwa_pose.pose.orientation.x = 0.70711;
-        iiwa_pose.pose.orientation.w = 0.70711;
+        iiwa_pose.pose.orientation.y = 1.0;
+        iiwa_pose.pose.orientation.w = 6.12e-17;
+//        iiwa_pose.pose.orientation.y = -0.70711;
+//        moveit_msgs::msg::Constraints constraints;
 
-
-        arm.setGoal(iiwa_pose, "iiwa_link_ee");
+        arm.setGoal(iiwa_pose, "gripper_jaw_centre");
 
         // Run actual plan
         RCLCPP_INFO(LOGGER, "Plan to goal");
@@ -143,7 +145,7 @@ int main(int argc, char** argv)
         demo.run();
     });
 
-    rclcpp::spin(node);
+//    rclcpp::spin(node);
     run_demo.join();
 
     return 0;
