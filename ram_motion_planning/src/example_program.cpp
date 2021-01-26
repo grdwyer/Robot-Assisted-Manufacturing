@@ -46,6 +46,7 @@
 #include <utility>
 #include <std_srvs/srv/set_bool.hpp>
 #include <std_srvs/srv/trigger.hpp>
+#include <iostream>
 
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_cpp_demo");
 
@@ -129,7 +130,7 @@ public:
         // Load stock
         load_stock(true);
         rclcpp::sleep_for(std::chrono::seconds(2));
-
+//        system("pause");
         // move to grasp pose
         RCLCPP_INFO(LOGGER, "Set goal");
         geometry_msgs::msg::PoseStamped iiwa_pose;
@@ -156,7 +157,7 @@ public:
 
         // attach stock
         attach_stock(true);
-        gripper(true);
+        gripper(false);
         rclcpp::sleep_for(std::chrono::seconds(1));
 
         // move to cutter
@@ -164,9 +165,9 @@ public:
         iiwa_pose.header.frame_id = "cutting_tool_tip";
         iiwa_pose.header.stamp = this->node_->get_clock()->now();
 
-        iiwa_pose.pose.position.x = 0.0;
+        iiwa_pose.pose.position.x = -0.021;
         iiwa_pose.pose.position.y = 0.0;
-        iiwa_pose.pose.position.z = 0.01;
+        iiwa_pose.pose.position.z = -0.01;
 
         iiwa_pose.pose.orientation.y = 1.0;
         iiwa_pose.pose.orientation.w = 6.12e-17;
@@ -190,6 +191,7 @@ public:
 
         attach_stock(false);
         load_stock(false);
+        gripper(true);
     }
 
 private:

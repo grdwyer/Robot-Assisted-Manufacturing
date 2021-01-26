@@ -89,7 +89,7 @@ def generate_launch_description():
     nodes.append(move_group_node)
 
     # RViz
-    rviz_config_file = get_package_share_directory('ram_moveit_config') + "/launch/moveit_motion_planning.rviz"
+    rviz_config_file = get_package_share_directory('ram_motion_planning') + "/launch/moveit_dev_setup.rviz"
 
     rviz_node = Node(package='rviz2',
                      executable='rviz2',
@@ -142,5 +142,12 @@ def generate_launch_description():
                          parameters=[stock_config_file]
                          )
     nodes.append(stock_handler)
+
+    # toolpath_handler = Node(package='ram_tooling_support',
+    #                         executable='toolpath_handler',
+    #                         name='toolpath_handler',
+    #                         output='log',
+    #                         )
+    # nodes.append(toolpath_handler)
 
     return LaunchDescription(nodes)

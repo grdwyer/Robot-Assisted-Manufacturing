@@ -24,16 +24,16 @@ find_package(Boost REQUIRED COMPONENTS system)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
-add_executable(moveit2_demo src/moveit2_demo.cpp)
-target_include_directories(moveit2_demo PUBLIC
+add_executable(example_program src/example_program.cpp)
+target_include_directories(example_program PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-ament_target_dependencies(moveit2_demo
+ament_target_dependencies(example_program
         moveit_ros_planning_interface
         Boost
         )
 
-install(TARGETS moveit2_demo
+install(TARGETS example_program
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)

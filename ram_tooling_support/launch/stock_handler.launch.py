@@ -6,7 +6,6 @@ from ament_index_python.packages import get_package_share_directory
 import xacro
 from math import pi
 
-
 def load_file(package_name, file_path):
     package_path = get_package_share_directory(package_name)
     absolute_file_path = os.path.join(package_path, file_path)

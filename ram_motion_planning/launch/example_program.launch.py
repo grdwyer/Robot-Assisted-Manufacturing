@@ -78,7 +78,7 @@ def generate_launch_description():
     # Start the actual move_group node/action server
     run_moveit_cpp_node = Node(name='run_moveit_cpp',
                                package='ram_motion_planning',
-                               executable='moveit2_demo',
+                               executable='example_program',
                                output='screen',
                                parameters=[moveit_cpp_yaml_file_name,
                                            robot_description,
