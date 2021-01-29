@@ -143,11 +143,11 @@ def generate_launch_description():
                          )
     nodes.append(stock_handler)
 
-    # toolpath_handler = Node(package='ram_tooling_support',
-    #                         executable='toolpath_handler',
-    #                         name='toolpath_handler',
-    #                         output='log',
-    #                         )
-    # nodes.append(toolpath_handler)
+    toolpath_handler = Node(package='ram_tooling_support',
+                            executable='toolpath_handler',
+                            name='toolpath_handler',
+                            output='log',
+                            )
+    nodes.append(toolpath_handler)
 
     return LaunchDescription(nodes)

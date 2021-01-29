@@ -20,20 +20,43 @@ find_package(moveit_ros_planning_interface REQUIRED)
 # This shouldn't be necessary (required by moveit_simple_controller_manager)
 find_package(rosidl_default_runtime REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(ram_interfaces REQUIRED)
+
+include_directories(include)
+
+add_library(ram_helpers src/helpers.cpp)
+ament_target_dependencies(ram_helpers
+        rclcpp
+        ram_interfaces
+        std_srvs
+        )
+
+install(TARGETS ram_helpers
+        DESTINATION lib/${PROJECT_NAME})
 
 add_executable(example_program src/example_program.cpp)
 target_include_directories(example_program PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
+target_link_libraries(example_program
+        ram_helpers)
 ament_target_dependencies(example_program
         moveit_ros_planning_interface
         Boost
         )
 
-install(TARGETS example_program
+add_executable(toolpath_follower src/toolpath_follower_position.cpp)
+target_include_directories(toolpath_follower PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+target_link_libraries(toolpath_follower
+        ram_helpers)
+ament_target_dependencies(toolpath_follower
+        moveit_ros_planning_interface
+        Boost
+        )
+
+install(TARGETS example_program toolpath_follower
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)

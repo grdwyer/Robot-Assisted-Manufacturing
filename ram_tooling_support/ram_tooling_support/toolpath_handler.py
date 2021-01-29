@@ -2,6 +2,8 @@ import rclpy
 from rclpy.node import Node
 from rclpy.time import Time
 from geometry_msgs.msg import Pose, Vector3, Point, Polygon, Point32
+from ram_interfaces.srv import GetToolpath
+from ram_interfaces.msg import Toolpath
 from visualization_msgs.msg import Marker
 from std_srvs.srv import SetBool, Trigger
 from rclpy.qos import QoSProfile, QoSDurabilityPolicy, QoSReliabilityPolicy
@@ -37,7 +39,7 @@ class ToolPathHandler(Node):
         self.pub_marker = self.create_publisher(Marker, "/{}/marker_toolpath".format(self.get_name()), 10)
 
         qos = QoSProfile(depth=1, durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL)
-        self.pub_toolpath = self.create_publisher(Polygon, "/{}/toolpath".format(self.get_name()), qos)
+        self.srv_toolpath = self.create_service(GetToolpath, "/{}/get_toolpath".format(self.get_name()), self.callback_get_toolpath)
         self.declare_parameter("toolpath_frame", "gripper_jaw_centre")
 
         # Toolpath file
@@ -49,16 +51,10 @@ class ToolPathHandler(Node):
         self.timer_rviz_display = self.create_timer(1, self.callback_timer_marker_publish)
         self.timer_rviz_display.cancel()
 
-        self.timer_toolpath_publish = self.create_timer(1, self.callback_timer_toolpath_publish)
-        self.timer_toolpath_publish.cancel()
-
         self.srv_load_toolpath = self.create_service(Trigger, "/{}/load_toolpath".format(self.get_name()),
                                                      self.callback_load_toolpath)
         self.srv_display_toolpath = self.create_service(SetBool, "/{}/display_toolpath".format(self.get_name()),
                                                         self.callback_display_toolpath)
-
-    def callback_timer_toolpath_publish(self):
-        self.pub_toolpath.publish(self.toolpath_msg)
 
     def callback_display_toolpath(self, request, response):
         if request.data is True:
@@ -88,9 +84,6 @@ class ToolPathHandler(Node):
         self.load_toolpath_file()
 
         if self.toolpath_config is not None:
-            self.toolpath_msg = self.create_toolpath_message()
-            self.pub_toolpath.publish(self.toolpath_msg)
-            self.timer_toolpath_publish.reset()
 
             response.success = True
             response.message = "Loaded toolpath from {}, containing {} points".format(
@@ -112,13 +105,24 @@ class ToolPathHandler(Node):
         self.pub_marker.publish(msg)
 
     def create_toolpath_message(self):
-        msg = Polygon()
+        msg = Toolpath()
         if self.toolpath_config is not None:  # if initialised, there's a better way to check
+            msg.header.frame_id = self.get_parameter("toolpath_frame").get_parameter_value().string_value
+            msg.header.stamp = self.get_clock().now().to_msg()
+
             points = self.toolpath_config["cut"]["points"]
             for path_point in points:
                 point = make_point(path_point, msg_type=Point32)
-                msg.points.append(point)
+                msg.path.points.append(point)
+
+        else:
+            self.get_logger().warn("Toolpath has not been loaded. Empty toolpath will be returned")
         return msg
+
+    def callback_get_toolpath(self, request, response):
+        response.toolpath = self.create_toolpath_message()
+
+        return response
 
     def create_rviz_marker(self):
         msg = Marker()

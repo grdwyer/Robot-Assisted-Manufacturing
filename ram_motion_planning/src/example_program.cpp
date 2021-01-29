@@ -47,6 +47,7 @@
 #include <std_srvs/srv/set_bool.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <iostream>
+#include <ram_motion_planning/helpers.h>
 
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_cpp_demo");
 
@@ -55,6 +56,8 @@ class MoveItCppDemo
 public:
     explicit MoveItCppDemo(rclcpp::Node::SharedPtr  node)
             : node_(std::move(node))
+            , gripperHelper_(node)
+            , stockHelper_(node)
             , robot_state_publisher_(node_->create_publisher<moveit_msgs::msg::DisplayRobotState>("display_robot_state", 1))
     {
         RCLCPP_INFO(LOGGER, "Initialize MoveItCpp");
@@ -65,70 +68,18 @@ public:
         RCLCPP_INFO(LOGGER, "Initialize PlanningComponent");
         arm_ = std::make_unique<moveit::planning_interface::PlanningComponent>("iiwa", moveit_cpp_);
 
-        client_load_stock_ = node_->create_client<std_srvs::srv::SetBool>("/stock_handler/load_stock");
-        client_attach_stock_ = node_->create_client<std_srvs::srv::SetBool>("/stock_handler/attach_stock");
-        client_gripper_open_ = node_->create_client<std_srvs::srv::Trigger>("/sim_gripper_controller/open");
-        client_gripper_close_ = node_->create_client<std_srvs::srv::Trigger>("/sim_gripper_controller/close");
+//        stockHelper_ = StockHelper(node);
+//        gripperHelper_ = GripperHelper(node);
 
     }
 
-    void load_stock(bool load){
-        auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
-        request->data = load;
-
-        auto result = client_load_stock_->async_send_request(request);
-        // Wait for the result.
-        if (rclcpp::spin_until_future_complete(node_, result) ==
-            rclcpp::FutureReturnCode::SUCCESS)
-        {
-            RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), result.get()->message);
-
-        } else {
-            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to call service load_stock");
-        }
-    }
-
-    void attach_stock(bool load){
-        auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
-        request->data = load;
-
-        auto result = client_attach_stock_->async_send_request(request);
-        // Wait for the result.
-        if (rclcpp::spin_until_future_complete(node_, result) ==
-            rclcpp::FutureReturnCode::SUCCESS)
-        {
-            RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), result.get()->message);
-
-        } else {
-            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to call service attach stock");
-        }
-    }
-
-    void gripper(bool open){
-        auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
-        std::shared_future<std_srvs::srv::Trigger::Response::SharedPtr> result;
-        if(open) {
-            result = client_gripper_open_->async_send_request(request);
-        } else{
-            result = client_gripper_close_->async_send_request(request);
-        }
-        // Wait for the result.
-        if (rclcpp::spin_until_future_complete(node_, result) ==
-            rclcpp::FutureReturnCode::SUCCESS)
-        {
-            RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), result.get()->message);
-
-        } else {
-            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to call service attach stock");
-        }
-    }
 
     void run()
     {
         // A little delay before running the plan
 
         // Load stock
-        load_stock(true);
+        stockHelper_.load_stock(true);
         rclcpp::sleep_for(std::chrono::seconds(2));
 //        system("pause");
         // move to grasp pose
@@ -156,8 +107,8 @@ public:
         rclcpp::sleep_for(std::chrono::seconds(2));
 
         // attach stock
-        attach_stock(true);
-        gripper(false);
+        stockHelper_.attach_stock(true);
+        gripperHelper_.gripper(false);
         rclcpp::sleep_for(std::chrono::seconds(1));
 
         // move to cutter
@@ -189,19 +140,17 @@ public:
 
         rclcpp::sleep_for(std::chrono::seconds(3));
 
-        attach_stock(false);
-        load_stock(false);
-        gripper(true);
+        stockHelper_.attach_stock(false);
+        stockHelper_.load_stock(false);
+        gripperHelper_.gripper(true);
     }
 
 private:
     rclcpp::Node::SharedPtr node_;
     rclcpp::Publisher<moveit_msgs::msg::DisplayRobotState>::SharedPtr robot_state_publisher_;
     moveit::planning_interface::MoveItCppPtr moveit_cpp_;
-    rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_load_stock_;
-    rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_attach_stock_;
-    rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_gripper_open_;
-    rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_gripper_close_;
+    StockHelper stockHelper_;
+    GripperHelper gripperHelper_;
 
     std::unique_ptr<moveit::planning_interface::PlanningComponent> arm_;
 };
