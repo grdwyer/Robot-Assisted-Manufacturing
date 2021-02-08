@@ -47,32 +47,16 @@ def generate_launch_description():
 
     kinematics_yaml = load_yaml('ram_moveit_config', 'config/kinematics.yaml')
 
-    # Planning Functionality
-    ompl_planning_pipeline_config = {'move_group': {
-        'planning_plugin': 'ompl_interface/OMPLPlanner',
-        'request_adapters': """default_planner_request_adapters/AddTimeOptimalParameterization default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints""",
-        'start_state_max_bounds_error': 0.1}}
-    ompl_planning_yaml = load_yaml('ram_moveit_config', 'config/ompl_planning.yaml')
-    ompl_planning_pipeline_config['move_group'].update(ompl_planning_yaml)
-
-    # Trajectory Execution Functionality
-    controllers_yaml = load_yaml('ram_moveit_config', 'config/controllers.yaml')
-    moveit_controllers = {'moveit_simple_controller_manager': controllers_yaml,
-                          'moveit_controller_manager': 'moveit_simple_controller_manager/MoveItSimpleControllerManager'}
-
-    moveit_cpp_yaml_file_name = get_package_share_directory('ram_motion_planning') + "/config/moveit_cpp.yaml"
     nodes = []
-    # Start the actual move_group node/action server
-    run_moveit_cpp_node = Node(name='run_moveit_cpp',
-                               package='ram_motion_planning',
-                               executable='toolpath_follower',
-                               output='screen',
-                               parameters=[moveit_cpp_yaml_file_name,
-                                           robot_description,
-                                           robot_description_semantic,
-                                           kinematics_yaml,
-                                           ompl_planning_pipeline_config,
-                                           moveit_controllers])
-    nodes.append(run_moveit_cpp_node)
+    # Start the actual move_group interface node
+    toolpath_follower = Node(name='toolpath_follower',
+                             package='ram_motion_planning',
+                             executable='toolpath_follower',
+                             output='screen',
+                             parameters=[robot_description,
+                                         robot_description_semantic,
+                                         kinematics_yaml,
+                                         ])
+    nodes.append(toolpath_follower)
 
     return LaunchDescription(nodes)

@@ -9,6 +9,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <moveit/moveit_cpp/moveit_cpp.h>
 #include <moveit/moveit_cpp/planning_component.h>
+#include <moveit/move_group_interface/move_group_interface.h>
+#include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/robot_state/conversions.h>
 #include <moveit_msgs/msg/display_robot_state.hpp>
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
@@ -44,13 +46,13 @@ public:
 
 private:
     rclcpp::Node::SharedPtr node_;
-    rclcpp::Publisher<moveit_msgs::msg::DisplayRobotState>::SharedPtr robot_state_publisher_;
-    moveit::planning_interface::MoveItCppPtr moveit_cpp_;
-    ToolpathHelper toolpath_helper_;
-
-    std::unique_ptr<moveit::planning_interface::PlanningComponent> arm_;
+    std::shared_ptr<ToolpathHelper> toolpath_helper_;
+    std::shared_ptr<StockHelper> stockHelper_;
+    std::shared_ptr<GripperHelper> gripperHelper_;
 
     ram_interfaces::msg::Toolpath toolpath_;
+    std::unique_ptr<moveit::planning_interface::MoveGroupInterface> move_group_;
+    moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
 
 
 };
