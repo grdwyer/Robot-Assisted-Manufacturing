@@ -28,7 +28,7 @@ private:
 
 class StockHelper{
 public:
-    explicit StockHelper(rclcpp::Node::SharedPtr node);
+    explicit StockHelper(rclcpp::Node::SharedPtr &node);
 
     bool load_stock(bool load);
     bool attach_stock(bool attach);
@@ -40,7 +40,7 @@ private:
 
 class GripperHelper{
 public:
-    explicit GripperHelper(rclcpp::Node::SharedPtr  node);
+    explicit GripperHelper(rclcpp::Node::SharedPtr  &node);
     bool gripper(bool open);
 
 private:

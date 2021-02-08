@@ -48,7 +48,7 @@ bool ToolpathHelper::get_toolpath(ram_interfaces::msg::Toolpath &toolpath) {
     }
 }
 
-StockHelper::StockHelper(rclcpp::Node::SharedPtr node) {
+StockHelper::StockHelper(rclcpp::Node::SharedPtr &node) {
     node_ = std::move(node);
     client_load_stock_ = node_->create_client<std_srvs::srv::SetBool>("/stock_handler/load_stock");
     client_attach_stock_ = node_->create_client<std_srvs::srv::SetBool>("/stock_handler/attach_stock");
@@ -89,7 +89,7 @@ bool StockHelper::attach_stock(bool attach) {
     return result.get()->success;
 }
 
-GripperHelper::GripperHelper(rclcpp::Node::SharedPtr node) {
+GripperHelper::GripperHelper(rclcpp::Node::SharedPtr &node) {
     node_ = std::move(node);
     client_gripper_open_ = node_->create_client<std_srvs::srv::Trigger>("/sim_gripper_controller/open");
     client_gripper_close_ = node_->create_client<std_srvs::srv::Trigger>("/sim_gripper_controller/close");

@@ -56,8 +56,6 @@ class MoveItCppDemo
 public:
     explicit MoveItCppDemo(rclcpp::Node::SharedPtr  node)
             : node_(std::move(node))
-            , gripperHelper_(node)
-            , stockHelper_(node)
             , robot_state_publisher_(node_->create_publisher<moveit_msgs::msg::DisplayRobotState>("display_robot_state", 1))
     {
         RCLCPP_INFO(LOGGER, "Initialize MoveItCpp");
@@ -68,8 +66,10 @@ public:
         RCLCPP_INFO(LOGGER, "Initialize PlanningComponent");
         arm_ = std::make_unique<moveit::planning_interface::PlanningComponent>("iiwa", moveit_cpp_);
 
-//        stockHelper_ = StockHelper(node);
-//        gripperHelper_ = GripperHelper(node);
+        auto stock_node = node_->create_sub_node("stock");
+        auto gripper_node = node_->create_sub_node("gripper");
+        stockHelper_ = std::make_shared<StockHelper>(stock_node);
+        gripperHelper_ = std::make_shared<GripperHelper>(gripper_node);
 
     }
 
@@ -79,8 +79,8 @@ public:
         // A little delay before running the plan
 
         // Load stock
-        stockHelper_.load_stock(true);
-        rclcpp::sleep_for(std::chrono::seconds(2));
+        stockHelper_->load_stock(true);
+        rclcpp::sleep_for(std::chrono::seconds(1));
 //        system("pause");
         // move to grasp pose
         RCLCPP_INFO(LOGGER, "Set goal");
@@ -107,8 +107,8 @@ public:
         rclcpp::sleep_for(std::chrono::seconds(2));
 
         // attach stock
-        stockHelper_.attach_stock(true);
-        gripperHelper_.gripper(false);
+        stockHelper_->attach_stock(true);
+        gripperHelper_->gripper(false);
         rclcpp::sleep_for(std::chrono::seconds(1));
 
         // move to cutter
@@ -140,17 +140,17 @@ public:
 
         rclcpp::sleep_for(std::chrono::seconds(3));
 
-        stockHelper_.attach_stock(false);
-        stockHelper_.load_stock(false);
-        gripperHelper_.gripper(true);
+        stockHelper_->attach_stock(false);
+        stockHelper_->load_stock(false);
+        gripperHelper_->gripper(true);
     }
 
 private:
     rclcpp::Node::SharedPtr node_;
     rclcpp::Publisher<moveit_msgs::msg::DisplayRobotState>::SharedPtr robot_state_publisher_;
     moveit::planning_interface::MoveItCppPtr moveit_cpp_;
-    StockHelper stockHelper_;
-    GripperHelper gripperHelper_;
+    std::shared_ptr<StockHelper> stockHelper_;
+    std::shared_ptr<GripperHelper> gripperHelper_;
 
     std::unique_ptr<moveit::planning_interface::PlanningComponent> arm_;
 };
