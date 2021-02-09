@@ -16,12 +16,14 @@
 class ToolpathHelper{
 public:
     explicit ToolpathHelper(rclcpp::Node::SharedPtr  node);
+    ToolpathHelper();
 
     bool load_toolpath();
     bool get_toolpath(ram_interfaces::msg::Toolpath &toolpath);
 
 private:
     rclcpp::Node::SharedPtr  node_;
+    rclcpp::executors::SingleThreadedExecutor executor_;
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_load_toolpath_;
     rclcpp::Client<ram_interfaces::srv::GetToolpath>::SharedPtr client_get_toolpath_;
 };
@@ -29,6 +31,7 @@ private:
 class StockHelper{
 public:
     explicit StockHelper(rclcpp::Node::SharedPtr &node);
+    StockHelper();
 
     bool load_stock(bool load);
     bool attach_stock(bool attach);
@@ -40,6 +43,7 @@ private:
 
 class GripperHelper{
 public:
+    GripperHelper();
     explicit GripperHelper(rclcpp::Node::SharedPtr  &node);
     bool gripper(bool open);
 

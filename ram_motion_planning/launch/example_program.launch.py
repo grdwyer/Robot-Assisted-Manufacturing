@@ -75,7 +75,7 @@ def generate_launch_description():
 
     moveit_cpp_yaml_file_name = get_package_share_directory('ram_motion_planning') + "/config/moveit_cpp.yaml"
     nodes = []
-    # Start the actual move_group node/action server
+
     run_moveit_cpp_node = Node(name='run_moveit_cpp',
                                package='ram_motion_planning',
                                executable='example_program',

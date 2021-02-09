@@ -21,10 +21,11 @@
 #include <ram_motion_planning/helpers.h>
 #include <ram_interfaces/msg/toolpath.hpp>
 #include <rosidl_runtime_cpp/traits.hpp>
+#include <functional>
 
-class ToolpathFollower{
+class ToolpathFollower : public rclcpp::Node{
 public:
-    explicit ToolpathFollower(rclcpp::Node::SharedPtr  node);
+    explicit ToolpathFollower(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
     /***
      * @brief function to load toolpath from the toolpath handler
@@ -44,15 +45,50 @@ public:
      */
     void display_planned_trajectory();
 
+    /***
+     * Helper function to move to the initial position and load the stock material
+     * @return
+     */
+    bool move_to_setup();
+    /***
+     * Executes the planned trajectory
+     * @return
+     */
+    bool execute_trajectory();
+
+    /***
+     * Callback for setup service
+     * this will:
+     *   load toolpath
+     *   move to setup
+     *   plan
+     * @param request
+     * @param response
+     */
+    void callback_setup(const std_srvs::srv::Trigger::Request::SharedPtr request,
+                        std_srvs::srv::Trigger::Response::SharedPtr response);
+
+    /***
+     * Callback for execute service, this will execute the planned trajectory
+     * @param request
+     * @param response
+     */
+    void callback_execute(const std_srvs::srv::Trigger::Request::SharedPtr request,
+                          std_srvs::srv::Trigger::Response::SharedPtr response);
+
 private:
-    rclcpp::Node::SharedPtr node_;
+
     std::shared_ptr<ToolpathHelper> toolpath_helper_;
     std::shared_ptr<StockHelper> stockHelper_;
     std::shared_ptr<GripperHelper> gripperHelper_;
 
+    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_setup_;
+    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_execute_;
+
     ram_interfaces::msg::Toolpath toolpath_;
     std::unique_ptr<moveit::planning_interface::MoveGroupInterface> move_group_;
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
+    moveit_msgs::msg::RobotTrajectory trajectory_toolpath_;
 
 
 };
