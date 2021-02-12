@@ -4,7 +4,7 @@
 
 #include <ram_motion_planning/helpers.h>
 
-#include <utility>
+
 
 ToolpathHelper::ToolpathHelper(rclcpp::Node::SharedPtr node) {
     node_ = std::move(node);
@@ -19,15 +19,25 @@ ToolpathHelper::ToolpathHelper() {
 }
 
 bool ToolpathHelper::load_toolpath() {
-    auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
+    auto request_load = std::make_shared<std_srvs::srv::Trigger::Request>();
 
-    using ServiceResponseFuture =
+    using ServiceResponseLoadFuture =
     rclcpp::Client<std_srvs::srv::Trigger>::SharedFuture;
-    auto response_received_callback = [this](ServiceResponseFuture future) {
+    auto response_received_load_callback = [this](ServiceResponseLoadFuture future) {
         auto result = future.get();
         RCLCPP_INFO_STREAM(rclcpp::get_logger("Toolpath helper"), "Loaded toolpath: " << result->success);
     };
-    auto result = client_load_toolpath_->async_send_request(request, response_received_callback);
+    client_load_toolpath_->async_send_request(request_load, response_received_load_callback);
+
+    auto request_get = std::make_shared<ram_interfaces::srv::GetToolpath::Request>();
+    using ServiceResponseGetFuture =
+    rclcpp::Client<ram_interfaces::srv::GetToolpath>::SharedFuture;
+    auto response_received_get_callback = [this](ServiceResponseGetFuture future) {
+        auto result = future.get();
+        toolpath_ = result->toolpath;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("Toolpath helper"), "Got toolpath");
+    };
+    client_get_toolpath_->async_send_request(request_get, response_received_get_callback);
 
     return true;
 }
@@ -48,6 +58,13 @@ bool ToolpathHelper::get_toolpath(ram_interfaces::msg::Toolpath &toolpath) {
         RCLCPP_ERROR_STREAM(rclcpp::get_logger("Toolpath helper"), "Failed to call service " << client_get_toolpath_->get_service_name());
         return false;
     }
+//    if(!toolpath_.path.points.empty()){
+//        toolpath = toolpath_;
+//        return true;
+//    } else{
+//        RCLCPP_ERROR_STREAM(rclcpp::get_logger("Toolpath helper"), "Toolpath was empty, it probably has not been loaded");
+//        return false;
+//    }
 }
 
 
@@ -128,12 +145,49 @@ std::ostream& operator<<(std::ostream& os, const geometry_msgs::msg::Point32& po
     return os;
 }
 
+std::ostream& operator<<(std::ostream& os, const geometry_msgs::msg::Point& point)
+{
+    os << "X:" << point.x << ", Y: " << point.y << ", Z: " << point.z;
+    return os;
+}
+
 std::ostream& operator<<(std::ostream& os, const ram_interfaces::msg::Toolpath& toolpath)
 {
     os << "Frame: " << toolpath.header.frame_id << "\nPoints: \n";
     for(const auto &point : toolpath.path.points ){
         os << "\t" << point << "\n";
     }
+
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const std::vector<geometry_msgs::msg::Pose>& waypoints)
+{
+    os << "Waypoint positions: \n";
+    for(const auto &pose : waypoints ){
+        os << "\t" << pose.position << "\n";
+    }
+
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const std::vector<KDL::Frame>& waypoints)
+{
+    os << "Positions: \n";
+    for(const auto &frame : waypoints ){
+        os << "\t" << "X:" << frame.p.x() << ", Y: " << frame.p.y() << ", Z: " << frame.p.z() << "\n";
+    }
+
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const geometry_msgs::msg::TransformStamped& trans)
+{
+    os << "Parent: " << trans.header.frame_id << "\nChild: " << trans.child_frame_id <<
+    "\nPosition: \n\tX: " << trans.transform.translation.x << "\n\tY: " << trans.transform.translation.y <<
+    "\n\tZ: " << trans.transform.translation.z << "\nOrientation: \n\tX: " << trans.transform.rotation.x <<
+    "\n\tY: " << trans.transform.rotation.y << "\n\tZ: " << trans.transform.rotation.z << "\n\tW: " <<
+    trans.transform.rotation.w << "\n";
 
     return os;
 }

@@ -39,8 +39,9 @@ class ToolPathHandler(Node):
         self.pub_marker = self.create_publisher(Marker, "/{}/marker_toolpath".format(self.get_name()), 10)
 
         qos = QoSProfile(depth=1, durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL)
-        self.srv_toolpath = self.create_service(GetToolpath, "/{}/get_toolpath".format(self.get_name()), self.callback_get_toolpath)
-        self.declare_parameter("toolpath_frame", "gripper_jaw_centre")
+        self.srv_toolpath = self.create_service(GetToolpath, "/{}/get_toolpath".format(self.get_name()),
+                                                self.callback_get_toolpath)
+        self.declare_parameter("toolpath_frame", "implant")
 
         # Toolpath file
         default_path = os.path.join(get_package_share_directory("ram_tooling_support"), "config/test_toolpath.yaml")
@@ -48,7 +49,7 @@ class ToolPathHandler(Node):
         self.toolpath_config = None
         self.toolpath_msg = Polygon()
 
-        self.timer_rviz_display = self.create_timer(1, self.callback_timer_marker_publish)
+        self.timer_rviz_display = self.create_timer(0.2, self.callback_timer_marker_publish)
         self.timer_rviz_display.cancel()
 
         self.srv_load_toolpath = self.create_service(Trigger, "/{}/load_toolpath".format(self.get_name()),

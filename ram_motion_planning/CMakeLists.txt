@@ -21,6 +21,10 @@ find_package(moveit_ros_planning_interface REQUIRED)
 find_package(rosidl_default_runtime REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(ram_interfaces REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_kdl REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 include_directories(include)
 
@@ -29,6 +33,7 @@ ament_target_dependencies(ram_helpers
         rclcpp
         ram_interfaces
         std_srvs
+
         )
 
 install(TARGETS ram_helpers

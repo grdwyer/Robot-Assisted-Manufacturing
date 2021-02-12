@@ -12,6 +12,10 @@
 #include <std_srvs/srv/set_bool.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <iostream>
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <kdl/frames.hpp>
+#include <utility>
 
 class ToolpathHelper{
 public:
@@ -26,6 +30,7 @@ private:
     rclcpp::executors::SingleThreadedExecutor executor_;
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_load_toolpath_;
     rclcpp::Client<ram_interfaces::srv::GetToolpath>::SharedPtr client_get_toolpath_;
+    ram_interfaces::msg::Toolpath toolpath_;
 };
 
 class StockHelper{
@@ -55,7 +60,15 @@ private:
 
 std::ostream& operator<<(std::ostream& os, const geometry_msgs::msg::Point32& point);
 
+std::ostream& operator<<(std::ostream& os, const geometry_msgs::msg::Point& point);
+
 std::ostream& operator<<(std::ostream& os, const ram_interfaces::msg::Toolpath& toolpath);
+
+std::ostream& operator<<(std::ostream& os, const std::vector<geometry_msgs::msg::Pose>& waypoints);
+
+std::ostream& operator<<(std::ostream& os, const std::vector<KDL::Frame>& waypoints);
+
+std::ostream& operator<<(std::ostream& os, const geometry_msgs::msg::TransformStamped& trans);
 
 
 #endif //RAM_MOTION_PLANNING_HELPERS_H

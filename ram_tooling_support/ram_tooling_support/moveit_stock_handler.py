@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from tf2_ros import TransformBroadcaster
+from tf2_ros import StaticTransformBroadcaster
 from geometry_msgs.msg import TransformStamped, Transform
 import std_msgs.msg
 from std_srvs.srv import SetBool
@@ -13,6 +13,26 @@ import pyassimp
 import os
 from ament_index_python.packages import get_package_share_directory
 import numpy as np
+
+
+def pose_to_transform(pose):
+    """
+    converts a pose to transform
+    :param pose:
+    :type pose: Pose
+    :return: transform
+    :rtype: Transform
+    """
+    transform = Transform()
+    transform.translation.x = pose.position.x
+    transform.translation.y = pose.position.y
+    transform.translation.z = pose.position.z
+
+    transform.rotation.x = pose.orientation.x
+    transform.rotation.y = pose.orientation.y
+    transform.rotation.z = pose.orientation.z
+    transform.rotation.w = pose.orientation.w
+    return transform
 
 
 def make_mesh_msg(filename):
@@ -62,6 +82,8 @@ class StockHandler(Node):
                                                                    "/attached_collision_object", 10)
         self.pub_moveit_collision = self.create_publisher(CollisionObject, "/collision_object", 10)
 
+        self.static_transform_publisher = StaticTransformBroadcaster(self)
+
         self.stock_in_scene = False
         self.stock_attached = False
 
@@ -94,6 +116,13 @@ class StockHandler(Node):
         pose.orientation.w = self.get_parameter("{}.qw".format(namespace)).get_parameter_value().double_value
         return pose
 
+    def create_stock_tf(self, namespace):
+        trans = TransformStamped()
+        trans.child_frame_id = self.get_parameter("stock_frame").get_parameter_value().string_value
+        trans.header.frame_id = self.get_parameter("{}.frame".format(namespace)).get_parameter_value().string_value
+        trans.transform = pose_to_transform(self.load_pose_from_param("{}.pose".format(namespace)))
+        return trans
+
     def callback_load_stock(self, req, res):
         """
         Service callback for the stock material to be loaded (or unloaded) in the scene
@@ -113,6 +142,7 @@ class StockHandler(Node):
             stock_object.operation = CollisionObject.ADD
             self.get_logger().info("Adding stock to the scene")
             self.pub_moveit_collision.publish(stock_object)
+            self.static_transform_publisher.sendTransform(self.create_stock_tf("start"))
             self.stock_in_scene = True
 
             res.message = "stock added to scene"
@@ -163,6 +193,7 @@ class StockHandler(Node):
             msg.link_name = self.get_parameter("attach.frame").get_parameter_value().string_value
             self.get_logger().info("attaching stock to link")
             self.pub_moveit_attached_collision.publish(msg)
+            self.static_transform_publisher.sendTransform(self.create_stock_tf("attach"))
             self.stock_attached = True
 
             res.message = "stock attached"
@@ -176,6 +207,7 @@ class StockHandler(Node):
             msg.link_name = self.get_parameter("attach.frame").get_parameter_value().string_value
             self.get_logger().info("detaching stock from link")
             self.pub_moveit_attached_collision.publish(msg)
+            self.static_transform_publisher.sendTransform(self.create_stock_tf("start"))
             self.stock_attached = False
 
             res.message = "stock detached"
