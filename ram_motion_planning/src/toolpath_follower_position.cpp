@@ -138,9 +138,28 @@ bool ToolpathFollower::construct_plan_request() {
         waypoints.push_back(pose);
     }
 
-    RCLCPP_INFO_STREAM(LOGGER, "Waypoints: \n" << waypoints);
-//    follow_waypoints_sequentially(waypoints);
-//    display_planned_trajectory(waypoints); //TODO: can't get rviz to publish pose array markers
+    // Determine an approach pose for the toolpath
+    geometry_msgs::msg::Pose approach_pose;
+    KDL::Frame initial_path_frame, approach_frame;
+    tf2::fromMsg(waypoints[0], initial_path_frame);
+    approach_frame = KDL::Frame(KDL::Vector(-0.01,0,0)) * initial_path_frame; // TODO: param this
+    tf_trans = tf2::kdlToTransform(approach_frame);
+    tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
+    tf_trans.header.stamp = this->get_clock()->now();
+    tf_trans.child_frame_id = "approach_frame";
+    broadcaster.sendTransform(tf_trans);
+    rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
+
+    approach_pose = tf2::toMsg(approach_frame);
+    moveit::planning_interface::MoveGroupInterface::Plan approach_plan;
+    move_group_->setPoseTarget(approach_pose);
+    if(move_group_->plan(approach_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS){
+        move_group_->execute(approach_plan);
+    }
+    rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
+
+    //TODO: Set start state for cartesian planning
+    RCLCPP_INFO_STREAM(LOGGER, "Cartesian planning for toolpath using Waypoints: \n" << waypoints);
     const double jump_threshold = 0.0;
     const double eef_step = 0.001;
     double fraction = move_group_->computeCartesianPath(waypoints, eef_step, jump_threshold, trajectory_toolpath_);
