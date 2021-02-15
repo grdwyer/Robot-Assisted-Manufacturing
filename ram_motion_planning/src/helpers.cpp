@@ -115,7 +115,7 @@ GripperHelper::GripperHelper(rclcpp::Node::SharedPtr &node) {
 }
 
 GripperHelper::GripperHelper() {
-    node_ = rclcpp::Node::make_shared("toolpath_helper");
+    node_ = rclcpp::Node::make_shared("gripper_helper");
     client_gripper_open_ = node_->create_client<std_srvs::srv::Trigger>("/sim_gripper_controller/open");
     client_gripper_close_ = node_->create_client<std_srvs::srv::Trigger>("/sim_gripper_controller/close");
 }

@@ -1,0 +1,6 @@
+#toolpath_follower:
+#  ros__parameters:
+moveit_planning_group: 'iiwa'
+tool_reference_frame: 'cutting_tool_tip'
+end_effector_reference_frame: 'gripper_jaw_centre'
+part_reference_frame: 'implant'

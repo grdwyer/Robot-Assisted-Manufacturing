@@ -36,6 +36,11 @@ public:
     explicit ToolpathFollower(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
     /***
+     * Prints the configuration of the node using the parameters declared
+     */
+    void configuration_message();
+
+    /***
      * @brief function to load toolpath from the toolpath handler
      * Load toolpath currently a polygon message and
      * @return
@@ -47,11 +52,6 @@ public:
      * @return
      */
     bool construct_plan_request();
-
-    /***
-     * @brief sends trajectory to be displayed in rviz
-     */
-    void display_planned_trajectory(std::vector<geometry_msgs::msg::Pose> &poses);
 
     /***
      * Helper function to move to the initial position and load the stock material
@@ -73,7 +73,7 @@ public:
      * @param request
      * @param response
      */
-    void callback_setup(const std_srvs::srv::Trigger::Request::SharedPtr request,
+    void callback_setup(std_srvs::srv::Trigger::Request::SharedPtr request,
                         std_srvs::srv::Trigger::Response::SharedPtr response);
 
     /***
@@ -81,10 +81,23 @@ public:
      * @param request
      * @param response
      */
-    void callback_execute(const std_srvs::srv::Trigger::Request::SharedPtr request,
+    void callback_execute(std_srvs::srv::Trigger::Request::SharedPtr request,
                           std_srvs::srv::Trigger::Response::SharedPtr response);
 
+
+    // DEBUG functions
+    /***
+     * Plan to go to each point sequentially, useful for sim debugging should take this out before using hardware
+     * @param waypoints
+     * @return
+     */
     bool follow_waypoints_sequentially(std::vector<geometry_msgs::msg::Pose> &waypoints);
+
+    /***
+    * @brief sends trajectory to be displayed in rviz
+    */
+    void display_planned_trajectory(std::vector<geometry_msgs::msg::Pose> &poses);
+
 
 private:
 
@@ -96,13 +109,13 @@ private:
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_execute_;
 
     ram_interfaces::msg::Toolpath toolpath_;
-    geometry_msgs::msg::PoseArray toolpath_poses_;
     std::unique_ptr<moveit::planning_interface::MoveGroupInterface> move_group_;
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
     moveit_msgs::msg::RobotTrajectory trajectory_toolpath_;
 
     //rviz pose array publisher
     rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr publisher_toolpath_poses_;
+    geometry_msgs::msg::PoseArray toolpath_poses_;
     rclcpp::TimerBase::SharedPtr timer_toolpath_poses_;
 
     //TF2

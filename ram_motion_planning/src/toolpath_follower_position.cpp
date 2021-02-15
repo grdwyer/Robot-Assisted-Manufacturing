@@ -6,9 +6,19 @@ static const rclcpp::Logger LOGGER = rclcpp::get_logger("toolpath_follower");
 
 ToolpathFollower::ToolpathFollower(const rclcpp::NodeOptions & options): Node("toolpath_follower", options),
                                     buffer_(this->get_clock()){
+    // Declare parameters
+    // TODO: add parameter decriptions for each
+    this->declare_parameter<std::string>("moveit_planning_group", "iiwa");
+    this->declare_parameter<std::string>("tool_reference_frame", "cutting_tool_tip");
+    this->declare_parameter<std::string>("end_effector_reference_frame", "gripper_jaw_centre");
+    this->declare_parameter<std::string>("part_reference_frame", "implant");
+    this->declare_parameter<int>("debug_wait_time", 500);
 
+    // Initialise
     auto move_group_node = this->create_sub_node("");
-    move_group_ = std::make_unique<moveit::planning_interface::MoveGroupInterface>(move_group_node, "iiwa");
+    move_group_ = std::make_unique<moveit::planning_interface::MoveGroupInterface>(move_group_node,
+            this->get_parameter("moveit_planning_group").as_string());
+
     move_group_->setMaxVelocityScalingFactor(0.1);
     auto toolpath_node = this->create_sub_node("toolpath");
     auto stock_node = this->create_sub_node("stock");
@@ -18,13 +28,26 @@ ToolpathFollower::ToolpathFollower(const rclcpp::NodeOptions & options): Node("t
     gripperHelper_ = std::make_shared<GripperHelper>(gripper_node);
 
     // TODO: put service names into node namespace
-    service_setup_ = this->create_service<std_srvs::srv::Trigger>("/toolpath_setup", std::bind(&ToolpathFollower::callback_setup, this, std::placeholders::_1, std::placeholders::_2));
-    service_execute_ = this->create_service<std_srvs::srv::Trigger>("/toolpath_execute", std::bind(&ToolpathFollower::callback_execute, this, std::placeholders::_1, std::placeholders::_2));
-    publisher_toolpath_poses_ = this->create_publisher<geometry_msgs::msg::PoseArray>("/toolpath_follower/planned_toolpath", 10);
+    service_setup_ = this->create_service<std_srvs::srv::Trigger>(this->get_fully_qualified_name() + std::string("/toolpath_setup"),
+            std::bind(&ToolpathFollower::callback_setup, this, std::placeholders::_1, std::placeholders::_2));
+    service_execute_ = this->create_service<std_srvs::srv::Trigger>(this->get_fully_qualified_name() + std::string("/toolpath_execute"),
+            std::bind(&ToolpathFollower::callback_execute, this, std::placeholders::_1, std::placeholders::_2));
+    publisher_toolpath_poses_ = this->create_publisher<geometry_msgs::msg::PoseArray>(this->get_fully_qualified_name() + std::string("/planned_toolpath"), 10);
 
     //TF2
     tfl_ = std::make_shared<tf2_ros::TransformListener>(buffer_);
-    rclcpp::sleep_for(std::chrono::seconds(2));
+
+    configuration_message();
+    rclcpp::sleep_for(std::chrono::seconds(1));
+}
+
+
+void ToolpathFollower::configuration_message() {
+    RCLCPP_INFO_STREAM(LOGGER, "Initialising node in " << this->get_fully_qualified_name() <<
+    "\n\tMoveit planning group: " << this->get_parameter("moveit_planning_group").as_string() <<
+    "\n\tTool reference frame: " << this->get_parameter("tool_reference_frame").as_string() <<
+    "\n\tEnd-effector reference frame: " << this->get_parameter("end_effector_reference_frame").as_string() <<
+    "\n\tPart reference frame: " << this->get_parameter("part_reference_frame").as_string());
 }
 
 bool ToolpathFollower::load_toolpath() {
@@ -36,17 +59,19 @@ bool ToolpathFollower::load_toolpath() {
 }
 
 bool ToolpathFollower::construct_plan_request() {
-    RCLCPP_INFO(LOGGER, "Constructing request");
-    RCLCPP_INFO_STREAM(LOGGER, "using toolpath: \n" << toolpath_);
+    RCLCPP_INFO_STREAM(LOGGER, "Constructing request\n\tusing toolpath: " << toolpath_ <<
+                               "\n\tTool reference frame: " << this->get_parameter("tool_reference_frame").as_string() <<
+                               "\n\tEnd-effector reference frame: " << this->get_parameter("end_effector_reference_frame").as_string() <<
+                               "\n\tPart reference frame: " << this->get_parameter("part_reference_frame").as_string() << "\n\n");
 
-    move_group_->setPoseReferenceFrame("cutting_tool_tip");
-    move_group_->setEndEffectorLink("gripper_jaw_centre");
+    move_group_->setPoseReferenceFrame(this->get_parameter("tool_reference_frame").as_string());
+    move_group_->setEndEffectorLink(this->get_parameter("end_effector_reference_frame").as_string());
 
     // Get TF from ee to stock frame
     geometry_msgs::msg::TransformStamped stock_pose, tf_trans;
 
     try {
-        stock_pose = buffer_.lookupTransform(move_group_->getEndEffectorLink(), "implant", tf2::TimePoint());
+        stock_pose = buffer_.lookupTransform(move_group_->getEndEffectorLink(), this->get_parameter("part_reference_frame").as_string(), tf2::TimePoint());
         RCLCPP_INFO_STREAM(LOGGER, "Found stock to ee transform\n" << stock_pose);
     } catch (const tf2::TransformException & ex) {
         std::cout << "Failure at " << this->get_clock()->now().seconds() << std::endl;
@@ -61,11 +86,10 @@ bool ToolpathFollower::construct_plan_request() {
     // Flip the pose about the x axis to have the gripper upside down
     // Tool base - flipped on the x (should be paramed), reorient - rotation to face the next point, tool pose - resultant pose to convert to pose msg
     KDL::Frame tool_base, reorient, tool_pose;
-    KDL::Vector current, next, diff;
+    KDL::Vector diff;
 
     geometry_msgs::msg::Pose pose;
     std::vector<geometry_msgs::msg::Pose> waypoints;
-    geometry_msgs::msg::Point32 point, next_point;
 
     tool_base = tf2::transformToKDL(stock_pose);
     // transform toolpath to ee frame
@@ -82,42 +106,35 @@ bool ToolpathFollower::construct_plan_request() {
         tf_trans.header.stamp = this->get_clock()->now();
         tf_trans.child_frame_id = "ee_toolpath_point";
         broadcaster.sendTransform(tf_trans);
-        rclcpp::sleep_for(std::chrono::microseconds (500));
+        rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
     }
 
     for(unsigned long i=0; i < ee_toolpath.size(); i++){
-//        point = toolpath_.path.points[i];
-//        current = KDL::Vector((double)point.x, (double)point.y, (double)point.z);
-
         if(i != ee_toolpath.size()-1){
             //determine orientation to go to next point
-//            next_point = toolpath_.path.points[i+1];
-//            next = KDL::Vector((double)next_point.x, (double)next_point.y, (double)next_point.z);
-//            tf2::convert(next, next);
-
             diff = ee_toolpath[i+1].p - ee_toolpath[i].p;
             reorient = KDL::Frame(KDL::Rotation::RotZ(-atan2(diff.y(), diff.x())));
-
-        } else{
-          //At the end of the trajectory use the previous orientation
-
         }
 
         tool_pose = ee_toolpath[i] * reorient;
 
+        // Debug tf frames
+        // Frame on the implant
         tf_trans = tf2::kdlToTransform(tool_pose);
         tf_trans.header.frame_id = move_group_->getEndEffectorLink();
         tf_trans.header.stamp = this->get_clock()->now();
         tf_trans.child_frame_id = "ee_toolpath_point";
         broadcaster.sendTransform(tf_trans);
 
-        pose = tf2::toMsg(tool_pose.Inverse());
+        //Frame part to tool
         tf_trans = tf2::kdlToTransform(tool_pose.Inverse());
         tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
         tf_trans.header.stamp = this->get_clock()->now();
         tf_trans.child_frame_id = "planned_ee_pose";
         broadcaster.sendTransform(tf_trans);
-        rclcpp::sleep_for(std::chrono::seconds(4));
+        rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
+
+        pose = tf2::toMsg(tool_pose.Inverse());
         waypoints.push_back(pose);
     }
 
@@ -145,10 +162,10 @@ bool ToolpathFollower::follow_waypoints_sequentially(std::vector<geometry_msgs::
         }
     }
     move_to_setup();
-
     return true;
 }
 
+// Doesn't display with RVIZ at the moment, possibly unneeded.
 void ToolpathFollower::display_planned_trajectory(std::vector<geometry_msgs::msg::Pose> &poses) {
     geometry_msgs::msg::PoseArray msg;
     toolpath_poses_.header.frame_id = move_group_->getPoseReferenceFrame();
@@ -162,7 +179,6 @@ void ToolpathFollower::display_planned_trajectory(std::vector<geometry_msgs::msg
         publisher_toolpath_poses_->publish(toolpath_poses_);
     };
     timer_toolpath_poses_ = this->create_wall_timer(std::chrono::seconds(1), timer_callback);
-
 }
 
 bool ToolpathFollower::move_to_setup() {
@@ -223,7 +239,6 @@ void ToolpathFollower::callback_setup(const std_srvs::srv::Trigger::Request::Sha
         response->success = false;
         response->message = "Unable to load toolpath";
     }
-
 }
 
 void ToolpathFollower::callback_execute(const std_srvs::srv::Trigger::Request::SharedPtr request,
@@ -243,25 +258,10 @@ int main(int argc, char** argv)
     RCLCPP_INFO(LOGGER, "Initialize node");
     rclcpp::init(argc, argv);
     rclcpp::NodeOptions node_options;
-    // This enables loading undeclared parameters
-    // best practice would be to declare parameters in the corresponding classes
-    // and provide descriptions about expected use
-    node_options.automatically_declare_parameters_from_overrides(true);
-
 
     auto toolpath_follower = std::make_shared<ToolpathFollower>(node_options);
 
-////    std::thread run_demo([&toolpath_follower]() {
-//        // TODO: use lifecycle events to launch node
-//        toolpath_follower->load_toolpath();
-////        rclcpp::sleep_for(std::chrono::seconds(2));
-//        toolpath_follower->move_to_setup();
-////        rclcpp::sleep_for(std::chrono::seconds(2));
-//        toolpath_follower->construct_plan_request();
-//        rclcpp::sleep_for(std::chrono::seconds(2));
-
-////    });
-    rclcpp::executors::MultiThreadedExecutor executor;
+    rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(toolpath_follower);
     executor.spin();
     rclcpp::shutdown();
