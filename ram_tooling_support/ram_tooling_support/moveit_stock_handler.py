@@ -239,15 +239,6 @@ class StockHandler(Node):
         stock = make_mesh_msg(stock_mesh_path)
         collision_object.meshes.append(stock)
 
-        stock_pose = Pose()
-        stock_pose.position.x = 0.00
-        stock_pose.position.y = 0.00
-        # stock_pose.position.z = 0.07985
-        stock_pose.position.z = 0.0
-        stock_pose.orientation.w = 1.0
-
-        # collision_object.mesh_poses.append(stock_pose)
-
         return collision_object
 
 
@@ -255,14 +246,6 @@ def main(args=None):
     rclpy.init(args=args)
 
     stock_handler = StockHandler()
-    # collision_msg = stock_handler.create_moveit_collision_object()
-    # # stock_handler.pub_moveit_collision.publish(collision_msg)
-    #
-    # stock_handler.get_logger().info("Currently set to just attach the stock directly at the implant")
-    # attach_msg = AttachedCollisionObject()
-    # attach_msg.link_name = stock_handler.get_parameter("attachment_frame").get_parameter_value().string_value
-    # attach_msg.object = collision_msg
-    # stock_handler.pub_moveit_attached_collision.publish(attach_msg)
 
     try:
         rclpy.spin(stock_handler)
