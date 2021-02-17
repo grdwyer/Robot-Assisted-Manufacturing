@@ -150,12 +150,30 @@ bool ToolpathFollower::construct_plan_request() {
     broadcaster.sendTransform(tf_trans);
     rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
 
+    // Determine an approach pose for the toolpath
+    geometry_msgs::msg::Pose retreat_pose;
+    KDL::Frame end_path_frame, retreat_frame;
+    tf2::fromMsg(waypoints.back(), end_path_frame);
+    retreat_frame = end_path_frame * KDL::Frame(KDL::Vector(0.01,0,0)); // TODO: param this
+    tf_trans = tf2::kdlToTransform(retreat_frame);
+    tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
+    tf_trans.header.stamp = this->get_clock()->now();
+    tf_trans.child_frame_id = "retreat_frame";
+    broadcaster.sendTransform(tf_trans);
+
+    //Add to the waypoints vector for now, look into a nicer way of doing this during the cleanup possibly check the stock size and see if the toolpath already includes the retreat.
+    retreat_pose = tf2::toMsg(retreat_frame);
+    waypoints.push_back(retreat_pose);
+    rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
+
     approach_pose = tf2::toMsg(approach_frame);
     moveit::planning_interface::MoveGroupInterface::Plan approach_plan;
     move_group_->setPoseTarget(approach_pose);
     if(move_group_->plan(approach_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS){
         move_group_->execute(approach_plan);
     }
+    stockHelper_->modify_touch_link("cutting_tool_base", true);
+
     rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
 
     //TODO: Set start state for cartesian planning
@@ -232,6 +250,8 @@ bool ToolpathFollower::move_to_setup() {
 bool ToolpathFollower::execute_trajectory() {
     if (!trajectory_toolpath_.joint_trajectory.points.empty()){
         bool success = (move_group_->execute(trajectory_toolpath_) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+        // Remove tool from touch links
+        stockHelper_->modify_touch_link("cutting_tool_base", false);
         return success;
     } else{
         RCLCPP_WARN(LOGGER, "Toolpath trajectory is empty, try construct the plan request first.");

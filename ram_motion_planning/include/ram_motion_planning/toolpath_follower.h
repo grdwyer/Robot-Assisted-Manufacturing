@@ -30,6 +30,12 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_kdl/tf2_kdl.h>
 
+#include <moveit/robot_model/robot_model.h>
+#include <moveit/robot_state/robot_state.h>
+#include <moveit/collision_detection/collision_matrix.h>
+#include <moveit/planning_scene/planning_scene.h>
+#include <moveit_msgs/msg/planning_scene.hpp>
+
 
 class ToolpathFollower : public rclcpp::Node{
 public:

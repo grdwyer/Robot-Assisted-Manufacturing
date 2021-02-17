@@ -33,7 +33,6 @@ ament_target_dependencies(ram_helpers
         rclcpp
         ram_interfaces
         std_srvs
-
         )
 
 install(TARGETS ram_helpers

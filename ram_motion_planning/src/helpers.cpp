@@ -72,12 +72,14 @@ StockHelper::StockHelper(rclcpp::Node::SharedPtr &node) {
     node_ = std::move(node);
     client_load_stock_ = node_->create_client<std_srvs::srv::SetBool>("/stock_handler/load_stock");
     client_attach_stock_ = node_->create_client<std_srvs::srv::SetBool>("/stock_handler/attach_stock");
+    client_modify_touch_links_ = node_->create_client<ram_interfaces::srv::SetTouchLinks>("/stock_handler/set_touch_links");
 }
 
 StockHelper::StockHelper() {
     node_ = rclcpp::Node::make_shared("stock_helper");
     client_load_stock_ = node_->create_client<std_srvs::srv::SetBool>("/stock_handler/load_stock");
     client_attach_stock_ = node_->create_client<std_srvs::srv::SetBool>("/stock_handler/attach_stock");
+    client_modify_touch_links_ = node_->create_client<ram_interfaces::srv::SetTouchLinks>("/stock_handler/set_touch_links");
 }
 
 bool StockHelper::load_stock(bool load) {
@@ -105,6 +107,21 @@ bool StockHelper::attach_stock(bool attach) {
         RCLCPP_INFO_STREAM(rclcpp::get_logger("Stock helper"), result.get()->message);
     };
     auto result = client_attach_stock_->async_send_request(request, response_received_callback);
+    return true;
+}
+
+bool StockHelper::modify_touch_link(std::string link_name, bool operation) {
+    auto request = std::make_shared<ram_interfaces::srv::SetTouchLinks::Request>();
+    request->links.push_back(link_name);
+    request->modify.push_back(operation);
+
+    using ServiceResponseFuture =
+    rclcpp::Client<ram_interfaces::srv::SetTouchLinks>::SharedFuture;
+    auto response_received_callback = [this](ServiceResponseFuture future) {
+        auto result = future.get();
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("Stock helper"), result.get()->message);
+    };
+    auto result = client_modify_touch_links_->async_send_request(request, response_received_callback);
     return true;
 }
 

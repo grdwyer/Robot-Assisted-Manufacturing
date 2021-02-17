@@ -108,6 +108,7 @@ public:
 
         // attach stock
         stockHelper_->attach_stock(true);
+        stockHelper_->modify_touch_link("cutting_tool_base", true);
         gripperHelper_->gripper(false);
         rclcpp::sleep_for(std::chrono::seconds(1));
 

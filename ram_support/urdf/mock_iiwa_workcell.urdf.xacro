@@ -65,7 +65,7 @@
     <joint name="cutting_plate_base_joint" type="fixed">
         <parent link="optical_table_front_right_bolt"/>
         <child link="cutting_plate"/>
-        <origin xyz="-0.2 0.2 0.00" rpy="0.0 0.0 0"/>
+        <origin xyz="-0.35 0.2 0.00" rpy="0.0 0.0 0"/>
     </joint>
 
     <xacro:cutting_plate />

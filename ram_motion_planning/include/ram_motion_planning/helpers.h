@@ -7,6 +7,7 @@
 #include <thread>
 #include <rclcpp/rclcpp.hpp>
 #include <ram_interfaces/srv/get_toolpath.hpp>
+#include <ram_interfaces/srv/set_touch_links.hpp>
 #include <ram_interfaces/msg/toolpath.hpp>
 #include <utility>
 #include <std_srvs/srv/set_bool.hpp>
@@ -40,10 +41,12 @@ public:
 
     bool load_stock(bool load);
     bool attach_stock(bool attach);
+    bool modify_touch_link(std::string link_name, bool operation);
 private:
     rclcpp::Node::SharedPtr  node_;
     rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_load_stock_;
     rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_attach_stock_;
+    rclcpp::Client<ram_interfaces::srv::SetTouchLinks>::SharedPtr client_modify_touch_links_;
 };
 
 class GripperHelper{
