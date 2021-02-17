@@ -276,14 +276,20 @@ class StockHandler(Node):
                 else:
                     remove_list.append(link)
 
-            new_list = self.touch_links
+            new_list = self.touch_links  # make a copy of the current list
+            # Remove values from the the remove list
             for remove_link in remove_list:
                 try:
                     new_list.remove(remove_link)
                 except ValueError:
                     self.get_logger().warn("{} link was not found in touch links".format(remove_link))
 
-            self.touch_links = new_list + add_list
+            # Add values from the add list if not already there
+            for add_link in add_list:
+                if add_link not in new_list:
+                    new_list.append(add_link)
+
+            self.touch_links = new_list
 
             msg.touch_links = self.touch_links
             res.message = "Modifying touch links to be:\n{}".format(self.touch_links)
