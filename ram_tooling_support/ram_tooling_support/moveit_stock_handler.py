@@ -9,6 +9,7 @@ from rclpy.qos import QoSProfile, QoSDurabilityPolicy
 from moveit_msgs.msg import AttachedCollisionObject, CollisionObject
 from shape_msgs.msg import Mesh, MeshTriangle, SolidPrimitive
 from geometry_msgs.msg import Pose, Point
+from ram_interfaces.srv import SetTouchLinks
 import pyassimp
 import os
 from ament_index_python.packages import get_package_share_directory
@@ -67,6 +68,9 @@ class StockHandler(Node):
         self.srv_attach_stock = self.create_service(SetBool, '{}/attach_stock'.format(self.get_name()),
                                                     self.callback_attach_stock)
 
+        self.srv_touch_links = self.create_service(SetTouchLinks, '{}/set_touch_links'.format(self.get_name()),
+                                                   self.callback_modify_touch_links)
+
         # Node Parameters
         self.setup_params()
 
@@ -86,6 +90,8 @@ class StockHandler(Node):
 
         self.stock_in_scene = False
         self.stock_attached = False
+
+        self.touch_links = []
 
     def setup_params(self):
         # Frame for the object to be initialised in
@@ -240,6 +246,56 @@ class StockHandler(Node):
         collision_object.meshes.append(stock)
 
         return collision_object
+
+    def callback_modify_touch_links(self, req, res):
+        """
+        Callback to take an attached object and modify the touch links
+        :param req: Links to account for and what to do with them
+        :type req: SetTouchLinks.Request
+        :param res:
+        :type res: SetTouchLinks.Response
+        :return:
+        """
+        if self.stock_attached:
+            # Attach stock
+            msg = AttachedCollisionObject()
+            stock_object = self.create_collision_object_with_stock()
+            stock_object.header.frame_id = self.get_parameter("attach.frame").get_parameter_value().string_value
+            stock_object.mesh_poses.append(self.load_pose_from_param("attach.pose"))
+            stock_object.operation = CollisionObject.ADD
+
+            msg.object = stock_object
+            msg.link_name = self.get_parameter("attach.frame").get_parameter_value().string_value
+
+            # Determine the links requiring change
+            add_list = []
+            remove_list = []
+            for link, operation in zip(req.links, req.modify):
+                if operation:  # Means add the link
+                    add_list.append(link)
+                else:
+                    remove_list.append(link)
+
+            new_list = self.touch_links
+            for remove_link in remove_list:
+                try:
+                    new_list.remove(remove_link)
+                except ValueError:
+                    self.get_logger().warn("{} link was not found in touch links".format(remove_link))
+
+            self.touch_links = new_list + add_list
+
+            msg.touch_links = self.touch_links
+            res.message = "Modifying touch links to be:\n{}".format(self.touch_links)
+            self.get_logger().info(res.message)
+            self.pub_moveit_attached_collision.publish(msg)
+            res.success = True  # TODO: Need to check how it actually fails if attached
+
+        else:
+            res.message = "No object attached to the end-effector"
+            res.success = False
+
+        return res
 
 
 def main(args=None):

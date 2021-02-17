@@ -1,0 +1,5 @@
+string[] links
+bool[] modify
+---
+bool success
+string message

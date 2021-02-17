@@ -27,6 +27,7 @@ set(msg_files
 
 set(srv_files
         "srv/GetToolpath.srv"
+        "srv/SetTouchLinks.srv"
         # etc
         )
 
