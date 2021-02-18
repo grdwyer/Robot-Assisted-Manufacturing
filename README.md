@@ -3,69 +3,42 @@
 The robot assisted manufacturing project currently focused on implant fabrication built in ROS2 foxy.
 
 ## Packages
-
 Current packages:  
-
+* ram_gripper_control - simulated gripper controller
+* ram_interfaces - custom interfaces for ram project
+* ram_motion_planning - components to plan trajectories for toolpaths
+* ram_moveit_config - configuration files for moveit
 * ram_support - models and URDF for the core components of the project (robots, tables, etc)
+* ram_tooling_support - assistance nodes for handling (currently) toolpaths and stock material
 
-## Docker
+## Running the system
+This launches RVIZ, move_group node, sim iiwa controller, sim gripper controller, toolpath handler and stock handler.  
+```
+ros2 launch ram_motion_planning moveit_dev_setup.launch.py 
+```
+This launches the moveit movegroup interface for fully constrained toolpaths (6DoF) quite simple at the moment.  
+```
+ros2 launch ram_motion_planning toolpath_follower.launch.py  
+```
+When both launch files are running (wait for rviz to load), these service calls can be used
+toolpath_setup will:
+  * load the toolpath from the toolpath handler
+  * Compute the part to tool transform
+  * Plan to the approach pose
+  * Plan the toolpath with the retreat pose added
 
-All packages within this repo should be all building within a docker container.
-This will hopefully be working on both AMD64 and ARM64 platforms and regularly updated to docker hub.
-To get the latest image on docker hub, use:  
-
-```bash
-docker pull gdwyer/ram:latest
+toolpath execute will send the toolpath trajectory to the robot controller
+```
+ros2 service call /toolpath_follower/toolpath_setup std_srvs/srv/Trigger {}  
+ros2 service call /toolpath_follower/toolpath_execute std_srvs/srv/Trigger {}  
 ```
 
-However this will require docker login and for the latest version to be uploaded.
-
+## Docker
 ### Build
-
 ```bash
 docker build --pull --rm -f ./.docker/Dockerfile  -t gdwyer/ram:<branch>-<platform> .
 ```
-
-This will eventually be combined to a super image using docker manifests.  
-
-```bash
-docker manifest create \
-gdwyer/ram:<branch>-<platform> \
---amend gdwyer/ram:<branch>-<platform> \
---amend gdwyer/ram:<branch>-<platform>
-
-docker manifest push gdwyer/ram:<branch>
-```
-
-### Running
-
-#### Nvidia
-
-If you have an nvida GPU and want GUIs to run properly you'll need nvidia docker 2 following instructions [here](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
-
-My approach (2.3 from the [ROS guide](http://wiki.ros.org/docker/Tutorials/GUI))
-
-```bash
-docker run -it \
-    --user=$(id -u $USER):$(id -g $USER) \
-    --group-add sudo \
-    --env="DISPLAY" \
-    --env=QT_X11_NO_MITSHM=1 \
-    --workdir="/dev_ws/src" \
-    --volume="/home/$USER:/home/$USER" \
-    --volume="/etc/group:/etc/group:ro" \
-    --volume="/etc/passwd:/etc/passwd:ro" \
-    --volume="/etc/shadow:/etc/shadow:ro" \
-    --volume="/etc/sudoers.d:/etc/sudoers.d:ro" \
-    --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-    --gpus 'all,"capabilities=graphics,compute,utility"'\
-    gdwyer/ram:<branch>
-```
-
-#### Normal Running
-
-My approach (2.3 from the [ROS guide](http://wiki.ros.org/docker/Tutorials/GUI))
-
+### Run
 ```bash
 docker run -it \
     --user=$(id -u $USER):$(id -g $USER) \
@@ -81,3 +54,4 @@ docker run -it \
     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
     gdwyer/ram:<branch>
 ```
+Full docker info [here](https://github.com/grdwyer/Robot-Assisted-Manufacturing/wiki/Docker)
