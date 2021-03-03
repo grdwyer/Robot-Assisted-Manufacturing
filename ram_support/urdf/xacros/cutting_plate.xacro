@@ -19,35 +19,53 @@
       </collision>
     </link>
 
-    <link name="cutting_tool_base">
+    <joint name="cutting_plate_surface_joint" type="fixed">
+      <parent link="cutting_plate"/>
+      <child link="cutting_plate_base"/>
+      <origin xyz="0 0 0.25" rpy="0 0 0"/>
+    </joint>
+
+    <link name="cutting_plate_base"/>
+
+  <!-- Cutting tool selected-->
+    <link name="cutting_tool">
       <visual>
-        <origin xyz="0 0 -0.25" rpy="0 0 0"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://ram_support/meshes/tools/visual/mock_cutting_blade.dae"/>
+          <mesh filename="package://ram_support/meshes/tools/visual/DUK8.dae"/>
         </geometry>
       </visual>
 
       <collision>
-        <origin xyz="0 0 -0.25" rpy="0 0 0"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://ram_support/meshes/tools/collision/mock_cutting_blade.stl"/>
+          <mesh filename="package://ram_support/meshes/tools/collision/DUK8.stl"/>
         </geometry>
       </collision>
     </link>
 
-    <joint name="cutting_plate_tool_joint" type="fixed">
-      <parent link="cutting_plate"/>
-      <child link="cutting_tool_base"/>
-      <origin xyz="0 0 0.25" rpy="0 0 0"/>
-    </joint>
-
-    <joint name="cutting_tool_base_tip" type="fixed">
-      <parent link="cutting_tool_base"/>
-      <child link="cutting_tool_tip"/>
-      <origin xyz="0 0 0.014158" rpy="0 0 0"/>
-    </joint>
-
+    <link name="cutting_tool_base"/>
     <link name="cutting_tool_tip"/>
+
+    <joint name="cutting_tool_joint" type="fixed">
+      <parent link="cutting_plate_base"/>
+      <child link="cutting_tool"/>
+      <origin xyz="0 0 -0.0035" rpy="0 0 0"/>
+    </joint>
+
+    <joint name="cutting_tool_base_joint" type="fixed">
+      <parent link="cutting_tool"/>
+      <child link="cutting_tool_base"/>
+      <origin xyz="-0.003152 0 0.0035" rpy="0 0 0"/>
+    </joint>
+
+    <joint name="cutting_tool_tip_joint" type="fixed">
+      <parent link="cutting_tool"/>
+      <child link="cutting_tool_tip"/>
+      <origin xyz="0 0 0.0087" rpy="0 0 0"/>
+    </joint>
+
+
   </xacro:macro>
 
 </robot>

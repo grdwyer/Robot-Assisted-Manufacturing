@@ -172,7 +172,7 @@ bool ToolpathFollower::construct_plan_request() {
     if(move_group_->plan(approach_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS){
         move_group_->execute(approach_plan);
     }
-    stockHelper_->modify_touch_link("cutting_tool_base", true);
+    stockHelper_->modify_touch_link("cutting_tool", true);
 
     rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
 
@@ -251,7 +251,7 @@ bool ToolpathFollower::execute_trajectory() {
     if (!trajectory_toolpath_.joint_trajectory.points.empty()){
         bool success = (move_group_->execute(trajectory_toolpath_) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
         // Remove tool from touch links
-        stockHelper_->modify_touch_link("cutting_tool_base", false);
+        stockHelper_->modify_touch_link("cutting_tool", false); // TODO: param this
         return success;
     } else{
         RCLCPP_WARN(LOGGER, "Toolpath trajectory is empty, try construct the plan request first.");

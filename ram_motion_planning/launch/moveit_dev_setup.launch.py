@@ -94,7 +94,7 @@ def generate_launch_description():
     rviz_node = Node(package='rviz2',
                      executable='rviz2',
                      name='rviz2',
-                     output='log',
+                     output='own_log',
                      arguments=['-d', rviz_config_file],
                      parameters=[robot_description,
                                  robot_description_semantic,
@@ -125,6 +125,7 @@ def generate_launch_description():
                                        )
     nodes.append(iiwa_fake_joint_driver_node)
 
+    # Gripper control
     sim_gripper_controller = Node(package="ram_gripper_control",
                                   executable="sim_gripper_controller",
                                   name="sim_gripper_controller",
@@ -132,7 +133,7 @@ def generate_launch_description():
                                   )
     nodes.append(sim_gripper_controller)
 
-    # medport config file
+    # medpor config file
     stock_config_file = get_package_share_directory('ram_tooling_support') + "/config/medpor_configuration.yaml"
     # print(stock_config_file)
     stock_handler = Node(package='ram_tooling_support',
