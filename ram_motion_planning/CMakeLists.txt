@@ -49,18 +49,33 @@ ament_target_dependencies(example_program
         Boost
         )
 
-add_executable(toolpath_follower src/toolpath_follower_position.cpp)
-target_include_directories(toolpath_follower PUBLIC
+add_executable(base_toolpath_planner src/base_toolpath_planner.cpp)
+target_include_directories(base_toolpath_planner PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-target_link_libraries(toolpath_follower
+target_link_libraries(base_toolpath_planner
         ram_helpers)
-ament_target_dependencies(toolpath_follower
+ament_target_dependencies(base_toolpath_planner
         moveit_ros_planning_interface
         Boost
         )
 
-install(TARGETS example_program toolpath_follower
+add_executable(ompl_toolpath_planner src/ompl_constrained_toolpath_planner.cpp)
+target_include_directories(ompl_toolpath_planner PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>)
+target_link_libraries(ompl_toolpath_planner
+        ram_helpers)
+ament_target_dependencies(ompl_toolpath_planner
+        moveit_ros_planning_interface
+        Boost
+        )
+
+
+install(TARGETS
+        example_program
+        base_toolpath_planner
+        ompl_toolpath_planner
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)

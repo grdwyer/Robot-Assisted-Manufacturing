@@ -51,15 +51,15 @@ def generate_launch_description():
     print(node_config)
     nodes = []
     # Start the actual move_group interface node
-    toolpath_follower = Node(name='toolpath_follower',
+    toolpath_planner = Node(name='toolpath_planner',
                              package='ram_motion_planning',
-                             executable='toolpath_follower',
+                             executable='base_toolpath_planner',
                              output='screen',
                              parameters=[node_config,
                                          robot_description,
                                          robot_description_semantic,
                                          kinematics_yaml
                                          ])
-    nodes.append(toolpath_follower)
+    nodes.append(toolpath_planner)
 
     return LaunchDescription(nodes)

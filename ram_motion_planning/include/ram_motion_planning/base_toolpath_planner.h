@@ -2,8 +2,8 @@
 // Created by george on 1/27/21.
 //
 
-#ifndef RAM_MOTION_PLANNING_TOOLPATH_FOLLOWER_H
-#define RAM_MOTION_PLANNING_TOOLPATH_FOLLOWER_H
+#ifndef RAM_MOTION_PLANNING_BASE_TOOLPATH_PLANNER_H
+#define RAM_MOTION_PLANNING_BASE_TOOLPATH_PLANNER_H
 
 #include <thread>
 #include <rclcpp/rclcpp.hpp>
@@ -37,9 +37,9 @@
 #include <moveit_msgs/msg/planning_scene.hpp>
 
 
-class ToolpathFollower : public rclcpp::Node{
+class BaseToolpathPlanner : public rclcpp::Node{
 public:
-    explicit ToolpathFollower(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+    explicit BaseToolpathPlanner(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
     /***
      * Prints the configuration of the node using the parameters declared
@@ -105,7 +105,7 @@ public:
     void display_planned_trajectory(std::vector<geometry_msgs::msg::Pose> &poses);
 
 
-private:
+protected:
 
     std::shared_ptr<ToolpathHelper> toolpath_helper_;
     std::shared_ptr<StockHelper> stockHelper_;
@@ -133,4 +133,4 @@ private:
 
 
 
-#endif //RAM_MOTION_PLANNING_TOOLPATH_FOLLOWER_H
+#endif //RAM_MOTION_PLANNING_BASE_TOOLPATH_PLANNER_H

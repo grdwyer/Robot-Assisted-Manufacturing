@@ -1,11 +1,11 @@
 
-#include <ram_motion_planning/toolpath_follower.h>
+#include <ram_motion_planning/base_toolpath_planner.h>
 
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("toolpath_follower");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("toolpath_planner");
 
 
-ToolpathFollower::ToolpathFollower(const rclcpp::NodeOptions & options): Node("toolpath_follower", options),
-                                    buffer_(this->get_clock()){
+BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): Node("toolpath_follower", options),
+                                                                               buffer_(this->get_clock()){
     // Declare parameters
     // TODO: add parameter decriptions for each
     this->declare_parameter<std::string>("moveit_planning_group", "iiwa");
@@ -29,9 +29,9 @@ ToolpathFollower::ToolpathFollower(const rclcpp::NodeOptions & options): Node("t
 
     // TODO: put service names into node namespace
     service_setup_ = this->create_service<std_srvs::srv::Trigger>(this->get_fully_qualified_name() + std::string("/toolpath_setup"),
-            std::bind(&ToolpathFollower::callback_setup, this, std::placeholders::_1, std::placeholders::_2));
+            std::bind(&BaseToolpathPlanner::callback_setup, this, std::placeholders::_1, std::placeholders::_2));
     service_execute_ = this->create_service<std_srvs::srv::Trigger>(this->get_fully_qualified_name() + std::string("/toolpath_execute"),
-            std::bind(&ToolpathFollower::callback_execute, this, std::placeholders::_1, std::placeholders::_2));
+            std::bind(&BaseToolpathPlanner::callback_execute, this, std::placeholders::_1, std::placeholders::_2));
     publisher_toolpath_poses_ = this->create_publisher<geometry_msgs::msg::PoseArray>(this->get_fully_qualified_name() + std::string("/planned_toolpath"), 10);
 
     //TF2
@@ -42,7 +42,7 @@ ToolpathFollower::ToolpathFollower(const rclcpp::NodeOptions & options): Node("t
 }
 
 
-void ToolpathFollower::configuration_message() {
+void BaseToolpathPlanner::configuration_message() {
     RCLCPP_INFO_STREAM(LOGGER, "Initialising node in " << this->get_fully_qualified_name() <<
     "\n\tMoveit planning group: " << this->get_parameter("moveit_planning_group").as_string() <<
     "\n\tTool reference frame: " << this->get_parameter("tool_reference_frame").as_string() <<
@@ -50,7 +50,7 @@ void ToolpathFollower::configuration_message() {
     "\n\tPart reference frame: " << this->get_parameter("part_reference_frame").as_string());
 }
 
-bool ToolpathFollower::load_toolpath() {
+bool BaseToolpathPlanner::load_toolpath() {
     // load the toolpath
     RCLCPP_INFO(LOGGER, "Loading toolpath");
     auto success =toolpath_helper_->load_toolpath();
@@ -58,7 +58,7 @@ bool ToolpathFollower::load_toolpath() {
     return success;
 }
 
-bool ToolpathFollower::construct_plan_request() {
+bool BaseToolpathPlanner::construct_plan_request() {
     RCLCPP_INFO_STREAM(LOGGER, "Constructing request\n\tusing toolpath: " << toolpath_ <<
                                "\n\tTool reference frame: " << this->get_parameter("tool_reference_frame").as_string() <<
                                "\n\tEnd-effector reference frame: " << this->get_parameter("end_effector_reference_frame").as_string() <<
@@ -185,7 +185,7 @@ bool ToolpathFollower::construct_plan_request() {
     return true;
 }
 
-bool ToolpathFollower::follow_waypoints_sequentially(std::vector<geometry_msgs::msg::Pose> &waypoints) {
+bool BaseToolpathPlanner::follow_waypoints_sequentially(std::vector<geometry_msgs::msg::Pose> &waypoints) {
     for(const auto &pose : waypoints){
         move_group_->setPoseTarget(pose);
 
@@ -203,7 +203,7 @@ bool ToolpathFollower::follow_waypoints_sequentially(std::vector<geometry_msgs::
 }
 
 // Doesn't display with RVIZ at the moment, possibly unneeded.
-void ToolpathFollower::display_planned_trajectory(std::vector<geometry_msgs::msg::Pose> &poses) {
+void BaseToolpathPlanner::display_planned_trajectory(std::vector<geometry_msgs::msg::Pose> &poses) {
     geometry_msgs::msg::PoseArray msg;
     toolpath_poses_.header.frame_id = move_group_->getPoseReferenceFrame();
     toolpath_poses_.header.stamp = rclcpp::Clock().now();
@@ -218,7 +218,7 @@ void ToolpathFollower::display_planned_trajectory(std::vector<geometry_msgs::msg
     timer_toolpath_poses_ = this->create_wall_timer(std::chrono::seconds(1), timer_callback);
 }
 
-bool ToolpathFollower::move_to_setup() {
+bool BaseToolpathPlanner::move_to_setup() {
     move_group_->setPoseReferenceFrame("cutting_tool_tip");
     move_group_->setEndEffectorLink("gripper_jaw_centre");
 
@@ -247,7 +247,7 @@ bool ToolpathFollower::move_to_setup() {
     return false;
 }
 
-bool ToolpathFollower::execute_trajectory() {
+bool BaseToolpathPlanner::execute_trajectory() {
     if (!trajectory_toolpath_.joint_trajectory.points.empty()){
         bool success = (move_group_->execute(trajectory_toolpath_) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
         // Remove tool from touch links
@@ -259,8 +259,8 @@ bool ToolpathFollower::execute_trajectory() {
     }
 }
 
-void ToolpathFollower::callback_setup(const std_srvs::srv::Trigger::Request::SharedPtr request,
-                                      std_srvs::srv::Trigger::Response::SharedPtr response) {
+void BaseToolpathPlanner::callback_setup(const std_srvs::srv::Trigger::Request::SharedPtr request,
+                                         std_srvs::srv::Trigger::Response::SharedPtr response) {
     if(load_toolpath()){
         if(move_to_setup()){
             if(construct_plan_request()){
@@ -280,8 +280,8 @@ void ToolpathFollower::callback_setup(const std_srvs::srv::Trigger::Request::Sha
     }
 }
 
-void ToolpathFollower::callback_execute(const std_srvs::srv::Trigger::Request::SharedPtr request,
-                                        std_srvs::srv::Trigger::Response::SharedPtr response) {
+void BaseToolpathPlanner::callback_execute(const std_srvs::srv::Trigger::Request::SharedPtr request,
+                                           std_srvs::srv::Trigger::Response::SharedPtr response) {
     if(execute_trajectory()){
         response->success = true;
         response->message = "executed toolpath";
@@ -298,7 +298,7 @@ int main(int argc, char** argv)
     rclcpp::init(argc, argv);
     rclcpp::NodeOptions node_options;
 
-    auto toolpath_follower = std::make_shared<ToolpathFollower>(node_options);
+    auto toolpath_follower = std::make_shared<BaseToolpathPlanner>(node_options);
 
     rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(toolpath_follower);
