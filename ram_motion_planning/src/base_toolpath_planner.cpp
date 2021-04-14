@@ -81,8 +81,6 @@ bool BaseToolpathPlanner::construct_plan_request() {
         return false;
     }
 
-    tf2_ros::TransformBroadcaster broadcaster(this);
-
     // Flip the pose about the x axis to have the gripper upside down
     // Tool base - flipped on the x (should be paramed), reorient - rotation to face the next point, tool pose - resultant pose to convert to pose msg
     KDL::Frame tool_base, reorient, tool_pose;
@@ -99,6 +97,7 @@ bool BaseToolpathPlanner::construct_plan_request() {
     }
     RCLCPP_INFO_STREAM(LOGGER, "EE Toolpath: \n" << ee_toolpath);
 
+    tf2_ros::TransformBroadcaster broadcaster(this);
     // Run the marker across each
     for(const auto &frame : ee_toolpath){
         tf_trans = tf2::kdlToTransform(frame);
@@ -292,18 +291,3 @@ void BaseToolpathPlanner::callback_execute(const std_srvs::srv::Trigger::Request
 }
 
 
-int main(int argc, char** argv)
-{
-    RCLCPP_INFO(LOGGER, "Initialize node");
-    rclcpp::init(argc, argv);
-    rclcpp::NodeOptions node_options;
-
-    auto toolpath_follower = std::make_shared<BaseToolpathPlanner>(node_options);
-
-    rclcpp::executors::SingleThreadedExecutor executor;
-    executor.add_node(toolpath_follower);
-    executor.spin();
-    rclcpp::shutdown();
-
-    return 0;
-}

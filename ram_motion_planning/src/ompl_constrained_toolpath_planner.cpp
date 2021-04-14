@@ -4,18 +4,8 @@
 
 #include <ram_motion_planning/ompl_constrained_toolpath_planner.h>
 
-int main(int argc, char** argv)
-{
-    RCLCPP_INFO(LOGGER, "Initialize node");
-    rclcpp::init(argc, argv);
-    rclcpp::NodeOptions node_options;
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("ompl_toolpath_planner");
 
-    auto toolpath_follower = std::make_shared<OMPLToolpathPlanner>(node_options);
-
-    rclcpp::executors::SingleThreadedExecutor executor;
-    executor.add_node(toolpath_follower);
-    executor.spin();
-    rclcpp::shutdown();
-
-    return 0;
+bool OMPLToolpathPlanner::construct_plan_request() {
+    // Needs to create a trajectory in trajectory_toolpath_ and
 }

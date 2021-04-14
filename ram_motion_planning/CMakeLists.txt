@@ -49,7 +49,7 @@ ament_target_dependencies(example_program
         Boost
         )
 
-add_executable(base_toolpath_planner src/base_toolpath_planner.cpp)
+add_executable(base_toolpath_planner src/base_toolpath_planner.cpp src/run_base_planner.cpp)
 target_include_directories(base_toolpath_planner PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
@@ -60,7 +60,7 @@ ament_target_dependencies(base_toolpath_planner
         Boost
         )
 
-add_executable(ompl_toolpath_planner src/ompl_constrained_toolpath_planner.cpp)
+add_executable(ompl_toolpath_planner src/ompl_constrained_toolpath_planner.cpp src/base_toolpath_planner.cpp src/run_ompl_planner.cpp)
 target_include_directories(ompl_toolpath_planner PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
