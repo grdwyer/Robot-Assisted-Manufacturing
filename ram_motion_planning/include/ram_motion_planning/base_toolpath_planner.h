@@ -71,6 +71,20 @@ public:
     bool execute_trajectory();
 
     /***
+     * @brief Uses TF to get the transform between the EE link and the stock material (or held part)
+     * The EE link is taken from moveits EE link `move_group_->getEndEffectorLink()` and the stock frame from the
+     * parameter `part_reference_frame`
+     * @return Transform from end effector to the stock frame
+     */
+    KDL::Frame get_ee_to_stock_transform();
+
+    /***
+     * @brief processes the received toolpath to get the cartesian path required for the end effector
+     * @return boolean for sucess processing the toolpath
+     */
+    bool process_toolpath(std::vector<Frame> &ee_cartesian_path);
+
+    /***
      * Callback for setup service
      * this will:
      *   load toolpath
