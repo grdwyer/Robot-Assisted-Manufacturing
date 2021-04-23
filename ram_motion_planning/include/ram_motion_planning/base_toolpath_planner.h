@@ -82,7 +82,7 @@ public:
      * @brief processes the received toolpath to get the cartesian path required for the end effector
      * @return boolean for sucess processing the toolpath
      */
-    bool process_toolpath(std::vector<Frame> &ee_cartesian_path);
+    bool process_toolpath(std::vector<KDL::Frame> &ee_cartesian_path);
 
     /***
      * Callback for setup service
