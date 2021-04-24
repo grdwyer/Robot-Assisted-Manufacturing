@@ -2,8 +2,15 @@ import os
 import yaml
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from launch.actions import ExecuteProcess
 from ament_index_python.packages import get_package_share_directory
 import xacro
+
+
+def resolve_path(package_name, file_path):
+    package_path = get_package_share_directory(package_name)
+    absolute_file_path = os.path.join(package_path, file_path)
+    return absolute_file_path
 
 
 def load_file(package_name, file_path):
@@ -112,18 +119,30 @@ def generate_launch_description():
                                  parameters=[robot_description])
     nodes.append(robot_state_publisher)
 
-    # Fake joint driver
-    iiwa_fake_joint_driver_node = Node(package='fake_joint_driver',
-                                       executable='fake_joint_driver_node',
-                                       parameters=[{'controller_name': 'iiwa_arm_controller'},
-                                                   os.path.join(get_package_share_directory("ram_moveit_config"),
-                                                                "config", "fake_controller_setup.yaml"),
-                                                   os.path.join(get_package_share_directory("ram_moveit_config"),
-                                                                "config", "start_positions.yaml"),
-                                                   robot_description],
-                                       output="screen"
-                                       )
-    nodes.append(iiwa_fake_joint_driver_node)
+    # ros2_control using FakeSystem as hardware
+    ros2_controllers_path = resolve_path('ram_moveit_config', 'config/ros_controllers.yaml')
+    ros2_control_node = Node(
+        package="controller_manager",
+        executable="ros2_control_node",
+        parameters=[robot_description, ros2_controllers_path],
+        output={
+            "stdout": "screen",
+            "stderr": "screen",
+        },
+    )
+    nodes.append(ros2_control_node)
+
+    # Load controllers
+    load_controllers = []
+    for controller in ["iiwa_arm_controller", "joint_state_controller"]:
+        load_controllers += [
+            ExecuteProcess(
+                cmd=["ros2 run controller_manager spawner.py {}".format(controller)],
+                shell=True,
+                output="screen",
+            )
+        ]
+    nodes += load_controllers
 
     # Gripper control
     sim_gripper_controller = Node(package="ram_gripper_control",

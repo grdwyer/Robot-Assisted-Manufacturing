@@ -12,6 +12,7 @@
   <xacro:property name="PI" value="3.1415926535897931"/>
   
   <xacro:macro name="iiwa14" params="hardware_interface robot_name">
+    <xacro:arg name="use_ros2_control" default="true"/>
     
     <link name="${robot_name}_link_0">
       <inertial>
@@ -314,8 +315,17 @@
     </link>
     
     <!--Extensions -->
-    <xacro:iiwa_transmission hardware_interface="${hardware_interface}" robot_name="${robot_name}"/>
-    
+    <xacro:if value="$(arg use_ros2_control)" >
+      <xacro:include filename="$(find ram_support)/urdf/xacros/control/iiwa.ros2_control.xacro" />
+      <xacro:iiwa_position_only name="IiwaFakePositionHardwareInterface"/>
+<!--                                robot_ip="$(arg robot_ip)"-->
+<!--                                robot_port="$(arg robot_port)"/>-->
+    </xacro:if>
+
+    <xacro:unless value="$(arg use_ros2_control)" >
+      <xacro:iiwa_transmission hardware_interface="${hardware_interface}" robot_name="${robot_name}"/>
+    </xacro:unless>
+
   </xacro:macro>
   
 </robot>
