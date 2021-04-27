@@ -20,6 +20,9 @@ BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): N
             this->get_parameter("moveit_planning_group").as_string());
 
     move_group_->setMaxVelocityScalingFactor(0.1);
+    move_group_->setPlanningTime(30.0);
+    move_group_->setNumPlanningAttempts(5);
+
     auto toolpath_node = this->create_sub_node("toolpath");
     auto stock_node = this->create_sub_node("stock");
     auto gripper_node = this->create_sub_node("gripper");
@@ -74,6 +77,7 @@ bool BaseToolpathPlanner::construct_plan_request() {
 
     // Flip the pose about the x axis to have the gripper upside down
     // Tool base - flipped on the x (should be paramed), reorient - rotation to face the next point, tool pose - resultant pose to convert to pose msg
+
     bool success = process_toolpath(ee_cartesian_path);
 
     // Determine an approach pose for the toolpath
@@ -92,7 +96,7 @@ bool BaseToolpathPlanner::construct_plan_request() {
     geometry_msgs::msg::Pose retreat_pose;
     KDL::Frame end_path_frame, retreat_frame;
     end_path_frame = ee_cartesian_path.back();
-    retreat_frame = end_path_frame * KDL::Frame(KDL::Vector(0.01,0,0)); // TODO: param this
+    retreat_frame = KDL::Frame(KDL::Vector(0.01,0,0)) * end_path_frame; // TODO: param this
     tf_trans = tf2::kdlToTransform(retreat_frame);
     tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
     tf_trans.header.stamp = this->get_clock()->now();
