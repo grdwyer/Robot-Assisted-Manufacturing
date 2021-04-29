@@ -68,21 +68,84 @@ bool OMPLToolpathPlanner::construct_plan_request() {
         waypoints.push_back(tf2::toMsg(frame));
     }
 
-    //TODO: Set start state for cartesian planning
-    RCLCPP_INFO_STREAM(LOGGER, "Cartesian planning for toolpath using Waypoints: \n" << waypoints);
-    const double jump_threshold = 0.0;
-    const double eef_step = 0.001;
-    double fraction = move_group_->computeCartesianPath(waypoints, eef_step, jump_threshold, trajectory_toolpath_);
-    RCLCPP_INFO(LOGGER, "Visualizing Cartesian path (%.2f%% acheived)", fraction * 100.0);
-    return fraction > 0.99;
+    std::vector<moveit::planning_interface::MoveGroupInterface::Plan> separated_plans;
+    moveit::core::RobotStatePtr start_state;
+    moveit::planning_interface::MoveGroupInterface::Plan current_plan;
+
+    for(auto &  desired_pose : waypoints){
+        if(separated_plans.empty()){
+           RCLCPP_DEBUG_STREAM(LOGGER, "First point in toolpath loaded, taking current state as start");
+           start_state = move_group_->getCurrentState();
+        }
+        else{
+            RCLCPP_DEBUG_STREAM(LOGGER, "Using previous plan for start state");
+            start_state = get_end_state_from_plan(separated_plans.back());
+        }
+        if(plan_between_points(start_state, desired_pose, current_plan)){
+            RCLCPP_DEBUG_STREAM(LOGGER, "Plan between points succeeded");
+        }
+
+    }
 }
 
-bool OMPLToolpathPlanner::plan_between_points(geometry_msgs::msg::Pose &start, geometry_msgs::msg::Pose &end,
+bool OMPLToolpathPlanner::plan_between_points(moveit::core::RobotStatePtr start_state, geometry_msgs::msg::Pose &end,
                                               moveit::planning_interface::MoveGroupInterface::Plan &plan) {
-    return false;
+    move_group_->clearPoseTargets();
+    move_group_->clearPathConstraints();
+
+    moveit_msgs::msg::PositionConstraint pcm;
+
+    pcm.header.frame_id = this->get_parameter("tool_reference_frame").as_string();
+    pcm.link_name = this->get_parameter("end_effector_reference_frame").as_string();
+    pcm.weight = 1.0;
+
+    shape_msgs::msg::SolidPrimitive cbox;
+    cbox.type = shape_msgs::msg::SolidPrimitive::BOX;
+
+    // For equality constraint set box dimension to: 1e-3 > 0.0005 > 1e-4
+    cbox.dimensions = { 0.0005, 0.0005, 1.0 };
+    pcm.constraint_region.primitives.emplace_back(cbox);
+
+    geometry_msgs::msg::PoseStamped pose = move_group_->getCurrentPose();
+
+    geometry_msgs::msg::Pose cbox_pose;
+    cbox_pose.position = pose.pose.position;
+
+    // turn the constraint region 45 degrees around the x-axis
+    tf2::Quaternion quat;
+    quat.setRPY(0.0, 0.0, 0.0);
+
+    cbox_pose.orientation.x = quat.x();
+    cbox_pose.orientation.y = quat.y();
+    cbox_pose.orientation.z = quat.z();
+    cbox_pose.orientation.w = quat.w();
+
+    pcm.constraint_region.primitive_poses.emplace_back(cbox_pose);
+
+    displayBox(cbox_pose, cbox.dimensions);
+
+
+    moveit_msgs::msg::Constraints path_constraints;
+
+    // For equality constraints set to: "use_equality_constraints"
+    path_constraints.name = "use_equality_constraints";
+
+    path_constraints.position_constraints.emplace_back(pcm);
+
+    move_group_->setStartState(start_state);
+    move_group_->setPoseTarget(end);
+    move_group_->setPathConstraints(path_constraints);
+
+    const bool plan_success = (move_group_->plan(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    RCLCPP_INFO(LOGGER, "Plan between 2 points %s", plan_success ? "SUCCEEDED" : "FAILED");
+    return plan_success;
 }
 
 bool OMPLToolpathPlanner::append_plans(moveit::planning_interface::MoveGroupInterface::Plan &first,
                                        moveit::planning_interface::MoveGroupInterface::Plan &second) {
     return false;
+}
+
+moveit::core::RobotStatePtr OMPLToolpathPlanner::get_end_state_from_plan(moveit::planning_interface::MoveGroupInterface::Plan &plan) {
+    return moveit::core::RobotStatePtr();
 }

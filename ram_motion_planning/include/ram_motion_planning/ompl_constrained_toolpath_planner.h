@@ -6,12 +6,14 @@
 #define RAM_MOTION_PLANNING_OMPL_CONSTRAINED_TOOLPATH_PLANNER_H
 
 #include <ram_motion_planning/base_toolpath_planner.h>
+#include <m
 
 class OMPLToolpathPlanner : public BaseToolpathPlanner{
     using BaseToolpathPlanner::BaseToolpathPlanner;
     bool construct_plan_request();
-    bool plan_between_points(geometry_msgs::msg::Pose& start, geometry_msgs::msg::Pose& end, moveit::planning_interface::MoveGroupInterface::Plan& plan);
+    bool plan_between_points(moveit::core::RobotStatePtr start_state, geometry_msgs::msg::Pose& end, moveit::planning_interface::MoveGroupInterface::Plan& plan);
     bool append_plans(moveit::planning_interface::MoveGroupInterface::Plan& first, moveit::planning_interface::MoveGroupInterface::Plan& second);
+    moveit::core::RobotStatePtr get_end_state_from_plan(moveit::planning_interface::MoveGroupInterface::Plan& plan);
 };
 
 #endif //RAM_MOTION_PLANNING_OMPL_CONSTRAINED_TOOLPATH_PLANNER_H
