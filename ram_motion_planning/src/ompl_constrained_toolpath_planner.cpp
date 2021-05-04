@@ -122,7 +122,7 @@ bool OMPLToolpathPlanner::plan_between_points(moveit::core::RobotStatePtr start_
 
     pcm.constraint_region.primitive_poses.emplace_back(cbox_pose);
 
-    displayBox(cbox_pose, cbox.dimensions);
+//    displayBox(cbox_pose, cbox.dimensions);
 
 
     moveit_msgs::msg::Constraints path_constraints;
@@ -132,7 +132,7 @@ bool OMPLToolpathPlanner::plan_between_points(moveit::core::RobotStatePtr start_
 
     path_constraints.position_constraints.emplace_back(pcm);
 
-    move_group_->setStartState(start_state);
+    move_group_->setStartState(*start_state.get());
     move_group_->setPoseTarget(end);
     move_group_->setPathConstraints(path_constraints);
 
