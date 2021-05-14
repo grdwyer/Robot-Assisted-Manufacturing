@@ -130,7 +130,6 @@ def generate_launch_description():
     nodes.append(robot_state_publisher)
 
     # Iiwa settings
-
     iiwa_controller = os.path.join(
         get_package_share_directory('iiwa_fri_ros'),
         'config',
@@ -140,6 +139,7 @@ def generate_launch_description():
         package='controller_manager',
         executable='ros2_control_node',
         parameters=[robot_description, iiwa_controller],
+        prefix=['nice -n -20 '],
         output={
             'stdout': 'screen',
             'stderr': 'screen',

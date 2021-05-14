@@ -1,9 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
   
-  <!-- Import Transmissions -->
-  <xacro:include filename="$(find ram_support)/urdf/xacros/iiwa.transmission.xacro" />
-  
   <!-- some constants -->
   <xacro:property name="safety_controller_k_pos" value="10" /> <!-- This sets the velocity according the distance the soft limits, velocity = -k_pos * (pos - soft_limit) -->
   <xacro:property name="safety_controller_k_vel" value="40" />
@@ -15,6 +12,7 @@
     <xacro:arg name="use_ros2_control" default="true"/>
     <xacro:arg name="robot_ip" default="192.170.10.2"/>
     <xacro:arg name="robot_port" default="30200"/>
+    <xacro:arg name="hardware" default="false"/>
 
     <link name="${robot_name}_link_0">
       <inertial>
@@ -319,13 +317,14 @@
     <!--Extensions -->
     <xacro:if value="$(arg use_ros2_control)" >
       <xacro:include filename="$(find ram_support)/urdf/xacros/control/iiwa.ros2_control.xacro" />
-      <xacro:iiwa_position_only name="IiwaFakePositionHardwareInterface"
+      <xacro:iiwa_position_only name="IiwaPositionHardwareInterface"
                                 robot_ip="$(arg robot_ip)"
-                                robot_port="$(arg robot_port)"/>
-
+                                robot_port="$(arg robot_port)"
+                                hardware="$(arg hardware)"/>
     </xacro:if>
 
     <xacro:unless value="$(arg use_ros2_control)" >
+      <xacro:include filename="$(find ram_support)/urdf/xacros/iiwa.transmission.xacro" />
       <xacro:iiwa_transmission hardware_interface="${hardware_interface}" robot_name="${robot_name}"/>
     </xacro:unless>
 
