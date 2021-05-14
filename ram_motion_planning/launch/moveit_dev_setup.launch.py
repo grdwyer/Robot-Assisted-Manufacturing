@@ -1,10 +1,13 @@
 import os
 import yaml
-from launch import LaunchDescription
-from launch_ros.actions import Node
-from launch.actions import ExecuteProcess
 from ament_index_python.packages import get_package_share_directory
 import xacro
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, ExecuteProcess
+from launch.conditions import IfCondition
+from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
+from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
 
 
 def resolve_path(package_name, file_path):
@@ -42,6 +45,16 @@ def load_xacro(package_name, file_path):
 
 
 def generate_launch_description():
+    # Adding arguments
+    declared_arguments = []
+    # UR specific arguments
+    declared_arguments.append(
+        DeclareLaunchArgument("manipulator", default_value="fake", description="Type of manipulator to startup (fake or real)")
+    )
+
+    manipulator = LaunchConfiguration("manipulator")
+    print("\n\n\n\n\n\tManipulator set as {}\n\n\n\n".format(manipulator))
+
     # Component yaml files are grouped in separate namespaces
     ######################
     #### Config Files ####
@@ -49,13 +62,10 @@ def generate_launch_description():
     doc = load_xacro('ram_support', 'urdf/mock_iiwa_workcell.urdf.xacro')
     robot_description = {'robot_description': doc}
 
-    implant_description_doc = load_xacro('ram_support', 'urdf/implant.urdf.xacro')
-
     robot_description_semantic_config = load_file('ram_moveit_config', 'config/iiwa_workcell.srdf')
     robot_description_semantic = {'robot_description_semantic': robot_description_semantic_config}
 
     kinematics_yaml = load_yaml('ram_moveit_config', 'config/kinematics.yaml')
-    robot_description_kinematics = {'robot_description_kinematics': kinematics_yaml}
 
     # Planning Functionality
     ompl_planning_pipeline_config = {'move_group': {
@@ -119,20 +129,24 @@ def generate_launch_description():
                                  parameters=[robot_description])
     nodes.append(robot_state_publisher)
 
-    # ros2_control using FakeSystem as hardware
-    ros2_controllers_path = resolve_path('ram_moveit_config', 'config/ros_controllers.yaml')
+    # Iiwa settings
+
+    iiwa_controller = os.path.join(
+        get_package_share_directory('iiwa_fri_ros'),
+        'config',
+        'iiwa_fri_control.yaml'
+    )
     ros2_control_node = Node(
-        package="controller_manager",
-        executable="ros2_control_node",
-        parameters=[robot_description, ros2_controllers_path],
+        package='controller_manager',
+        executable='ros2_control_node',
+        parameters=[robot_description, iiwa_controller],
         output={
-            "stdout": "screen",
-            "stderr": "screen",
-        },
+            'stdout': 'screen',
+            'stderr': 'screen',
+        }
     )
     nodes.append(ros2_control_node)
 
-    # Load controllers
     load_controllers = []
     for controller in ["iiwa_arm_controller", "joint_state_controller"]:
         load_controllers += [
@@ -170,4 +184,4 @@ def generate_launch_description():
                             )
     nodes.append(toolpath_handler)
 
-    return LaunchDescription(nodes)
+    return LaunchDescription(declared_arguments + nodes)
