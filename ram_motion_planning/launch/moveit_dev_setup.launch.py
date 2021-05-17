@@ -5,7 +5,7 @@ import xacro
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess
 from launch.conditions import IfCondition
-from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution, TextSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
@@ -37,30 +37,62 @@ def load_yaml(package_name, file_path):
         return None
 
 
-def load_xacro(package_name, file_path):
+def load_xacro(package_name, file_path, mappings):
     package_path = get_package_share_directory(package_name)
     absolute_file_path = os.path.join(package_path, file_path)
-    doc = xacro.process_file(absolute_file_path).toprettyxml(indent='  ')
+    doc = xacro.process_file(absolute_file_path, mappings=mappings).toprettyxml(indent='  ')
     return doc
 
 
 def generate_launch_description():
     # Adding arguments
     declared_arguments = []
-    # UR specific arguments
+    # specific arguments
     declared_arguments.append(
-        DeclareLaunchArgument("manipulator", default_value="fake", description="Type of manipulator to startup (fake or real)")
+        DeclareLaunchArgument("robot_ip", default_value="192.170.10.2",
+                              description="IP address of the kuka KONI")
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument("robot_port", default_value="30200",
+                              description="Port used by the FRI (30200 - 30209")
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument("real_manipulator", default_value="false", description="Type of manipulator to startup (fake/false or real/true)")
     )
 
-    manipulator = LaunchConfiguration("manipulator")
-    print("\n\n\n\n\n\tManipulator set as {}\n\n\n\n".format(manipulator))
+    robot_ip = LaunchConfiguration("robot_ip")
+    robot_port = LaunchConfiguration("robot_port")
+    manipulator = LaunchConfiguration("real_manipulator")
+
+    # print("\n\n\n\n\n\tManipulator set as {}\n\n\n\n".format(TextSubstitution().perform(manipulator)))
 
     # Component yaml files are grouped in separate namespaces
     ######################
     #### Config Files ####
     ######################
-    doc = load_xacro('ram_support', 'urdf/mock_iiwa_workcell.urdf.xacro')
-    robot_description = {'robot_description': doc}
+    # doc = load_xacro('ram_support', 'urdf/mock_iiwa_workcell.urdf.xacro', ['hardware:=false'])
+    # robot_description = {'robot_description': doc}
+    robot_description_content = Command(
+        [
+            PathJoinSubstitution([FindExecutable(name="xacro")]),
+            " ",
+            PathJoinSubstitution([FindPackageShare('ram_support'), "urdf", 'mock_iiwa_workcell.urdf.xacro']),
+            " ",
+            "robot_ip:=",
+            robot_ip,
+            " ",
+            " ",
+            "robot_port:=",
+            robot_port,
+            " ",
+            " ",
+            "hardware:=",
+            manipulator,
+            " ",
+        ]
+    )
+    print(robot_description_content)
+    robot_description = {"robot_description": robot_description_content}
 
     robot_description_semantic_config = load_file('ram_moveit_config', 'config/iiwa_workcell.srdf')
     robot_description_semantic = {'robot_description_semantic': robot_description_semantic_config}

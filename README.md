@@ -12,11 +12,20 @@ Current packages:
 * ram_tooling_support - assistance nodes for handling (currently) toolpaths and stock material
 
 ## Running the system
-This launches RVIZ, move_group node, sim iiwa controller, sim gripper controller, toolpath handler and stock handler.  
+This launches RVIZ, move_group node, sim iiwa controller, sim gripper controller, toolpath handler and stock handler.
+Now includes some arguments that can be set (just for the ros control side at the moment)
+
+Default (fake controller)
 ```
 ros2 launch ram_motion_planning moveit_dev_setup.launch.py 
 ```
-This launches the moveit movegroup interface for fully constrained toolpaths (6DoF) quite simple at the moment.  
+
+Real kuka
+```
+ros2 launch ram_motion_planning moveit_dev_setup.launch.py real_manipulator:=true robot_port:=30200 robot_ip:=192.170.10.2
+```
+
+This launches the moveit movegroup interface for fully constrained toolpaths (6DoF) quite simple at the moment.
 ```
 ros2 launch ram_motion_planning toolpath_planner.launch.py  
 ```
