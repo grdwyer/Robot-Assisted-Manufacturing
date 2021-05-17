@@ -55,3 +55,8 @@ docker run -it \
     gdwyer/ram:<branch>
 ```
 Full docker info [here](https://github.com/grdwyer/Robot-Assisted-Manufacturing/wiki/Docker)
+
+## Hardware Support
+### Iiwa
+WARNING this currently only works if you run as a user and have ssh keys setup for the Kuka_iiwa_ROS2_drive repo
+`/dev_ws/src/ram/.docker/add_kuka_driver.sh` 
