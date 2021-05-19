@@ -163,9 +163,9 @@ def generate_launch_description():
 
     # Iiwa settings
     iiwa_controller = os.path.join(
-        get_package_share_directory('iiwa_fri_ros'),
+        get_package_share_directory('ram_moveit_config'),
         'config',
-        'iiwa_fri_control.yaml'
+        'ros_controllers.yaml'
     )
     ros2_control_node = Node(
         package='controller_manager',

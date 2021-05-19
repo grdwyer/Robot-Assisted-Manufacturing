@@ -32,3 +32,15 @@ iiwa_arm_controller:
     constraints:
       stopped_velocity_tolerance: 0.0
       goal_time: 0.0
+
+forward_command_controller_position:
+  ros__parameters:
+    joints:
+      - iiwa_joint_1
+      - iiwa_joint_2
+      - iiwa_joint_3
+      - iiwa_joint_4
+      - iiwa_joint_5
+      - iiwa_joint_6
+      - iiwa_joint_7
+    interface_name: position

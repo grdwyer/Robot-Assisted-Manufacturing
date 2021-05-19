@@ -6,6 +6,10 @@
 
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("ompl_toolpath_planner");
 
+OMPLToolpathPlanner::OMPLToolpathPlanner(const rclcpp::NodeOptions & options) : BaseToolpathPlanner(options){
+    marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/visualization_marker", 10);
+}
+
 bool OMPLToolpathPlanner::construct_plan_request() {
     // Needs to create a trajectory in trajectory_toolpath_ and modify the touch link to
     RCLCPP_INFO_STREAM(LOGGER, "Constructing request\n\tusing toolpath: " << toolpath_ <<
@@ -81,14 +85,17 @@ bool OMPLToolpathPlanner::construct_plan_request() {
             RCLCPP_DEBUG_STREAM(LOGGER, "Using previous plan for start state");
             start_state = get_end_state_from_plan(separated_plans.back());
         }
+
         if(plan_between_points(start_state, desired_pose, current_plan)){
             RCLCPP_DEBUG_STREAM(LOGGER, "Plan between points succeeded");
+            separated_plans.push_back(current_plan);
+        } else{
+            RCLCPP_WARN_STREAM(LOGGER, "Failed to plan to desired pose:  \n");// << desired_pose);
         }
-
     }
 }
 
-bool OMPLToolpathPlanner::plan_between_points(moveit::core::RobotStatePtr start_state, geometry_msgs::msg::Pose &end,
+bool OMPLToolpathPlanner::plan_between_points(const moveit::core::RobotStatePtr& start_state, geometry_msgs::msg::Pose &end,
                                               moveit::planning_interface::MoveGroupInterface::Plan &plan) {
     move_group_->clearPoseTargets();
     move_group_->clearPathConstraints();
@@ -106,10 +113,14 @@ bool OMPLToolpathPlanner::plan_between_points(moveit::core::RobotStatePtr start_
     cbox.dimensions = { 0.0005, 0.0005, 1.0 };
     pcm.constraint_region.primitives.emplace_back(cbox);
 
-    geometry_msgs::msg::PoseStamped pose = move_group_->getCurrentPose();
+    auto trans_ee = start_state->getFrameTransform(this->get_parameter("end_effector_reference_frame").as_string());
+    auto trans_base = start_state->getFrameTransform(this->get_parameter("tool_reference_frame").as_string());
+    auto start_pose = trans_base.inverse() * trans_ee;
 
     geometry_msgs::msg::Pose cbox_pose;
-    cbox_pose.position = pose.pose.position;
+    cbox_pose.position.x = start_pose.translation().x();
+    cbox_pose.position.y = start_pose.translation().y();
+    cbox_pose.position.z = start_pose.translation().z();
 
     // turn the constraint region 45 degrees around the x-axis
     tf2::Quaternion quat;
@@ -122,8 +133,7 @@ bool OMPLToolpathPlanner::plan_between_points(moveit::core::RobotStatePtr start_
 
     pcm.constraint_region.primitive_poses.emplace_back(cbox_pose);
 
-//    displayBox(cbox_pose, cbox.dimensions);
-
+    display_line(cbox_pose, cbox.dimensions);
 
     moveit_msgs::msg::Constraints path_constraints;
 
@@ -141,11 +151,35 @@ bool OMPLToolpathPlanner::plan_between_points(moveit::core::RobotStatePtr start_
     return plan_success;
 }
 
-bool OMPLToolpathPlanner::append_plans(moveit::planning_interface::MoveGroupInterface::Plan &first,
-                                       moveit::planning_interface::MoveGroupInterface::Plan &second) {
-    return false;
-}
+void OMPLToolpathPlanner::display_line(const geometry_msgs::msg::Pose &pose, const rosidl_runtime_cpp::BoundedVector<double, 3, std::allocator<double>> &dimensions) {
 
-moveit::core::RobotStatePtr OMPLToolpathPlanner::get_end_state_from_plan(moveit::planning_interface::MoveGroupInterface::Plan &plan) {
-    return moveit::core::RobotStatePtr();
-}
+    visualization_msgs::msg::Marker marker;
+    marker.header.frame_id = this->get_parameter("tool_reference_frame").as_string();
+    marker.header.stamp = this->now();
+    marker.ns = "/";
+    marker.id = 1;
+
+    marker.type = visualization_msgs::msg::Marker::CUBE;
+    marker.action = visualization_msgs::msg::Marker::ADD;
+    marker.lifetime = rclcpp::Duration(0);
+
+    marker.color.a = 0.5;
+    marker.pose = pose;
+    marker.scale.x = dimensions.at(0);
+    marker.scale.y = dimensions.at(1);
+    marker.scale.z = dimensions.at(2);
+
+    marker_pub_->publish(marker);
+    }
+
+    bool OMPLToolpathPlanner::append_plans(moveit::planning_interface::MoveGroupInterface::Plan &first,
+                                           moveit::planning_interface::MoveGroupInterface::Plan &second) {
+        return false;
+    }
+
+    moveit::core::RobotStatePtr OMPLToolpathPlanner::get_end_state_from_plan(moveit::planning_interface::MoveGroupInterface::Plan &plan) {
+        return moveit::core::RobotStatePtr();
+    }
+
+
+
