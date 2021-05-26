@@ -55,7 +55,7 @@
       <axis xyz="1 0 0"/>
       <limit lower="0.000" upper="0.004"
              effort="${max_effort}" velocity="0.0833" />
-      <mimic joint="${robot_name}_joint_left"/>
+<!--      <mimic joint="${robot_name}_joint_left"/>-->
     </joint>
     
     <link name="${robot_name}_link_right">
@@ -94,28 +94,9 @@
       <child link="${robot_name}_jaw_right"/>
       <origin xyz="0.000524 0 0.078850" rpy="0 0 ${pi}"/>
     </joint>
-    
-    <transmission name="${robot_name}_tran_right">
-      <type>transmission_interface/SimpleTransmission</type>
-      <joint name="${robot_name}_joint_right">
-	<hardwareInterface>hardware_interface/${hardware_interface}</hardwareInterface>
-      </joint>
-      <actuator name="${robot_name}_motor_right">
-	<hardwareInterface>hardware_interface/${hardware_interface}</hardwareInterface>
-	<mechanicalReduction>1</mechanicalReduction>
-      </actuator>
-    </transmission>
 
-    <transmission name="${robot_name}_tran_left">
-      <type>transmission_interface/SimpleTransmission</type>
-      <joint name="${robot_name}_joint_left">
-	<hardwareInterface>hardware_interface/${hardware_interface}</hardwareInterface>
-      </joint>
-      <actuator name="${robot_name}_motor_left">
-	<hardwareInterface>hardware_interface/${hardware_interface}</hardwareInterface>
-	<mechanicalReduction>1</mechanicalReduction>
-      </actuator>
-    </transmission>
+    <xacro:include filename="$(find ram_support)/urdf/xacros/control/gripper.ros2_control.xacro" />
+    <xacro:gripper_interface name="${robot_name}"/>
 
   </xacro:macro>
   

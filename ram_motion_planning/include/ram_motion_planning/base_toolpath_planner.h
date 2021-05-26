@@ -2,8 +2,8 @@
 // Created by george on 1/27/21.
 //
 
-#ifndef RAM_MOTION_PLANNING_TOOLPATH_FOLLOWER_H
-#define RAM_MOTION_PLANNING_TOOLPATH_FOLLOWER_H
+#ifndef RAM_MOTION_PLANNING_BASE_TOOLPATH_PLANNER_H
+#define RAM_MOTION_PLANNING_BASE_TOOLPATH_PLANNER_H
 
 #include <thread>
 #include <rclcpp/rclcpp.hpp>
@@ -37,9 +37,9 @@
 #include <moveit_msgs/msg/planning_scene.hpp>
 
 
-class ToolpathFollower : public rclcpp::Node{
+class BaseToolpathPlanner : public rclcpp::Node{
 public:
-    explicit ToolpathFollower(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+    explicit BaseToolpathPlanner(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
     /***
      * Prints the configuration of the node using the parameters declared
@@ -69,6 +69,20 @@ public:
      * @return
      */
     bool execute_trajectory();
+
+    /***
+     * @brief Uses TF to get the transform between the EE link and the stock material (or held part)
+     * The EE link is taken from moveits EE link `move_group_->getEndEffectorLink()` and the stock frame from the
+     * parameter `part_reference_frame`
+     * @return Transform from end effector to the stock frame
+     */
+    KDL::Frame get_ee_to_stock_transform();
+
+    /***
+     * @brief processes the received toolpath to get the cartesian path required for the end effector
+     * @return boolean for sucess processing the toolpath
+     */
+    bool process_toolpath(std::vector<KDL::Frame> &ee_cartesian_path);
 
     /***
      * Callback for setup service
@@ -105,7 +119,7 @@ public:
     void display_planned_trajectory(std::vector<geometry_msgs::msg::Pose> &poses);
 
 
-private:
+protected:
 
     std::shared_ptr<ToolpathHelper> toolpath_helper_;
     std::shared_ptr<StockHelper> stockHelper_;
@@ -133,4 +147,4 @@ private:
 
 
 
-#endif //RAM_MOTION_PLANNING_TOOLPATH_FOLLOWER_H
+#endif //RAM_MOTION_PLANNING_BASE_TOOLPATH_PLANNER_H

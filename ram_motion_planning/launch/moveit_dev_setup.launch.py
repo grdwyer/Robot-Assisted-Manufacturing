@@ -1,9 +1,19 @@
 import os
 import yaml
-from launch import LaunchDescription
-from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 import xacro
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, ExecuteProcess
+from launch.conditions import IfCondition
+from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution, TextSubstitution
+from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
+
+
+def resolve_path(package_name, file_path):
+    package_path = get_package_share_directory(package_name)
+    absolute_file_path = os.path.join(package_path, file_path)
+    return absolute_file_path
 
 
 def load_file(package_name, file_path):
@@ -27,28 +37,67 @@ def load_yaml(package_name, file_path):
         return None
 
 
-def load_xacro(package_name, file_path):
+def load_xacro(package_name, file_path, mappings):
     package_path = get_package_share_directory(package_name)
     absolute_file_path = os.path.join(package_path, file_path)
-    doc = xacro.process_file(absolute_file_path).toprettyxml(indent='  ')
+    doc = xacro.process_file(absolute_file_path, mappings=mappings).toprettyxml(indent='  ')
     return doc
 
 
 def generate_launch_description():
+    # Adding arguments
+    declared_arguments = []
+    # specific arguments
+    declared_arguments.append(
+        DeclareLaunchArgument("robot_ip", default_value="192.170.10.2",
+                              description="IP address of the kuka KONI")
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument("robot_port", default_value="30200",
+                              description="Port used by the FRI (30200 - 30209")
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument("real_manipulator", default_value="false", description="Type of manipulator to startup (fake/false or real/true)")
+    )
+
+    robot_ip = LaunchConfiguration("robot_ip")
+    robot_port = LaunchConfiguration("robot_port")
+    manipulator = LaunchConfiguration("real_manipulator")
+
+    # print("\n\n\n\n\n\tManipulator set as {}\n\n\n\n".format(TextSubstitution().perform(manipulator)))
+
     # Component yaml files are grouped in separate namespaces
     ######################
     #### Config Files ####
     ######################
-    doc = load_xacro('ram_support', 'urdf/mock_iiwa_workcell.urdf.xacro')
-    robot_description = {'robot_description': doc}
-
-    implant_description_doc = load_xacro('ram_support', 'urdf/implant.urdf.xacro')
+    # doc = load_xacro('ram_support', 'urdf/mock_iiwa_workcell.urdf.xacro', ['hardware:=false'])
+    # robot_description = {'robot_description': doc}
+    robot_description_content = Command(
+        [
+            PathJoinSubstitution([FindExecutable(name="xacro")]),
+            " ",
+            PathJoinSubstitution([FindPackageShare('ram_support'), "urdf", 'mock_iiwa_workcell.urdf.xacro']),
+            " ",
+            "robot_ip:=",
+            robot_ip,
+            " ",
+            " ",
+            "robot_port:=",
+            robot_port,
+            " ",
+            " ",
+            "hardware:=",
+            manipulator,
+            " ",
+        ]
+    )
+    print(robot_description_content)
+    robot_description = {"robot_description": robot_description_content}
 
     robot_description_semantic_config = load_file('ram_moveit_config', 'config/iiwa_workcell.srdf')
     robot_description_semantic = {'robot_description_semantic': robot_description_semantic_config}
 
     kinematics_yaml = load_yaml('ram_moveit_config', 'config/kinematics.yaml')
-    robot_description_kinematics = {'robot_description_kinematics': kinematics_yaml}
 
     # Planning Functionality
     ompl_planning_pipeline_config = {'move_group': {
@@ -112,18 +161,34 @@ def generate_launch_description():
                                  parameters=[robot_description])
     nodes.append(robot_state_publisher)
 
-    # Fake joint driver
-    iiwa_fake_joint_driver_node = Node(package='fake_joint_driver',
-                                       executable='fake_joint_driver_node',
-                                       parameters=[{'controller_name': 'iiwa_arm_controller'},
-                                                   os.path.join(get_package_share_directory("ram_moveit_config"),
-                                                                "config", "fake_controller_setup.yaml"),
-                                                   os.path.join(get_package_share_directory("ram_moveit_config"),
-                                                                "config", "start_positions.yaml"),
-                                                   robot_description],
-                                       output="screen"
-                                       )
-    nodes.append(iiwa_fake_joint_driver_node)
+    # Iiwa settings
+    iiwa_controller = os.path.join(
+        get_package_share_directory('ram_moveit_config'),
+        'config',
+        'ros_controllers.yaml'
+    )
+    ros2_control_node = Node(
+        package='controller_manager',
+        executable='ros2_control_node',
+        parameters=[robot_description, iiwa_controller],
+        prefix=['nice -n -20 '],
+        output={
+            'stdout': 'screen',
+            'stderr': 'screen',
+        }
+    )
+    nodes.append(ros2_control_node)
+
+    load_controllers = []
+    for controller in ["iiwa_arm_controller", "joint_state_controller", "gripper_forward_command_controller_position"]:
+        load_controllers += [
+            ExecuteProcess(
+                cmd=["ros2 run controller_manager spawner.py {}".format(controller)],
+                shell=True,
+                output="screen",
+            )
+        ]
+    nodes += load_controllers
 
     # Gripper control
     sim_gripper_controller = Node(package="ram_gripper_control",
@@ -151,4 +216,4 @@ def generate_launch_description():
                             )
     nodes.append(toolpath_handler)
 
-    return LaunchDescription(nodes)
+    return LaunchDescription(declared_arguments + nodes)

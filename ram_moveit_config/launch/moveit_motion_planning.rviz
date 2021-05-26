@@ -7,13 +7,14 @@ Panels:
         - /Global Options1
         - /Status1
         - /MotionPlanning1
+        - /MotionPlanning1/Status1
         - /MotionPlanning1/Planning Request1
         - /TF1
         - /TF1/Frames1
         - /Marker1
         - /Marker1/Topic1
       Splitter Ratio: 0.5
-    Tree Height: 523
+    Tree Height: 372
   - Class: rviz_common/Selection
     Name: Selection
   - Class: rviz_common/Tool Properties
@@ -48,7 +49,7 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
-    - Acceleration_Scaling_Factor: 1
+    - Acceleration_Scaling_Factor: 0.5000000000000001
       Class: moveit_rviz_plugin/MotionPlanning
       Enabled: true
       Move Group Namespace: ""
@@ -86,11 +87,32 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          cutting_plate_base:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          cutting_tool:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           cutting_tool_base:
             Alpha: 1
             Show Axes: false
             Show Trail: false
           cutting_tool_tip:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          gripper_jaw_centre:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          gripper_jaw_left:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          gripper_jaw_right:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -218,7 +240,7 @@ Visualization Manager:
         Interactive Marker Size: 0.3499999940395355
         Joint Violation Color: 255; 0; 255
         Planning Group: iiwa
-        Query Goal State: false
+        Query Goal State: true
         Query Start State: false
         Show Workspace: false
         Start State Alpha: 1
@@ -245,11 +267,32 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          cutting_plate_base:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          cutting_tool:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           cutting_tool_base:
             Alpha: 1
             Show Axes: false
             Show Trail: false
           cutting_tool_tip:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          gripper_jaw_centre:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          gripper_jaw_left:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          gripper_jaw_right:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -358,7 +401,7 @@ Visualization Manager:
         Show Robot Collision: false
         Show Robot Visual: true
       Value: true
-      Velocity_Scaling_Factor: 1
+      Velocity_Scaling_Factor: 0.20000000000000015
     - Class: rviz_default_plugins/TF
       Enabled: true
       Frame Timeout: 15
@@ -366,9 +409,19 @@ Visualization Manager:
         All Enabled: false
         cutting_plate:
           Value: false
+        cutting_plate_base:
+          Value: true
+        cutting_tool:
+          Value: true
         cutting_tool_base:
           Value: true
         cutting_tool_tip:
+          Value: true
+        gripper_jaw_centre:
+          Value: true
+        gripper_jaw_left:
+          Value: true
+        gripper_jaw_right:
           Value: true
         gripper_link_left:
           Value: false
@@ -379,18 +432,6 @@ Visualization Manager:
         home_a_implant:
           Value: false
         iiwa_link_0:
-          Value: false
-        iiwa_link_1:
-          Value: false
-        iiwa_link_2:
-          Value: false
-        iiwa_link_3:
-          Value: false
-        iiwa_link_4:
-          Value: false
-        iiwa_link_5:
-          Value: false
-        iiwa_link_6:
           Value: false
         iiwa_link_7:
           Value: false
@@ -432,24 +473,15 @@ Visualization Manager:
                 iiwa_mounting_plate:
                   iiwa_mounting_plate_centre_top_surface:
                     iiwa_link_0:
-                      iiwa_link_1:
-                        iiwa_link_2:
-                          iiwa_link_3:
-                            iiwa_link_4:
-                              iiwa_link_5:
-                                iiwa_link_6:
-                                  iiwa_link_7:
-                                    iiwa_link_ee:
-                                      gripper_link_main_body:
-                                        gripper_link_left:
-                                          {}
-                                        gripper_link_right:
-                                          {}
+                      {}
             optical_table_front_right_bolt:
               cutting_plate:
-                cutting_tool_base:
-                  cutting_tool_tip:
-                    {}
+                cutting_plate_base:
+                  cutting_tool:
+                    cutting_tool_base:
+                      {}
+                    cutting_tool_tip:
+                      {}
       Update Interval: 0
       Value: true
     - Class: rviz_default_plugins/Marker
@@ -507,43 +539,43 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/ThirdPersonFollower
-      Distance: 0.8984420299530029
+      Distance: 2.6409366130828857
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.13768833875656128
-        Y: 0.9608386754989624
-        Z: 0
+        X: -0.21429044008255005
+        Y: 0.11842811107635498
+        Z: -1.1920928955078125e-07
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5203975439071655
+      Pitch: 0.6553974151611328
       Target Frame: <Fixed Frame>
       Value: ThirdPersonFollower (rviz_default_plugins)
-      Yaw: 4.106767654418945
+      Yaw: 3.4867677688598633
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1376
+  Height: 1043
   Hide Left Dock: false
   Hide Right Dock: true
   MotionPlanning:
     collapsed: false
   MotionPlanning - Trajectory Slider:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000001ca0000050afc020000000cfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003b00000246000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000003c005400720061006a006500630074006f007200790020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000000000000000fb000000280020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000000000000000fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000003f00fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e00670100000287000002be0000016900ffffff000000010000010f0000050afc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003b0000050a000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004420000003efc0100000002fb0000000800540069006d00650100000000000004420000000000000000fb0000000800540069006d00650100000000000004500000000000000000000002ea0000050a00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000001ca000003bdfc020000000cfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003b000001af000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000003c005400720061006a006500630074006f007200790020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000000000000000fb000000280020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000000000000000fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000003f00fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e006701000001f0000002080000017400ffffff000000010000010f0000050afc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003b0000050a000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004420000003efc0100000002fb0000000800540069006d00650100000000000004420000000000000000fb0000000800540069006d00650100000000000004500000000000000000000005b0000003bd00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Tool Properties:
     collapsed: false
   Views:
     collapsed: true
-  Width: 1210
-  X: 2230
-  Y: 27
+  Width: 1920
+  X: 1920
+  Y: 0

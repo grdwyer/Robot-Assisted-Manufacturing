@@ -12,13 +12,22 @@ Current packages:
 * ram_tooling_support - assistance nodes for handling (currently) toolpaths and stock material
 
 ## Running the system
-This launches RVIZ, move_group node, sim iiwa controller, sim gripper controller, toolpath handler and stock handler.  
+This launches RVIZ, move_group node, sim iiwa controller, sim gripper controller, toolpath handler and stock handler.
+Now includes some arguments that can be set (just for the ros control side at the moment)
+
+Default (fake controller)
 ```
 ros2 launch ram_motion_planning moveit_dev_setup.launch.py 
 ```
-This launches the moveit movegroup interface for fully constrained toolpaths (6DoF) quite simple at the moment.  
+
+Real kuka
 ```
-ros2 launch ram_motion_planning toolpath_follower.launch.py  
+ros2 launch ram_motion_planning moveit_dev_setup.launch.py real_manipulator:=true robot_port:=30200 robot_ip:=192.170.10.2
+```
+
+This launches the moveit movegroup interface for fully constrained toolpaths (6DoF) quite simple at the moment.
+```
+ros2 launch ram_motion_planning toolpath_planner.launch.py  
 ```
 When both launch files are running (wait for rviz to load), these service calls can be used
 toolpath_setup will:
@@ -29,8 +38,8 @@ toolpath_setup will:
 
 toolpath execute will send the toolpath trajectory to the robot controller
 ```
-ros2 service call /toolpath_follower/toolpath_setup std_srvs/srv/Trigger {}  
-ros2 service call /toolpath_follower/toolpath_execute std_srvs/srv/Trigger {}  
+ros2 service call /toolpath_planner/toolpath_setup std_srvs/srv/Trigger {}  
+ros2 service call /toolpath_planner/toolpath_execute std_srvs/srv/Trigger {}  
 ```
 
 ## Docker
@@ -45,7 +54,7 @@ docker run -it \
     --group-add sudo \
     --env="DISPLAY" \
     --env=QT_X11_NO_MITSHM=1 \
-    --workdir="/dev_ws/src" \
+    --workdir="/dev_ws" \
     --volume="/home/$USER:/home/$USER" \
     --volume="/etc/group:/etc/group:ro" \
     --volume="/etc/passwd:/etc/passwd:ro" \

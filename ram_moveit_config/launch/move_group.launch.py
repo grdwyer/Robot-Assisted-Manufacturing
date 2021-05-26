@@ -105,25 +105,30 @@ def generate_launch_description():
     nodes.append(rviz_node)
 
     # Publish TF
-    robot_state_publisher = Node(package='robot_state_publisher',
-                                 executable='robot_state_publisher',
-                                 name='robot_state_publisher',
-                                 output='both',
-                                 parameters=[robot_description])
-    nodes.append(robot_state_publisher)
 
     # Fake joint driver
-    iiwa_fake_joint_driver_node = Node(package='fake_joint_driver',
-                                       executable='fake_joint_driver_node',
-                                       parameters=[{'controller_name': 'iiwa_arm_controller'},
-                                                   os.path.join(get_package_share_directory("ram_moveit_config"),
-                                                                "config", "fake_controller_setup.yaml"),
-                                                   os.path.join(get_package_share_directory("ram_moveit_config"),
-                                                                "config", "start_positions.yaml"),
-                                                   robot_description],
-                                       output="screen"
-                                       )
-    nodes.append(iiwa_fake_joint_driver_node)
+    run_type = "sim"
+    # run_type = "real"
+
+    if run_type == "sim":
+        robot_state_publisher = Node(package='robot_state_publisher',
+                                     executable='robot_state_publisher',
+                                     name='robot_state_publisher',
+                                     output='both',
+                                     parameters=[robot_description])
+        nodes.append(robot_state_publisher)
+
+        iiwa_fake_joint_driver_node = Node(package='fake_joint_driver',
+                                           executable='fake_joint_driver_node',
+                                           parameters=[{'controller_name': 'iiwa_arm_controller'},
+                                                       os.path.join(get_package_share_directory("ram_moveit_config"),
+                                                                    "config", "fake_controller_setup.yaml"),
+                                                       os.path.join(get_package_share_directory("ram_moveit_config"),
+                                                                    "config", "start_positions.yaml"),
+                                                       robot_description],
+                                           output="screen"
+                                           )
+        nodes.append(iiwa_fake_joint_driver_node)
 
     sim_gripper_controller = Node(package="ram_gripper_control",
                                   executable="sim_gripper_controller",

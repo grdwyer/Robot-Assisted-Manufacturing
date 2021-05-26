@@ -44,7 +44,7 @@ class ToolPathHandler(Node):
         self.declare_parameter("toolpath_frame", "implant")
 
         # Toolpath file
-        default_path = os.path.join(get_package_share_directory("ram_tooling_support"), "config/test_toolpath.yaml")
+        default_path = os.path.join(get_package_share_directory("ram_tooling_support"), "config/test_toolpath_straight_x.yaml")
         self.declare_parameter("toolpath_file", default_path)
         self.toolpath_config = None
         self.toolpath_msg = Polygon()

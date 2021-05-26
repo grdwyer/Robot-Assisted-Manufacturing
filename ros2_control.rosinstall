@@ -1,0 +1,7 @@
+- git: {local-name: ros2_control, uri: 'https://github.com/ros-controls/ros2_control.git', version: master}
+- git: {local-name: ros2_controllers, uri: 'https://github.com/ros-controls/ros2_controllers.git', version: master}
+- git: {local-name: control_msgs, uri: 'https://github.com/ros-controls/control_msgs.git', version: foxy-devel}
+- git: {local-name: realtime_tools, uri: 'https://github.com/ros-controls/realtime_tools.git', version: foxy-devel}
+- git: {local-name: srdfdom, uri: 'https://github.com/ros-planning/srdfdom.git', version: ros2}
+- git: {local-name: rcl_interfaces, uri: 'https://github.com/ros2/rcl_interfaces.git', version: foxy}
+- git: {local-name: test_interface_files, uri: 'https://github.com/ros2/test_interface_files.git', version: foxy}

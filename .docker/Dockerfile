@@ -85,18 +85,23 @@ RUN pip3 install -U \
     pytest \
     pyassimp==4.1.3
 
+# copy packages across
+RUN mkdir -p /dev_ws/src/ram
+COPY . /dev_ws/src/ram/
+
 # Moveit 2 build process
 RUN mkdir -p /moveit_ws/src
 WORKDIR /moveit_ws/src
 RUN ["/bin/bash", "-c", "source /opt/ros/foxy/setup.bash &&\
     git clone https://github.com/ros-planning/moveit2.git -b main &&\
     vcs-import < moveit2/moveit2.repos || true && \
+    vcs-import < /dev_ws/src/ram/ros2_control.rosinstall || true && \
     apt update && \
     rosdep install -r --from-paths . --ignore-src --rosdistro foxy -y"]
 
 WORKDIR /moveit_ws
 RUN ["/bin/bash", "-c", "source /opt/ros/foxy/setup.bash &&\
-    colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release"]
+    colcon build --executor sequential --cmake-args -DCMAKE_BUILD_TYPE=Release"]
 
 RUN mkdir -p /dev_ws/src/ram
 COPY . /dev_ws/src/ram/
