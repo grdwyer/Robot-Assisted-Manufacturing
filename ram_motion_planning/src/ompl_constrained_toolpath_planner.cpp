@@ -95,12 +95,14 @@ bool OMPLToolpathPlanner::construct_plan_request() {
 
     for(auto &  desired_pose : waypoints){
         if(separated_plans.empty()){
-            RCLCPP_DEBUG_STREAM(LOGGER, "First point in toolpath loaded, taking current state as start");
+            RCLCPP_INFO_STREAM(LOGGER, "First point in toolpath loaded, taking current state as start\nState monitor: " << state_monitor_->isActive(););
             state_monitor_->waitForCurrentState();
+
             auto state_time = state_monitor_->getCurrentStateTime();
             auto time_now = this->get_clock()->now();
             RCLCPP_INFO_STREAM(LOGGER, "Difference between state and current time: " << (time_now - state_time).seconds());
             start_state = state_monitor_->getCurrentState();
+//            start_state = move_group_->getCurrentState(5);
             start_pose = approach_pose;
         }
         else{
@@ -119,13 +121,14 @@ bool OMPLToolpathPlanner::construct_plan_request() {
             move_group_->clearPathConstraints();
             return false;
         }
-        RCLCPP_INFO_STREAM(LOGGER, "Each section has been planned successfully will now merge the plans");
-        auto combined_plans = separated_plans.front();
-        separated_plans.erase(separated_plans.begin());
-        for(auto & plan : separated_plans){
-            append_plans(combined_plans, plan);
-        }
     }
+    RCLCPP_INFO_STREAM(LOGGER, "Each section has been planned successfully will now merge the plans");
+    auto combined_plans = separated_plans.front();
+    separated_plans.erase(separated_plans.begin());
+    for(auto & plan : separated_plans){
+        append_plans(combined_plans, plan);
+    }
+    return true;
 }
 
 bool OMPLToolpathPlanner::plan_between_points(const moveit::core::RobotStatePtr& start_state,
