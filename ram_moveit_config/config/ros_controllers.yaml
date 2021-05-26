@@ -2,7 +2,10 @@ controller_manager:
   ros__parameters:
     update_rate: 500  # Hz
 
-    forward_command_controller_position:
+    iiwa_forward_command_controller_position:
+      type: forward_command_controller/ForwardCommandController
+
+    gripper_forward_command_controller_position:
       type: forward_command_controller/ForwardCommandController
 
     joint_state_controller:
@@ -18,6 +21,11 @@ joint_state_controller:
 
 iiwa_arm_controller:
   ros__parameters:
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
     joints:
       - iiwa_joint_1
       - iiwa_joint_2
@@ -33,8 +41,14 @@ iiwa_arm_controller:
       stopped_velocity_tolerance: 0.0
       goal_time: 0.0
 
-forward_command_controller_position:
+iiwa_forward_command_controller_position:
   ros__parameters:
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+      - effort
     joints:
       - iiwa_joint_1
       - iiwa_joint_2
@@ -43,4 +57,15 @@ forward_command_controller_position:
       - iiwa_joint_5
       - iiwa_joint_6
       - iiwa_joint_7
+    interface_name: position
+
+gripper_forward_command_controller_position:
+  ros__parameters:
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+    joints:
+      - gripper_joint_right
+      - gripper_joint_left
     interface_name: position

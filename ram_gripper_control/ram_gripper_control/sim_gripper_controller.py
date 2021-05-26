@@ -5,6 +5,7 @@ import tf2_ros
 from tf2_ros import TransformBroadcaster, TransformListener, Buffer
 from geometry_msgs.msg import TransformStamped, Transform
 from sensor_msgs.msg import JointState
+from std_msgs.msg import Float64MultiArray, MultiArrayDimension
 from rclpy.action import ActionClient
 import builtin_interfaces
 import std_srvs.srv
@@ -32,11 +33,13 @@ class SimGripperController(Node):
         self.publisher_implant_transform = self.create_publisher(TransformStamped, "implant_transform", 10)
 
         # publisher for gripper joints
-        self.publisher_joint_state = self.create_publisher(JointState, "joint_states", 10)
+        # self.publisher_joint_state = self.create_publisher(JointState, "joint_states", 10)
+        self.publisher_joint_state = self.create_publisher(Float64MultiArray,
+                                                           "gripper_forward_command_controller_position/commands", 10)
 
         self.gripper_open = True
 
-        self.timer_joint_states = self.create_timer(1/30.0, self.callback_gripper_joint_state)
+        # self.timer_joint_states = self.create_timer(1/30.0, self.callback_gripper_joint_state)
         self.get_logger().info("Sim Gripper Controller started up")
 
     def callback_gripper_joint_state(self):
@@ -53,6 +56,16 @@ class SimGripperController(Node):
 
         self.publisher_joint_state.publish(js)
 
+    def send_joint_command(self, position):
+        msg = Float64MultiArray()
+        dim = MultiArrayDimension()
+        dim.size = 2
+        dim.stride = 1
+        msg.layout.dim.append(dim)
+        msg.data.append(position)
+        msg.data.append(position)
+        self.publisher_joint_state.publish(msg)
+
     def callback_open(self, request, response):
         """
         Service callback to open the gripper
@@ -63,6 +76,7 @@ class SimGripperController(Node):
         :return: acknowledgement it was processed (not successful)
         """
         self.get_logger().info("request to open gripper received")
+        self.send_joint_command(0.004)
         self.gripper_open = True
         response.success = True
         return response
@@ -77,6 +91,7 @@ class SimGripperController(Node):
         :return: acknowledgement it was processed (not successful)
         """
         self.get_logger().info("request to close gripper received")
+        self.send_joint_command(0.00)
         self.gripper_open = False
         response.success = True
         return response
