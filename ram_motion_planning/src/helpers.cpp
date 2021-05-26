@@ -4,8 +4,6 @@
 
 #include <ram_motion_planning/helpers.h>
 
-
-
 ToolpathHelper::ToolpathHelper(rclcpp::Node::SharedPtr node) {
     node_ = std::move(node);
     client_get_toolpath_ = node_->create_client<ram_interfaces::srv::GetToolpath>("/toolpath_handler/get_toolpath");

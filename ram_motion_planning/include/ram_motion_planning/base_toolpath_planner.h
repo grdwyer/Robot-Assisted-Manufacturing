@@ -57,7 +57,7 @@ public:
      * @brief formulates the toolpath into a motion planning request for moveit
      * @return
      */
-    bool construct_plan_request();
+    virtual bool construct_plan_request();
 
     /***
      * Helper function to move to the initial position and load the stock material
@@ -93,7 +93,7 @@ public:
      * @param request
      * @param response
      */
-    void callback_setup(std_srvs::srv::Trigger::Request::SharedPtr request,
+    virtual void callback_setup(std_srvs::srv::Trigger::Request::SharedPtr request,
                         std_srvs::srv::Trigger::Response::SharedPtr response);
 
     /***
@@ -101,7 +101,7 @@ public:
      * @param request
      * @param response
      */
-    void callback_execute(std_srvs::srv::Trigger::Request::SharedPtr request,
+    virtual void callback_execute(std_srvs::srv::Trigger::Request::SharedPtr request,
                           std_srvs::srv::Trigger::Response::SharedPtr response);
 
 
@@ -129,7 +129,7 @@ protected:
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_execute_;
 
     ram_interfaces::msg::Toolpath toolpath_;
-    std::unique_ptr<moveit::planning_interface::MoveGroupInterface> move_group_;
+    std::shared_ptr<moveit::planning_interface::MoveGroupInterface> move_group_;
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
     moveit_msgs::msg::RobotTrajectory trajectory_toolpath_;
 

@@ -16,7 +16,7 @@ BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): N
 
     // Initialise
     auto move_group_node = this->create_sub_node("");
-    move_group_ = std::make_unique<moveit::planning_interface::MoveGroupInterface>(move_group_node,
+    move_group_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(move_group_node,
             this->get_parameter("moveit_planning_group").as_string());
 
     move_group_->setMaxVelocityScalingFactor(0.1);
@@ -128,8 +128,9 @@ bool BaseToolpathPlanner::construct_plan_request() {
     const double eef_step = 0.001;
     double fraction = move_group_->computeCartesianPath(waypoints, eef_step, jump_threshold, trajectory_toolpath_);
     RCLCPP_INFO(LOGGER, "Visualizing Cartesian path (%.2f%% acheived)", fraction * 100.0);
+    auto state = move_group_->getCurrentState(1.0);
     return fraction > 0.99;
-}
+    }
 
 bool BaseToolpathPlanner::follow_waypoints_sequentially(std::vector<geometry_msgs::msg::Pose> &waypoints) {
     for(const auto &pose : waypoints){
@@ -165,14 +166,15 @@ void BaseToolpathPlanner::display_planned_trajectory(std::vector<geometry_msgs::
 }
 
 bool BaseToolpathPlanner::move_to_setup() {
-    move_group_->setPoseReferenceFrame("cutting_tool_tip");
-    move_group_->setEndEffectorLink("gripper_jaw_centre");
+    move_group_->setPoseReferenceFrame(this->get_parameter("tool_reference_frame").as_string());
+    move_group_->setEndEffectorLink(this->get_parameter("end_effector_reference_frame").as_string());
 
     // Flip the pose about the x axis to have the gripper upside down
     geometry_msgs::msg::Pose pose;
     pose.orientation.x = 1.0;
     pose.orientation.w = 6e-17;
     pose.position.x = -0.04;
+    pose.position.z = 0.01;
     move_group_->setPoseTarget(pose);
 
     // TODO: remove this, it will be handled by the manager

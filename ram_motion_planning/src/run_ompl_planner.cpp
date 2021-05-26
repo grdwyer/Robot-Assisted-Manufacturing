@@ -11,7 +11,7 @@ int main(int argc, char** argv)
 
     auto toolpath_follower = std::make_shared<OMPLToolpathPlanner>(node_options);
 
-    rclcpp::executors::SingleThreadedExecutor executor;
+    rclcpp::executors::MultiThreadedExecutor executor(rclcpp::ExecutorOptions(), 3);
     executor.add_node(toolpath_follower);
     executor.spin();
     rclcpp::shutdown();
