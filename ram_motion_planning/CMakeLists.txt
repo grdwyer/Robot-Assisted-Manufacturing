@@ -71,11 +71,18 @@ ament_target_dependencies(ompl_toolpath_planner
         Boost
         )
 
+add_executable(ompl_demo src/ompl_demo.cpp)
+
+ament_target_dependencies(ompl_demo
+        moveit_ros_planning_interface
+        Boost
+        )
 
 install(TARGETS
         example_program
         base_toolpath_planner
         ompl_toolpath_planner
+        ompl_demo
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
