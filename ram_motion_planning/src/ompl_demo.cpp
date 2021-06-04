@@ -39,7 +39,7 @@ public:
         move_group_->setStartStateToCurrentState();
         geometry_msgs::msg::Pose goal;
         goal.position.x = 0.307;
-        goal.position.y = 0;
+        goal.position.y = 0.25;
         goal.position.z = 0.59;
 
         goal.orientation.x = 1;
@@ -60,8 +60,27 @@ public:
 
 //        const moveit_msgs::msg::RobotState start_state = createRobotState("ready");
         auto start_state = move_group_->getCurrentState();
-        const geometry_msgs::msg::PoseStamped pose_goal = createPoseGoal(0.0, 0.3, -0.3);
-        const moveit_msgs::msg::PositionConstraint pcm = createBoxConstraint();
+        const geometry_msgs::msg::PoseStamped pose_goal = createPoseGoal(0.0, 0.3, 0);
+        moveit_msgs::msg::PositionConstraint pcm;
+
+        pcm.header.frame_id = ref_link_;
+        pcm.link_name = ee_link_;
+        pcm.weight = 1.0;
+
+        shape_msgs::msg::SolidPrimitive cbox;
+        cbox.type = shape_msgs::msg::SolidPrimitive::BOX;
+        cbox.dimensions = { 0.1, 0.4, 0.1 };
+        pcm.constraint_region.primitives.emplace_back(cbox);
+
+        geometry_msgs::msg::PoseStamped pose = move_group_->getCurrentPose();
+
+        geometry_msgs::msg::Pose cbox_pose;
+        cbox_pose.position.x = pose.pose.position.x;
+        cbox_pose.position.y = 0.4;
+        cbox_pose.position.z = 0.6;
+        pcm.constraint_region.primitive_poses.emplace_back(cbox_pose);
+
+        displayBox(cbox_pose, cbox.dimensions);
 
         moveit_msgs::msg::Constraints path_constraints;
         path_constraints.name = "box constraints";
@@ -152,8 +171,37 @@ public:
         move_group_->clearPathConstraints();
 
         auto start_state = move_group_->getCurrentState();
-        const geometry_msgs::msg::PoseStamped pose_goal = createPoseGoal(0.0, 0.0, -0.3);
-        const moveit_msgs::msg::PositionConstraint pcm = createLineConstraint();
+        const geometry_msgs::msg::PoseStamped pose_goal = createPoseGoal(0.0, 0.0, -0.1);
+
+        moveit_msgs::msg::PositionConstraint pcm;
+        pcm.header.frame_id = ref_link_;
+        pcm.link_name = ee_link_;
+        pcm.weight = 1.0;
+
+        shape_msgs::msg::SolidPrimitive cbox;
+        cbox.type = shape_msgs::msg::SolidPrimitive::BOX;
+
+        // For equality constraint set box dimension to: 1e-3 > 0.0005 > 1e-4
+        cbox.dimensions = { 0.0005, 0.0005, 1.0 };
+        pcm.constraint_region.primitives.emplace_back(cbox);
+
+        geometry_msgs::msg::PoseStamped pose = move_group_->getCurrentPose();
+
+        geometry_msgs::msg::Pose cbox_pose;
+        cbox_pose.position = pose.pose.position;
+
+        // turn the constraint region 45 degrees around the x-axis
+        tf2::Quaternion quat;
+        quat.setRPY(0.0, 0.0, 0.0);
+
+        cbox_pose.orientation.x = quat.x();
+        cbox_pose.orientation.y = quat.y();
+        cbox_pose.orientation.z = quat.z();
+        cbox_pose.orientation.w = quat.w();
+
+        pcm.constraint_region.primitive_poses.emplace_back(cbox_pose);
+
+        displayBox(cbox_pose, cbox.dimensions);
 
         moveit_msgs::msg::Constraints path_constraints;
 
@@ -262,7 +310,7 @@ private:
 
         geometry_msgs::msg::Pose cbox_pose;
         cbox_pose.position.x = pose.pose.position.x;
-        cbox_pose.position.y = 0.15;
+        cbox_pose.position.y = 0.4;
         cbox_pose.position.z = 0.45;
         pcm.constraint_region.primitive_poses.emplace_back(cbox_pose);
 
@@ -496,29 +544,31 @@ int main(int argc, char** argv)
         constrained_planning.deleteAllMarkers();
 
         constrained_planning.moveToStart();
-
-        // 2. Equality Constraints
-        // If you make a box really thin along one dimension, you get something plane like.
-        // When solving the problem, you can tell the planner to model this really thin box as an equality constraint.
-        // This is achieved by setting the name of the constraint to :code:`"use_equality_constraints"`.
-        // In addition, any dimension of the box below a treshold of :code:`0.001` will be considered an equality
-        // constraint. However, if we make it too small, the box will be thinner that the tolerance used by OMPL to evaluate
-        // constraints (:code:`1e-4` by default). MoveIt will use the stricter tolerance (the box width) to check the
-        // constraints, and many states will appear invalid. That's where the number :code:`0.0005` comes from, it is
-        // between :code:`0.00001` and :code:`0.001`.
-        constrained_planning.planPlaneConstraints();
+        constrained_planning.planLineConstraints();
         constrained_planning.deleteAllMarkers();
 
-        constrained_planning.moveToStart();
-
-        // 3. Orientation Constraints
-        constrained_planning.planOrientationConstraints();
-        constrained_planning.deleteAllMarkers();
+//        constrained_planning.moveToStart();
+//
+//        // 2. Equality Constraints
+//        // If you make a box really thin along one dimension, you get something plane like.
+//        // When solving the problem, you can tell the planner to model this really thin box as an equality constraint.
+//        // This is achieved by setting the name of the constraint to :code:`"use_equality_constraints"`.
+//        // In addition, any dimension of the box below a treshold of :code:`0.001` will be considered an equality
+//        // constraint. However, if we make it too small, the box will be thinner that the tolerance used by OMPL to evaluate
+//        // constraints (:code:`1e-4` by default). MoveIt will use the stricter tolerance (the box width) to check the
+//        // constraints, and many states will appear invalid. That's where the number :code:`0.0005` comes from, it is
+//        // between :code:`0.00001` and :code:`0.001`.
+//        constrained_planning.planPlaneConstraints();
+//        constrained_planning.deleteAllMarkers();
+//
+//        constrained_planning.moveToStart();
+//
+//        // 3. Orientation Constraints
+//        constrained_planning.planOrientationConstraints();
+//        constrained_planning.deleteAllMarkers();
 
         // Additional examples with line constraints and obstacles
-        constrained_planning.moveToStart();
-         constrained_planning.planLineConstraints();
-        constrained_planning.deleteAllMarkers();
+
 
 //        constrained_planning.moveToStart();
 //         constrained_planning.planVerticlePlaneConstraints();

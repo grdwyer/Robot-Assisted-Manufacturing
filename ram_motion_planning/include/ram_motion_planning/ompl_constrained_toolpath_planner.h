@@ -18,6 +18,8 @@ public:
     bool plan_between_points(const moveit::core::RobotStatePtr& start_state, geometry_msgs::msg::Pose& start, geometry_msgs::msg::Pose& end, moveit::planning_interface::MoveGroupInterface::Plan& plan);
     bool append_plans(moveit::planning_interface::MoveGroupInterface::Plan& first, moveit::planning_interface::MoveGroupInterface::Plan& second);
     void display_line(const geometry_msgs::msg::Pose& pose, const rosidl_runtime_cpp::BoundedVector<double, 3, std::allocator<double>>& dimensions);
+    void display_sphere(const geometry_msgs::msg::Pose& pose, const std::string& color, int id);
+    void delete_markers();
     moveit_msgs::msg::RobotState get_end_state_from_plan(moveit::planning_interface::MoveGroupInterface::Plan& plan);
 
 protected:

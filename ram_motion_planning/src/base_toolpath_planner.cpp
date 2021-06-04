@@ -20,6 +20,7 @@ BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): N
             this->get_parameter("moveit_planning_group").as_string());
 
     move_group_->setMaxVelocityScalingFactor(0.1);
+    move_group_->setMaxAccelerationScalingFactor(1.0);
     move_group_->setPlanningTime(30.0);
     move_group_->setNumPlanningAttempts(5);
 
@@ -275,7 +276,7 @@ bool BaseToolpathPlanner::process_toolpath(std::vector<KDL::Frame> &ee_cartesian
         tf_trans.header.frame_id = move_group_->getEndEffectorLink();
         tf_trans.header.stamp = this->get_clock()->now();
         tf_trans.child_frame_id = "ee_toolpath_point";
-        broadcaster.sendTransform(tf_trans);
+//        broadcaster.sendTransform(tf_trans);
         rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
     }
 
@@ -294,14 +295,14 @@ bool BaseToolpathPlanner::process_toolpath(std::vector<KDL::Frame> &ee_cartesian
         tf_trans.header.frame_id = move_group_->getEndEffectorLink();
         tf_trans.header.stamp = this->get_clock()->now();
         tf_trans.child_frame_id = "ee_toolpath_point";
-        broadcaster.sendTransform(tf_trans);
+//        broadcaster.sendTransform(tf_trans);
 
         //Frame part to tool
         tf_trans = tf2::kdlToTransform(tool_pose.Inverse());
         tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
         tf_trans.header.stamp = this->get_clock()->now();
         tf_trans.child_frame_id = "planned_ee_pose";
-        broadcaster.sendTransform(tf_trans);
+//        broadcaster.sendTransform(tf_trans);
         rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
 
         ee_cartesian_path.push_back(tool_pose.Inverse());

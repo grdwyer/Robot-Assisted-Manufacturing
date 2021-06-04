@@ -14,12 +14,12 @@ OMPLToolpathPlanner::OMPLToolpathPlanner(const rclcpp::NodeOptions & options) : 
                                                                     std::bind(&OMPLToolpathPlanner::callback_execute, this, std::placeholders::_1, std::placeholders::_2));
 
     move_group_->startStateMonitor(5.0);
-    auto sub_node = this->create_sub_node("state");
-    state_monitor_ = std::make_shared<planning_scene_monitor::CurrentStateMonitor>(sub_node, move_group_->getRobotModel(), std::shared_ptr<tf2_ros::Buffer>());
-    state_monitor_->startStateMonitor("/joint_states");
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-    auto state = state_monitor_->getCurrentState();
-    state->printStateInfo();
+//    auto sub_node = this->create_sub_node("state");
+//    state_monitor_ = std::make_shared<planning_scene_monitor::CurrentStateMonitor>(sub_node, move_group_->getRobotModel(), std::shared_ptr<tf2_ros::Buffer>());
+//    state_monitor_->startStateMonitor("/joint_states");
+//    std::this_thread::sleep_for(std::chrono::seconds(2));
+//    auto state = state_monitor_->getCurrentState();
+//    state->printStateInfo();
 //    state->printStatePositions();
 }
 
@@ -95,14 +95,15 @@ bool OMPLToolpathPlanner::construct_plan_request() {
 
     for(auto &  desired_pose : waypoints){
         if(separated_plans.empty()){
-            RCLCPP_INFO_STREAM(LOGGER, "First point in toolpath loaded, taking current state as start\nState monitor: " << state_monitor_->isActive(););
-            state_monitor_->waitForCurrentState();
-
-            auto state_time = state_monitor_->getCurrentStateTime();
-            auto time_now = this->get_clock()->now();
-            RCLCPP_INFO_STREAM(LOGGER, "Difference between state and current time: " << (time_now - state_time).seconds());
-            start_state = state_monitor_->getCurrentState();
-//            start_state = move_group_->getCurrentState(5);
+//            RCLCPP_INFO_STREAM(LOGGER, "First point in toolpath loaded, taking current state as start\nState monitor: " << state_monitor_->isActive(););
+            RCLCPP_INFO_STREAM(LOGGER, "First point in toolpath loaded, taking current state as start");
+//            state_monitor_->waitForCurrentState();
+//
+//            auto state_time = state_monitor_->getCurrentStateTime();
+//            auto time_now = this->get_clock()->now();
+//            RCLCPP_INFO_STREAM(LOGGER, "Difference between state and current time: " << (time_now - state_time).seconds());
+//            start_state = state_monitor_->getCurrentState();
+            start_state = move_group_->getCurrentState(5);
             start_pose = approach_pose;
         }
         else{
@@ -128,6 +129,8 @@ bool OMPLToolpathPlanner::construct_plan_request() {
     for(auto & plan : separated_plans){
         append_plans(combined_plans, plan);
     }
+    trajectory_toolpath_ = combined_plans.trajectory_;
+    delete_markers();
     return true;
 }
 
@@ -135,6 +138,10 @@ bool OMPLToolpathPlanner::plan_between_points(const moveit::core::RobotStatePtr&
                                               geometry_msgs::msg::Pose& start,
                                               geometry_msgs::msg::Pose &end,
                                               moveit::planning_interface::MoveGroupInterface::Plan &plan) {
+    delete_markers();
+    display_sphere(start, "green", 2);
+    display_sphere(end, "red", 3);
+
     move_group_->clearPoseTargets();
     move_group_->clearPathConstraints();
 
@@ -146,14 +153,12 @@ bool OMPLToolpathPlanner::plan_between_points(const moveit::core::RobotStatePtr&
 
     shape_msgs::msg::SolidPrimitive cbox;
     cbox.type = shape_msgs::msg::SolidPrimitive::BOX;
-
-    // For equality constraint set box dimension to: 1e-3 > 0.0005 > 1e-4
-    cbox.dimensions = { 0.1, 0.0005, 0.0005 };
+    cbox.dimensions = { 0.1, 0.01, 0.01 };
     pcm.constraint_region.primitives.emplace_back(cbox);
 
-    auto trans_ee = start_state->getGlobalLinkTransform(this->get_parameter("end_effector_reference_frame").as_string());
-    auto trans_base = start_state->getGlobalLinkTransform(this->get_parameter("tool_reference_frame").as_string());
-    auto start_pose = trans_base.inverse() * trans_ee;
+//    auto trans_ee = start_state->getGlobalLinkTransform(this->get_parameter("end_effector_reference_frame").as_string());
+//    auto trans_base = start_state->getGlobalLinkTransform(this->get_parameter("tool_reference_frame").as_string());
+//    auto start_pose = trans_base.inverse() * trans_ee;
 
     geometry_msgs::msg::Pose cbox_pose = start;
 
@@ -164,11 +169,11 @@ bool OMPLToolpathPlanner::plan_between_points(const moveit::core::RobotStatePtr&
     moveit_msgs::msg::Constraints path_constraints;
 
     // For equality constraints set to: "use_equality_constraints"
-    path_constraints.name = "use_equality_constraints";
+    path_constraints.name = "box constraints";
 
     path_constraints.position_constraints.emplace_back(pcm);
 
-    move_group_->setStartState(*start_state.get());
+    move_group_->setStartState(*start_state);
     move_group_->setPoseTarget(end);
     move_group_->setPathConstraints(path_constraints);
 
@@ -198,13 +203,66 @@ void OMPLToolpathPlanner::display_line(const geometry_msgs::msg::Pose &pose, con
     marker_pub_->publish(marker);
 }
 
+void OMPLToolpathPlanner::display_sphere(const geometry_msgs::msg::Pose& pose, const std::string& color, int id)
+{
+    visualization_msgs::msg::Marker marker;
+    marker.header.frame_id = this->get_parameter("tool_reference_frame").as_string();
+    marker.header.stamp = this->now();
+    marker.ns = "/";
+    marker.id = id;
+
+    marker.type = visualization_msgs::msg::Marker::SPHERE;
+    marker.action = visualization_msgs::msg::Marker::ADD;
+    marker.lifetime = rclcpp::Duration(0);
+
+    marker.pose = pose;
+    marker.scale.x = 0.001;
+    marker.scale.y = 0.001;
+    marker.scale.z = 0.001;
+
+    if (color == "red")
+    {
+        marker.color.r = 1.0;
+        marker.color.g = 0.0;
+        marker.color.b = 0.0;
+        marker.color.a = 1.0;
+    }
+    else if (color == "green")
+    {
+        marker.color.r = 0.0;
+        marker.color.g = 1.0;
+        marker.color.b = 0.0;
+        marker.color.a = 1.0;
+    }
+    else
+    {
+        RCLCPP_ERROR(LOGGER, "Sphere color not specified");
+    }
+
+    marker_pub_->publish(marker);
+}
+
+void OMPLToolpathPlanner::delete_markers() {
+    RCLCPP_INFO(LOGGER, "Delete all markers");
+
+    visualization_msgs::msg::Marker marker;
+    marker.header.frame_id = this->get_parameter("tool_reference_frame").as_string();
+    marker.header.stamp = this->now();
+    marker.ns = "/";
+    marker.action = visualization_msgs::msg::Marker::DELETEALL;
+    marker_pub_->publish(marker);
+}
+
 bool OMPLToolpathPlanner::append_plans(moveit::planning_interface::MoveGroupInterface::Plan &first,
                                        moveit::planning_interface::MoveGroupInterface::Plan &second) {
     // Adding each point from the second trajectory to the first offsetting the time from start
     if(first.trajectory_.joint_trajectory.joint_names.size() == second.trajectory_.joint_trajectory.joint_names.size()){
         auto base_end_time = first.trajectory_.joint_trajectory.points.back().time_from_start;
         auto first_size = first.trajectory_.joint_trajectory.points.size();
+
+        second.trajectory_.joint_trajectory.points.erase(second.trajectory_.joint_trajectory.points.begin());
         auto second_size = second.trajectory_.joint_trajectory.points.size();
+
         for(auto & point : second.trajectory_.joint_trajectory.points){
             point.time_from_start.sec += base_end_time.sec;
             point.time_from_start.nanosec += base_end_time.nanosec;
@@ -263,6 +321,8 @@ void OMPLToolpathPlanner::callback_execute(std_srvs::srv::Trigger::Request::Shar
                                            std_srvs::srv::Trigger::Response::SharedPtr response) {
     BaseToolpathPlanner::callback_execute(request, response);
 }
+
+
 
 
 
