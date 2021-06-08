@@ -71,6 +71,17 @@ ament_target_dependencies(ompl_toolpath_planner
         Boost
         )
 
+add_executable(servo_toolpath_planner src/servo_toolpath_planner.cpp src/base_toolpath_planner.cpp src/run_servo_planner.cpp)
+target_include_directories(servo_toolpath_planner PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>)
+target_link_libraries(servo_toolpath_planner
+        ram_helpers)
+ament_target_dependencies(servo_toolpath_planner
+        moveit_ros_planning_interface
+        Boost
+        )
+
 add_executable(ompl_demo src/ompl_demo.cpp)
 
 ament_target_dependencies(ompl_demo
@@ -82,8 +93,15 @@ install(TARGETS
         example_program
         base_toolpath_planner
         ompl_toolpath_planner
+        servo_toolpath_planner
         ompl_demo
-  DESTINATION lib/${PROJECT_NAME})
+        RUNTIME DESTINATION lib/${PROJECT_NAME}
+        INCLUDES DESTINATION include
+        )
+
+install(DIRECTORY include/ DESTINATION include)
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -98,5 +116,4 @@ endif()
 
 ament_package()
 
-install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
-install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
+

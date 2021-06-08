@@ -13,7 +13,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install any needed packages then clean up apt cache
 # Build tools and general ROS tools
-RUN apt-get update && apt-get install -y \
+RUN apt update && \
+    apt install -y \
     software-properties-common \
     ssh \
     git \
@@ -45,7 +46,8 @@ RUN apt-get update && apt-get install -y \
     ros-$ROSDISTRO-rviz2 \
     python3-pykdl
 
-RUN apt-get update && apt-get install -y \
+RUN apt update && \
+    apt install -y \
     libbullet-dev \
     libasio-dev \
     libtinyxml2-dev \
@@ -97,7 +99,7 @@ RUN ["/bin/bash", "-c", "source /opt/ros/foxy/setup.bash &&\
     vcs-import < moveit2/moveit2.repos || true && \
     vcs-import < /dev_ws/src/ram/ros2_control.rosinstall || true && \
     apt update && \
-    rosdep install -r --from-paths . --ignore-src --rosdistro foxy -y"]
+    rosdep install -r --from-paths . --ignore-src --rosdistro foxy -y "]
 
 WORKDIR /moveit_ws
 RUN ["/bin/bash", "-c", "source /opt/ros/foxy/setup.bash &&\

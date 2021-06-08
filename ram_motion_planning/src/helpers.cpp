@@ -154,6 +154,31 @@ bool GripperHelper::gripper(bool open) {
     return true;
 }
 
+ServoHelper::ServoHelper() {
+    node_ = rclcpp::Node::make_shared("servo_helper");
+    client_enable_servo_ = node_->create_client<std_srvs::srv::Empty>("/enable_servoing");
+}
+
+ServoHelper::ServoHelper(rclcpp::Node::SharedPtr &node) {
+    node_ = std::move(node);
+    client_enable_servo_ = node_->create_client<std_srvs::srv::Empty>("/enable_servoing");
+}
+
+bool ServoHelper::enable_servo() {
+    auto request = std::make_shared<std_srvs::srv::Empty::Request>();
+    std::shared_future<std_srvs::srv::Empty::Response::SharedPtr> result;
+
+    using ServiceResponseFuture =
+    rclcpp::Client<std_srvs::srv::Empty>::SharedFuture;
+    auto response_received_callback = [this](ServiceResponseFuture future) {
+        auto result = future.get();
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("Servo helper"), "returned");
+    };
+
+    result = client_enable_servo_->async_send_request(request, response_received_callback);
+    return true;
+}
+
 std::ostream& operator<<(std::ostream& os, const geometry_msgs::msg::Point32& point)
 {
     os << "X:" << point.x << ", Y: " << point.y << ", Z: " << point.z;
@@ -206,3 +231,5 @@ std::ostream& operator<<(std::ostream& os, const geometry_msgs::msg::TransformSt
 
     return os;
 }
+
+

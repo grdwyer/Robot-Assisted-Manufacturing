@@ -68,7 +68,7 @@ public:
      * Executes the planned trajectory
      * @return
      */
-    bool execute_trajectory();
+    virtual bool execute_trajectory();
 
     /***
      * @brief Uses TF to get the transform between the EE link and the stock material (or held part)
