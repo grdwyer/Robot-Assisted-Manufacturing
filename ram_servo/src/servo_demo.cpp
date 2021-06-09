@@ -174,7 +174,7 @@ int main(int argc, char** argv)
     auto start_pose = target_pose;
 
     double radius = 0.04, x, y;
-    int i = 0, size = 1000;
+    int i = 0, size = 5000;
     while(rclcpp::ok()){
         x = radius * sin(2*M_PI * i/size);
         y = radius * cos(2*M_PI * i/size);

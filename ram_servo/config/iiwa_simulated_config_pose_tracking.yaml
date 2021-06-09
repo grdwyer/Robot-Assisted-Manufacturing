@@ -19,10 +19,12 @@ publish_period: 0.01  # 1/Nominal publish rate [seconds]
 # What type of topic does your robot driver expect?
 # Currently supported are std_msgs/Float64MultiArray or trajectory_msgs/JointTrajectory
 command_out_type: trajectory_msgs/JointTrajectory
+#command_out_type: std_msgs/Float64MultiArray
 
 # What to publish? Can save some bandwidth as most robots only require positions or velocities
 publish_joint_positions: true
 publish_joint_velocities: true
+#publish_joint_velocities: false
 publish_joint_accelerations: false
 
 ## Incoming Joint State properties
@@ -54,6 +56,7 @@ joint_command_in_topic: ~/delta_joint_cmds # Topic for incoming joint angle comm
 joint_topic: /joint_states
 status_topic: ~/status # Publish status to this topic
 command_out_topic: /iiwa_arm_controller/joint_trajectory # Publish outgoing commands here
+#command_out_topic: /iiwa_forward_command_controller_position/commands # Publish outgoing commands here
 
 ## Collision checking for the entire robot body
 check_collisions: true # Check collisions?
