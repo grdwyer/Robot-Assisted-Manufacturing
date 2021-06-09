@@ -18,7 +18,7 @@ ServoToolpathPlanner::ServoToolpathPlanner(const rclcpp::NodeOptions & options) 
     auto servo_node = this->create_sub_node("servo");
     servo_helper_ = std::make_shared<ServoHelper>();
 
-    this->declare_parameter("time_between_points", 0.6);
+    this->declare_parameter("time_between_points", 0.1);
     move_group_->startStateMonitor(5.0);
 }
 
@@ -108,8 +108,16 @@ bool ServoToolpathPlanner::execute_trajectory() {
     rclcpp::Rate loop_rate(1./time_between_points);
 
     servo_helper_->enable_servo();
+    auto pose = pose_trajectory_.front();
 
-    RCLCPP_INFO_STREAM(LOGGER, "starting trajectory");
+    // Send a couple to start.
+    for(int i = 0; i < 10; i++){
+        pose.header.stamp = this->now();
+        servo_pose_pub_->publish(pose);
+        loop_rate.sleep();
+    }
+
+    RCLCPP_INFO_STREAM(LOGGER, "starting trajectory\ncontrol rate: " << 1./time_between_points);
     for(auto &  desired_pose : pose_trajectory_){
         desired_pose.header.stamp = this->now();
         servo_pose_pub_->publish(desired_pose);

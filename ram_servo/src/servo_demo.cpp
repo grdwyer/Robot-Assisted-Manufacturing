@@ -138,7 +138,9 @@ int main(int argc, char** argv)
     geometry_msgs::msg::TransformStamped current_ee_tf;
     tracker.getCommandFrameTransform(current_ee_tf);
 
-//    RCLCPP_INFO_STREAM(LOGGER, "Current Pose: " << current_ee_tf);
+    RCLCPP_INFO_STREAM(LOGGER, "Current Pose frame: " << current_ee_tf.header.frame_id <<
+    "\nx: " << current_ee_tf.transform.translation.x << "\ty: " << current_ee_tf.transform.translation.y <<
+    "\tz: " << current_ee_tf.transform.translation.z);
     // Convert it to a Pose
     geometry_msgs::msg::PoseStamped target_pose;
     target_pose.header.frame_id = current_ee_tf.header.frame_id;
@@ -148,15 +150,15 @@ int main(int argc, char** argv)
     target_pose.pose.orientation = current_ee_tf.transform.rotation;
 
     // Modify it a little bit
-    target_pose.pose.position.x += 0.01;
+//    target_pose.pose.position.x += 0.01;
 
     // resetTargetPose() can be used to clear the target pose and wait for a new one, e.g. when moving between multiple
     // waypoints
     tracker.resetTargetPose();
 
     // Publish target pose
-    target_pose.header.stamp = node->now();
-    target_pose_pub->publish(target_pose);
+//    target_pose.header.stamp = node->now();
+////    target_pose_pub->publish(target_pose);
 
     // Run the pose tracking in a new thread
     std::thread move_to_pose_thread([&tracker, &lin_tol, &rot_tol] {
@@ -166,19 +168,36 @@ int main(int argc, char** argv)
                 << moveit_servo::POSE_TRACKING_STATUS_CODE_MAP.at(tracking_status));
     });
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+//    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     RCLCPP_INFO_STREAM(LOGGER, "Starting to publish commands");
-    rclcpp::Rate loop_rate(50);
-    for (size_t i = 0; i < 500; ++i)
-    {
-        // Modify the pose target a little bit each cycle
-        // This is a dynamic pose target
-        target_pose.pose.position.x += 0.0004;
+    rclcpp::Rate loop_rate(100);
+    auto start_pose = target_pose;
+
+    double radius = 0.04, x, y;
+    int i = 0, size = 1000;
+    while(rclcpp::ok()){
+        x = radius * sin(2*M_PI * i/size);
+        y = radius * cos(2*M_PI * i/size);
+        i++;
+        if(i==size){
+            i = 0;
+        }
+        target_pose.pose.position.x = start_pose.pose.position.x + x;
+        target_pose.pose.position.y = start_pose.pose.position.y + y;
         target_pose.header.stamp = node->now();
         target_pose_pub->publish(target_pose);
-
         loop_rate.sleep();
     }
+//    for (size_t i = 0; i < 500; ++i)
+//    {
+//        // Modify the pose target a little bit each cycle
+//        // This is a dynamic pose target
+//        target_pose.pose.position.x += 0.0004;
+//        target_pose.header.stamp = node->now();
+//        target_pose_pub->publish(target_pose);
+//
+//        loop_rate.sleep();
+//    }
     RCLCPP_WARN_STREAM(LOGGER, "Exiting command loop");
 
     // Make sure the tracker is stopped and clean up

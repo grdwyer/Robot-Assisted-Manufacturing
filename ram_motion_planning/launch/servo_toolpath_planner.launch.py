@@ -88,4 +88,14 @@ def generate_launch_description():
     )
     nodes.append(pose_tracking_node)
 
+    static_tf = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        name="static_transform_publisher",
+        output="log",
+        arguments=["0.0", "0.0", "0.05", "0.0", "0.0", "0.0", "cutting_tool_tip", "virtual_cutting"],
+    )
+    nodes.append(static_tf)
+
+
     return LaunchDescription(nodes)

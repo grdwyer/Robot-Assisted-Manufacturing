@@ -13,7 +13,8 @@ scale:
   joint: 0.01
 
 ## Properties of outgoing commands
-publish_period: 0.034  # 1/Nominal publish rate [seconds]
+#publish_period: 0.034  # 1/Nominal publish rate [seconds]
+publish_period: 0.01  # 1/Nominal publish rate [seconds]
 
 # What type of topic does your robot driver expect?
 # Currently supported are std_msgs/Float64MultiArray or trajectory_msgs/JointTrajectory
@@ -29,14 +30,15 @@ low_pass_filter_coeff: 2.0  # Larger --> trust the filtered data more, trust the
 
 ## MoveIt properties
 move_group_name:  iiwa  # Often 'manipulator' or 'arm'
-planning_frame: cutting_tool_tip  # The MoveIt planning frame. Often 'base_link' or 'world'
+planning_frame: iiwa_link_0  # The MoveIt planning frame. Often 'base_link' or 'world'
+#planning_frame: virtual_cutting  # The MoveIt planning frame. Often 'base_link' or 'world'
 
 ## Other frames
 ee_frame_name: gripper_jaw_centre  # The name of the end effector link, used to return the EE pose
-robot_link_command_frame:  iiwa_link_ee  # commands must be given in the frame of a robot link. Usually either the base or end effector
+robot_link_command_frame:  gripper_jaw_centre  # commands must be given in the frame of a robot link. Usually either the base or end effector
 
 ## Stopping behaviour
-incoming_command_timeout:  0.1  # Stop servoing if X seconds elapse without a new command
+incoming_command_timeout:  0.4  # Stop servoing if X seconds elapse without a new command
 # If 0, republish commands forever even if the robot is stationary. Otherwise, specify num. to publish.
 # Important because ROS may drop some messages and we need the robot to halt reliably.
 num_outgoing_halt_msgs_to_publish: 4
