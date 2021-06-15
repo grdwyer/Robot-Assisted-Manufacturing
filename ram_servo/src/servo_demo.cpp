@@ -188,16 +188,7 @@ int main(int argc, char** argv)
         target_pose_pub->publish(target_pose);
         loop_rate.sleep();
     }
-//    for (size_t i = 0; i < 500; ++i)
-//    {
-//        // Modify the pose target a little bit each cycle
-//        // This is a dynamic pose target
-//        target_pose.pose.position.x += 0.0004;
-//        target_pose.header.stamp = node->now();
-//        target_pose_pub->publish(target_pose);
-//
-//        loop_rate.sleep();
-//    }
+
     RCLCPP_WARN_STREAM(LOGGER, "Exiting command loop");
 
     // Make sure the tracker is stopped and clean up
