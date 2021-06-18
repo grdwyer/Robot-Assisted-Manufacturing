@@ -82,40 +82,43 @@ bool ServoToolpathPlanner::construct_plan_request() {
 
     rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
 
-//    std::vector<geometry_msgs::msg::Pose> waypoints;
+    std::vector<geometry_msgs::msg::PoseStamped> waypoints;
     geometry_msgs::msg::PoseStamped pose_stamped;
     std::string ref_frame = this->get_parameter("tool_reference_frame").as_string();
 
+    // Get vector of original toolpath
     pose_stamped.pose = tf2::toMsg(approach_frame);
     pose_stamped.header.frame_id = ref_frame;
-    pose_trajectory_.push_back(pose_stamped);
+    waypoints.push_back(pose_stamped);
 
     for(const auto & frame : ee_cartesian_path){
         pose_stamped.pose = tf2::toMsg(frame);
         pose_stamped.header.frame_id = ref_frame;
-        pose_trajectory_.push_back(pose_stamped);
+        waypoints.push_back(pose_stamped);
     }
 
     pose_stamped.pose = tf2::toMsg(retreat_frame);
     pose_stamped.header.frame_id = ref_frame;
-    pose_trajectory_.push_back(pose_stamped);
+    waypoints.push_back(pose_stamped);
+
+    // Interpolate across the entire trajectory
+    interpolate_pose_trajectory(waypoints, 0.0005, tf2Radians(1), pose_trajectory_);
 
     return true;
 }
 
 bool ServoToolpathPlanner::execute_trajectory() {
-    double time_between_points = this->get_parameter("time_between_points").as_double();
+    double distance = distance_along_trajectory(pose_trajectory_);
+    double desired_speed = 0.08; // 80 mm/s
+    double total_time = distance / desired_speed;
+
+    double time_between_points =  total_time / (double)pose_trajectory_.size(); //this->get_parameter("time_between_points").as_double();
+    RCLCPP_INFO_STREAM(LOGGER, "Total distance to travel: " << distance << "\nDesired speed: " <<
+                       desired_speed << "\nTotal time to complete trajecotry: " << total_time <<
+                       "\nPose output rate: " << 1./time_between_points);
     rclcpp::Rate loop_rate(1./time_between_points);
 
     servo_helper_->enable_servo();
-    auto pose = pose_trajectory_.front();
-
-    // Send a couple to start.
-    for(int i = 0; i < 10; i++){
-        pose.header.stamp = this->now();
-        servo_pose_pub_->publish(pose);
-        loop_rate.sleep();
-    }
 
     RCLCPP_INFO_STREAM(LOGGER, "starting trajectory\ncontrol rate: " << 1./time_between_points);
     for(auto &  desired_pose : pose_trajectory_){

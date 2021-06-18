@@ -25,14 +25,17 @@ find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_kdl REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(tf2_eigen REQUIRED)
 
 include_directories(include)
 
-add_library(ram_helpers src/helpers.cpp)
+add_library(ram_helpers src/helpers.cpp src/trajectory_utils.cpp)
 ament_target_dependencies(ram_helpers
         rclcpp
         ram_interfaces
         std_srvs
+        moveit_ros_planning_interface
+        tf2_eigen
         )
 
 install(TARGETS ram_helpers

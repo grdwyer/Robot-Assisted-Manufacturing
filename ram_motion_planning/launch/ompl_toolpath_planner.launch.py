@@ -48,23 +48,12 @@ def generate_launch_description():
     kinematics_yaml = load_yaml('ram_moveit_config', 'config/kinematics.yaml')
 
     node_config = load_yaml("ram_motion_planning", "config/toolpath_follower_defaults.yaml")
-
-    # Get parameters for the Pose Tracking node
-    pose_tracking_yaml = load_yaml("ram_servo", "config/pose_tracking_settings.yaml")
-    pose_tracking_params = {"moveit_servo": pose_tracking_yaml}
-
-    # Get parameters for the Servo node
-    servo_yaml = load_yaml(
-        "ram_servo", "config/iiwa_simulated_config_pose_tracking.yaml"
-    )
-    servo_params = {"moveit_servo": servo_yaml}
-
     print(node_config)
     nodes = []
     # Start the actual move_group interface node
     toolpath_planner = Node(name='toolpath_planner',
                              package='ram_motion_planning',
-                             executable='servo_toolpath_planner',
+                             executable='ompl_toolpath_planner',
                              output='screen',
                              parameters=[node_config,
                                          robot_description,
@@ -72,29 +61,5 @@ def generate_launch_description():
                                          kinematics_yaml
                                          ])
     nodes.append(toolpath_planner)
-
-    pose_tracking_node = Node(
-        package="ram_servo",
-        executable="servo_subscriber",
-        # prefix=['xterm -e gdb -ex run --args'],
-        output="screen",
-        parameters=[
-            robot_description,
-            robot_description_semantic,
-            kinematics_yaml,
-            pose_tracking_params,
-            servo_params,
-        ],
-    )
-    nodes.append(pose_tracking_node)
-
-    # static_tf = Node(
-    #     package="tf2_ros",
-    #     executable="static_transform_publisher",
-    #     name="static_transform_publisher",
-    #     output="log",
-    #     arguments=["0.0", "0.0", "0.05", "0.0", "0.0", "0.0", "cutting_tool_tip", "virtual_cutting"],
-    # )
-    # nodes.append(static_tf)
 
     return LaunchDescription(nodes)

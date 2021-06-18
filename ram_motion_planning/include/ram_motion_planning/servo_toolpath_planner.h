@@ -6,6 +6,7 @@
 #define RAM_MOTION_PLANNING_OMPL_CONSTRAINED_TOOLPATH_PLANNER_H
 
 #include <ram_motion_planning/base_toolpath_planner.h>
+#include <ram_motion_planning/trajectory_utils.h>
 #include <moveit_msgs/msg/constraints.hpp>
 #include <moveit/planning_scene_monitor/current_state_monitor.h>
 #include <trajectory_msgs/msg/joint_trajectory_point.h>
