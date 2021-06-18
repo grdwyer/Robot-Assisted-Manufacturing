@@ -18,6 +18,13 @@ BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): N
     auto move_group_node = this->create_sub_node("");
     move_group_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(move_group_node,
             this->get_parameter("moveit_planning_group").as_string());
+    move_group_->startStateMonitor(2.0);
+
+    auto sub_node = this->create_sub_node("state");
+    std::shared_ptr<planning_scene_monitor::CurrentStateMonitor> state_monitor = std::make_shared<planning_scene_monitor::CurrentStateMonitor>(sub_node, move_group_->getRobotModel(), std::shared_ptr<tf2_ros::Buffer>());
+    state_monitor->startStateMonitor("/joint_states");
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    robot_state_ = state_monitor->getCurrentState();
 
     move_group_->setMaxVelocityScalingFactor(0.1);
     move_group_->setMaxAccelerationScalingFactor(1.0);
@@ -129,7 +136,11 @@ bool BaseToolpathPlanner::construct_plan_request() {
     const double eef_step = 0.001;
     double fraction = move_group_->computeCartesianPath(waypoints, eef_step, jump_threshold, trajectory_toolpath_);
     RCLCPP_INFO(LOGGER, "Visualizing Cartesian path (%.2f%% acheived)", fraction * 100.0);
-    auto state = move_group_->getCurrentState(1.0);
+    moveit::planning_interface::MoveGroupInterface::Plan plan, retimed_plan;
+
+    plan.trajectory_ = trajectory_toolpath_;
+    retime_trajectory_constant_velocity(plan, robot_state_, 0.08, retimed_plan);
+    trajectory_toolpath_ = retimed_plan.trajectory_;
     return fraction > 0.99;
     }
 

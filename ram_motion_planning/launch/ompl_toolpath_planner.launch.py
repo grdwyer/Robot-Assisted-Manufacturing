@@ -53,7 +53,7 @@ def generate_launch_description():
     # Start the actual move_group interface node
     toolpath_planner = Node(name='toolpath_planner',
                              package='ram_motion_planning',
-                             executable='base_toolpath_planner',
+                             executable='ompl_toolpath_planner',
                              output='screen',
                              parameters=[node_config,
                                          robot_description,

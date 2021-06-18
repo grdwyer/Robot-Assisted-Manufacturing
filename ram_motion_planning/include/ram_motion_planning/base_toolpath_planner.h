@@ -19,6 +19,7 @@
 #include <std_srvs/srv/trigger.hpp>
 #include <iostream>
 #include <ram_motion_planning/helpers.h>
+#include <ram_motion_planning/trajectory_utils.h>
 #include <ram_interfaces/msg/toolpath.hpp>
 #include <rosidl_runtime_cpp/traits.hpp>
 #include <functional>
@@ -68,7 +69,7 @@ public:
      * Executes the planned trajectory
      * @return
      */
-    bool execute_trajectory();
+    virtual bool execute_trajectory();
 
     /***
      * @brief Uses TF to get the transform between the EE link and the stock material (or held part)
@@ -131,6 +132,7 @@ protected:
     ram_interfaces::msg::Toolpath toolpath_;
     std::shared_ptr<moveit::planning_interface::MoveGroupInterface> move_group_;
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
+    moveit::core::RobotStatePtr robot_state_;
     moveit_msgs::msg::RobotTrajectory trajectory_toolpath_;
 
     //rviz pose array publisher

@@ -11,6 +11,7 @@
 #include <ram_interfaces/msg/toolpath.hpp>
 #include <utility>
 #include <std_srvs/srv/set_bool.hpp>
+#include <std_srvs/srv/empty.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <iostream>
 #include <geometry_msgs/msg/pose.hpp>
@@ -59,6 +60,17 @@ private:
     rclcpp::Node::SharedPtr  node_;
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_gripper_open_;
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_gripper_close_;
+};
+
+class ServoHelper{
+public:
+    ServoHelper();
+    explicit ServoHelper(rclcpp::Node::SharedPtr  &node);
+    bool enable_servo();
+
+private:
+    rclcpp::Node::SharedPtr  node_;
+    rclcpp::Client<std_srvs::srv::Empty>::SharedPtr client_enable_servo_;
 };
 
 std::ostream& operator<<(std::ostream& os, const geometry_msgs::msg::Point32& point);
