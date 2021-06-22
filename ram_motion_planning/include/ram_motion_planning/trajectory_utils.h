@@ -25,6 +25,8 @@ geometry_msgs::msg::Pose interpolate_between_pose(geometry_msgs::msg::Pose start
 
 void interpolate_pose_trajectory(std::vector<geometry_msgs::msg::PoseStamped> &original, double max_distance, double max_angle, std::vector<geometry_msgs::msg::PoseStamped> &interpolated);
 
+void interpolate_pose_trajectory(std::vector<geometry_msgs::msg::Pose> &original, double max_distance, double max_angle, std::vector<geometry_msgs::msg::Pose> &interpolated);
+
 // Trajectory manipulation
 bool retime_trajectory_constant_velocity(moveit::planning_interface::MoveGroupInterface::Plan &plan, moveit::core::RobotStatePtr robot_state, double desired_velocity, moveit::planning_interface::MoveGroupInterface::Plan &retimed_plan);
 

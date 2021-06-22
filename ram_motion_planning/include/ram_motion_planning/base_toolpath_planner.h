@@ -119,8 +119,11 @@ public:
     */
     void display_planned_trajectory(std::vector<geometry_msgs::msg::Pose> &poses);
 
+    void run();
 
 protected:
+    void run_moveit_executor();
+    void run_helper_executor();
 
     std::shared_ptr<ToolpathHelper> toolpath_helper_;
     std::shared_ptr<StockHelper> stockHelper_;
@@ -131,6 +134,7 @@ protected:
 
     ram_interfaces::msg::Toolpath toolpath_;
     std::shared_ptr<moveit::planning_interface::MoveGroupInterface> move_group_;
+
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
     moveit::core::RobotStatePtr robot_state_;
     moveit_msgs::msg::RobotTrajectory trajectory_toolpath_;
@@ -144,7 +148,8 @@ protected:
     tf2_ros::Buffer buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tfl_;
 
-
+    rclcpp::executors::SingleThreadedExecutor executor_moveit_;
+    std::thread thread_moveit_executor_;
 };
 
 

@@ -13,14 +13,14 @@ OMPLToolpathPlanner::OMPLToolpathPlanner(const rclcpp::NodeOptions & options) : 
     service_execute_ = this->create_service<std_srvs::srv::Trigger>(this->get_fully_qualified_name() + std::string("/toolpath_execute"),
                                                                     std::bind(&OMPLToolpathPlanner::callback_execute, this, std::placeholders::_1, std::placeholders::_2));
 
-    move_group_->startStateMonitor(5.0);
-//    auto sub_node = this->create_sub_node("state");
-//    state_monitor_ = std::make_shared<planning_scene_monitor::CurrentStateMonitor>(sub_node, move_group_->getRobotModel(), std::shared_ptr<tf2_ros::Buffer>());
-//    state_monitor_->startStateMonitor("/joint_states");
-//    std::this_thread::sleep_for(std::chrono::seconds(2));
-//    auto state = state_monitor_->getCurrentState();
-//    state->printStateInfo();
-//    state->printStatePositions();
+//    move_group_->startStateMonitor(5.0);
+////    auto sub_node = this->create_sub_node("state");
+////    state_monitor_ = std::make_shared<planning_scene_monitor::CurrentStateMonitor>(sub_node, move_group_->getRobotModel(), std::shared_ptr<tf2_ros::Buffer>());
+////    state_monitor_->startStateMonitor("/joint_states");
+////    std::this_thread::sleep_for(std::chrono::seconds(2));
+////    auto state = state_monitor_->getCurrentState();
+////    state->printStateInfo();
+////    state->printStatePositions();
 }
 
 bool OMPLToolpathPlanner::construct_plan_request() {
@@ -83,17 +83,18 @@ bool OMPLToolpathPlanner::construct_plan_request() {
 
     rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
 
-    std::vector<geometry_msgs::msg::Pose> waypoints;
+    std::vector<geometry_msgs::msg::Pose> waypoints, interpolated_waypoints;
     for(const auto & frame : ee_cartesian_path){
         waypoints.push_back(tf2::toMsg(frame));
     }
+    interpolate_pose_trajectory(waypoints, 0.0005, tf2Radians(1), interpolated_waypoints);
 
     std::vector<moveit::planning_interface::MoveGroupInterface::Plan> separated_plans;
     moveit::core::RobotStatePtr start_state;
     moveit::planning_interface::MoveGroupInterface::Plan current_plan;
     geometry_msgs::msg::Pose start_pose;
 
-    for(auto &  desired_pose : waypoints){
+    for(auto &  desired_pose : interpolated_waypoints){
         if(separated_plans.empty()){
 //            RCLCPP_INFO_STREAM(LOGGER, "First point in toolpath loaded, taking current state as start\nState monitor: " << state_monitor_->isActive(););
             RCLCPP_INFO_STREAM(LOGGER, "First point in toolpath loaded, taking current state as start");
@@ -129,7 +130,10 @@ bool OMPLToolpathPlanner::construct_plan_request() {
     for(auto & plan : separated_plans){
         append_plans(combined_plans, plan);
     }
-    trajectory_toolpath_ = combined_plans.trajectory_;
+    moveit::planning_interface::MoveGroupInterface::Plan retimed_plan;
+    robot_state_ = move_group_->getCurrentState(2.0);
+    retime_trajectory_constant_velocity(combined_plans, robot_state_, 0.08, retimed_plan);
+    trajectory_toolpath_ = retimed_plan.trajectory_;
     delete_markers();
     return true;
 }
@@ -175,7 +179,7 @@ bool OMPLToolpathPlanner::plan_between_points(const moveit::core::RobotStatePtr&
 
     move_group_->setStartState(*start_state);
     move_group_->setPoseTarget(end);
-    move_group_->setPathConstraints(path_constraints);
+//    move_group_->setPathConstraints(path_constraints);
 
     const bool plan_success = (move_group_->plan(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
     RCLCPP_INFO(LOGGER, "Plan between 2 points %s", plan_success ? "SUCCEEDED" : "FAILED");

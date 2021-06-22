@@ -59,6 +59,7 @@ bool retime_trajectory_constant_velocity(moveit::planning_interface::MoveGroupIn
     const moveit::core::JointModelGroup* joint_model_group = robot_state->getJointModelGroup("iiwa");
     Eigen::Isometry3d p_start, p_end;
     double distance, time_between_points;
+    rclcpp::Duration new_time_from_start = rclcpp::Duration(0, 0);
     retimed_plan.trajectory_ = plan.trajectory_;
     retimed_plan.planning_time_ = plan.planning_time_;
     retimed_plan.start_state_ = plan.start_state_;
@@ -74,10 +75,14 @@ bool retime_trajectory_constant_velocity(moveit::planning_interface::MoveGroupIn
             distance = (p_end.translation() - p_start.translation()).norm();
             time_between_points = distance / desired_velocity;
 
-            retimed_plan.trajectory_.joint_trajectory.points[i].time_from_start =
-                    rclcpp::Duration(retimed_plan.trajectory_.joint_trajectory.points[i-1].time_from_start) + \
+            new_time_from_start = rclcpp::Duration(retimed_plan.trajectory_.joint_trajectory.points[i-1].time_from_start) + \
                     rclcpp::Duration::from_seconds(time_between_points);
 
+            RCLCPP_DEBUG_STREAM(LOGGER, "Point " << i << " of " << plan.trajectory_.joint_trajectory.points.size()
+            << "\nOriginal time from start: " << rclcpp::Duration(retimed_plan.trajectory_.joint_trajectory.points[i].time_from_start).seconds()
+            << "\nDistance between points: " << distance << "\nRecalculated time from start: " << new_time_from_start.seconds() << std::endl);
+
+            retimed_plan.trajectory_.joint_trajectory.points[i].time_from_start = new_time_from_start;
         } else{
             // TODO: take the start state and determine distance from start to first point.
 
@@ -89,7 +94,7 @@ bool retime_trajectory_constant_velocity(moveit::planning_interface::MoveGroupIn
 
 void interpolate_pose_trajectory(std::vector<geometry_msgs::msg::PoseStamped> &original, double max_distance,
                                  double max_angle, std::vector<geometry_msgs::msg::PoseStamped> &interpolated) {
-    double factor, dist, angle;
+    double dist, angle;
     int interp_size = 10, dist_size, ang_size;
     geometry_msgs::msg::PoseStamped p_start, p_end, p_interp;
     for (int i = 0; i < original.size(); i++) {
@@ -108,6 +113,35 @@ void interpolate_pose_trajectory(std::vector<geometry_msgs::msg::PoseStamped> &o
             for (int j = 0; j < interp_size; j++) {
                 p_interp.pose = interpolate_between_pose(p_start.pose, p_end.pose, (double) j / (double) interp_size);
                 p_interp.header = p_start.header;
+                interpolated.push_back(p_interp);
+            }
+        } else {
+            // Last pose just needs to be added to the list
+            interpolated.push_back(original[i]);
+        }
+    }
+}
+
+void interpolate_pose_trajectory(std::vector<geometry_msgs::msg::Pose> &original, double max_distance,
+                                 double max_angle, std::vector<geometry_msgs::msg::Pose> &interpolated) {
+    double dist, angle;
+    int interp_size = 10, dist_size, ang_size;
+    geometry_msgs::msg::Pose p_start, p_end, p_interp;
+    for (int i = 0; i < original.size(); i++) {
+        if (i < original.size() - 1) {
+            p_start = original[i];
+            p_end = original[i + 1];
+
+            // determine the number of poses to interpolate by
+            dist = distance_between_poses(p_start, p_end);
+            angle = angular_distance_between_poses(p_start, p_end);
+
+            dist_size = ceil(dist/max_distance);
+            ang_size = ceil(angle/max_angle);
+            interp_size = dist_size > ang_size? dist_size : ang_size;
+
+            for (int j = 0; j < interp_size; j++) {
+                p_interp = interpolate_between_pose(p_start, p_end, (double) j / (double) interp_size);
                 interpolated.push_back(p_interp);
             }
         } else {
