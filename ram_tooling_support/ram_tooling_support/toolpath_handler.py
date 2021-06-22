@@ -121,6 +121,10 @@ class ToolPathHandler(Node):
         return msg
 
     def callback_get_toolpath(self, request, response):
+        if len(request.id) > 0:
+            param = rclpy.Parameter('toolpath_file', rclpy.Parameter.Type.STRING, request.id)
+            self.set_parameters([param])
+            self.load_toolpath_file()
         response.toolpath = self.create_toolpath_message()
 
         return response
