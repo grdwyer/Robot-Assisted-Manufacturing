@@ -60,9 +60,14 @@ def generate_launch_description():
         DeclareLaunchArgument("real_manipulator", default_value="false", description="Type of manipulator to startup (fake/false or real/true)")
     )
 
+    declared_arguments.append(
+        DeclareLaunchArgument("rviz", default_value="true", description="If rviz should run")
+    )
+
     robot_ip = LaunchConfiguration("robot_ip")
     robot_port = LaunchConfiguration("robot_port")
     manipulator = LaunchConfiguration("real_manipulator")
+    rviz = LaunchConfiguration("rviz")
 
     # print("\n\n\n\n\n\tManipulator set as {}\n\n\n\n".format(TextSubstitution().perform(manipulator)))
 
@@ -149,7 +154,8 @@ def generate_launch_description():
                                  robot_description_semantic,
                                  ompl_planning_pipeline_config,
                                  kinematics_yaml,
-                                 ]
+                                 ],
+                     condition=IfCondition(rviz)
                      )
     nodes.append(rviz_node)
 

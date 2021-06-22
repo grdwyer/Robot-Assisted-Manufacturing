@@ -15,11 +15,19 @@ BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): N
     this->declare_parameter<int>("debug_wait_time", 500);
 
     // Initialise
-    auto move_group_node = this->create_sub_node("");
-    move_group_ = std::make_unique<moveit::planning_interface::MoveGroupInterface>(move_group_node,
+    auto move_group_node = std::make_shared<rclcpp::Node>("moveit", rclcpp::NodeOptions());
+//    auto move_group_node = this->create_sub_node("");
+    move_group_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(move_group_node,
             this->get_parameter("moveit_planning_group").as_string());
 
+//    auto sub_node = this->create_sub_node("state");
+//    std::shared_ptr<planning_scene_monitor::CurrentStateMonitor> state_monitor = std::make_shared<planning_scene_monitor::CurrentStateMonitor>(sub_node, move_group_->getRobotModel(), std::shared_ptr<tf2_ros::Buffer>());
+//    state_monitor->startStateMonitor("/joint_states");
+//    std::this_thread::sleep_for(std::chrono::seconds(2));
+//    robot_state_ = state_monitor->getCurrentState();
+
     move_group_->setMaxVelocityScalingFactor(0.1);
+    move_group_->setMaxAccelerationScalingFactor(1.0);
     move_group_->setPlanningTime(30.0);
     move_group_->setNumPlanningAttempts(5);
 
@@ -31,19 +39,32 @@ BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): N
     gripperHelper_ = std::make_shared<GripperHelper>(gripper_node);
 
     // TODO: put service names into node namespace
-    service_setup_ = this->create_service<std_srvs::srv::Trigger>(this->get_fully_qualified_name() + std::string("/toolpath_setup"),
+    auto planner_node = this->create_sub_node("planner");
+    service_setup_ = planner_node->create_service<std_srvs::srv::Trigger>(this->get_fully_qualified_name() + std::string("/toolpath_setup"),
             std::bind(&BaseToolpathPlanner::callback_setup, this, std::placeholders::_1, std::placeholders::_2));
-    service_execute_ = this->create_service<std_srvs::srv::Trigger>(this->get_fully_qualified_name() + std::string("/toolpath_execute"),
+    service_execute_ = planner_node->create_service<std_srvs::srv::Trigger>(this->get_fully_qualified_name() + std::string("/toolpath_execute"),
             std::bind(&BaseToolpathPlanner::callback_execute, this, std::placeholders::_1, std::placeholders::_2));
-    publisher_toolpath_poses_ = this->create_publisher<geometry_msgs::msg::PoseArray>(this->get_fully_qualified_name() + std::string("/planned_toolpath"), 10);
+    publisher_toolpath_poses_ = planner_node->create_publisher<geometry_msgs::msg::PoseArray>(this->get_fully_qualified_name() + std::string("/planned_toolpath"), 10);
 
     //TF2
     tfl_ = std::make_shared<tf2_ros::TransformListener>(buffer_);
 
-    configuration_message();
+//  Executor threads
+    executor_moveit_.add_node(move_group_node);
+    thread_moveit_executor_ = std::thread(&BaseToolpathPlanner::run_moveit_executor, this);
+
     rclcpp::sleep_for(std::chrono::seconds(1));
+
+    move_group_->startStateMonitor(2.0);
+    robot_state_ = move_group_->getCurrentState(2.0);
+
+    rclcpp::sleep_for(std::chrono::seconds(1));
+    configuration_message();
 }
 
+void BaseToolpathPlanner::run_moveit_executor(){
+    executor_moveit_.spin();
+}
 
 void BaseToolpathPlanner::configuration_message() {
     RCLCPP_INFO_STREAM(LOGGER, "Initialising node in " << this->get_fully_qualified_name() <<
@@ -79,6 +100,10 @@ bool BaseToolpathPlanner::construct_plan_request() {
     // Tool base - flipped on the x (should be paramed), reorient - rotation to face the next point, tool pose - resultant pose to convert to pose msg
 
     bool success = process_toolpath(ee_cartesian_path);
+    if(!success){
+        RCLCPP_ERROR_STREAM(LOGGER, "Toolpath was not processed correctly");
+        return false;
+    }
 
     // Determine an approach pose for the toolpath
     geometry_msgs::msg::Pose approach_pose;
@@ -117,19 +142,26 @@ bool BaseToolpathPlanner::construct_plan_request() {
 
     rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
 
-    std::vector<geometry_msgs::msg::Pose> waypoints;
+    std::vector<geometry_msgs::msg::Pose> waypoints, interpolated_waypoints;
     for(const auto & frame : ee_cartesian_path){
         waypoints.push_back(tf2::toMsg(frame));
     }
 
+    interpolate_pose_trajectory(waypoints, 0.0005, tf2Radians(1), interpolated_waypoints);
+
     //TODO: Set start state for cartesian planning
-    RCLCPP_INFO_STREAM(LOGGER, "Cartesian planning for toolpath using Waypoints: \n" << waypoints);
+    RCLCPP_INFO_STREAM(LOGGER, "Cartesian planning for toolpath using Waypoints: \n" << interpolated_waypoints);
     const double jump_threshold = 0.0;
     const double eef_step = 0.001;
-    double fraction = move_group_->computeCartesianPath(waypoints, eef_step, jump_threshold, trajectory_toolpath_);
+    double fraction = move_group_->computeCartesianPath(interpolated_waypoints, eef_step, jump_threshold, trajectory_toolpath_);
     RCLCPP_INFO(LOGGER, "Visualizing Cartesian path (%.2f%% acheived)", fraction * 100.0);
+    moveit::planning_interface::MoveGroupInterface::Plan plan, retimed_plan;
+    robot_state_ = move_group_->getCurrentState(2.0);
+    plan.trajectory_ = trajectory_toolpath_;
+    retime_trajectory_constant_velocity(plan, robot_state_, 0.08, retimed_plan);
+    trajectory_toolpath_ = retimed_plan.trajectory_;
     return fraction > 0.99;
-}
+    }
 
 bool BaseToolpathPlanner::follow_waypoints_sequentially(std::vector<geometry_msgs::msg::Pose> &waypoints) {
     for(const auto &pose : waypoints){
@@ -165,14 +197,15 @@ void BaseToolpathPlanner::display_planned_trajectory(std::vector<geometry_msgs::
 }
 
 bool BaseToolpathPlanner::move_to_setup() {
-    move_group_->setPoseReferenceFrame("cutting_tool_tip");
-    move_group_->setEndEffectorLink("gripper_jaw_centre");
+    move_group_->setPoseReferenceFrame(this->get_parameter("tool_reference_frame").as_string());
+    move_group_->setEndEffectorLink(this->get_parameter("end_effector_reference_frame").as_string());
 
     // Flip the pose about the x axis to have the gripper upside down
     geometry_msgs::msg::Pose pose;
     pose.orientation.x = 1.0;
     pose.orientation.w = 6e-17;
     pose.position.x = -0.04;
+    pose.position.z = 0.01;
     move_group_->setPoseTarget(pose);
 
     // TODO: remove this, it will be handled by the manager
@@ -273,7 +306,7 @@ bool BaseToolpathPlanner::process_toolpath(std::vector<KDL::Frame> &ee_cartesian
         tf_trans.header.frame_id = move_group_->getEndEffectorLink();
         tf_trans.header.stamp = this->get_clock()->now();
         tf_trans.child_frame_id = "ee_toolpath_point";
-        broadcaster.sendTransform(tf_trans);
+//        broadcaster.sendTransform(tf_trans);
         rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
     }
 
@@ -292,14 +325,14 @@ bool BaseToolpathPlanner::process_toolpath(std::vector<KDL::Frame> &ee_cartesian
         tf_trans.header.frame_id = move_group_->getEndEffectorLink();
         tf_trans.header.stamp = this->get_clock()->now();
         tf_trans.child_frame_id = "ee_toolpath_point";
-        broadcaster.sendTransform(tf_trans);
+//        broadcaster.sendTransform(tf_trans);
 
         //Frame part to tool
         tf_trans = tf2::kdlToTransform(tool_pose.Inverse());
         tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
         tf_trans.header.stamp = this->get_clock()->now();
         tf_trans.child_frame_id = "planned_ee_pose";
-        broadcaster.sendTransform(tf_trans);
+//        broadcaster.sendTransform(tf_trans);
         rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
 
         ee_cartesian_path.push_back(tool_pose.Inverse());

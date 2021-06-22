@@ -25,14 +25,17 @@ find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_kdl REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(tf2_eigen REQUIRED)
 
 include_directories(include)
 
-add_library(ram_helpers src/helpers.cpp)
+add_library(ram_helpers src/helpers.cpp src/trajectory_utils.cpp)
 ament_target_dependencies(ram_helpers
         rclcpp
         ram_interfaces
         std_srvs
+        moveit_ros_planning_interface
+        tf2_eigen
         )
 
 install(TARGETS ram_helpers
@@ -71,12 +74,25 @@ ament_target_dependencies(ompl_toolpath_planner
         Boost
         )
 
+add_executable(ompl_demo src/ompl_demo.cpp)
+
+ament_target_dependencies(ompl_demo
+        moveit_ros_planning_interface
+        Boost
+        )
 
 install(TARGETS
         example_program
         base_toolpath_planner
         ompl_toolpath_planner
-  DESTINATION lib/${PROJECT_NAME})
+        ompl_demo
+        RUNTIME DESTINATION lib/${PROJECT_NAME}
+        INCLUDES DESTINATION include
+        )
+
+install(DIRECTORY include/ DESTINATION include)
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -91,5 +107,4 @@ endif()
 
 ament_package()
 
-install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
-install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
+
