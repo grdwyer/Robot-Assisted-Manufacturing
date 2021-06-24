@@ -15,6 +15,7 @@ from python_qt_binding import loadUi
 from python_qt_binding.QtCore import QAbstractListModel, QFile, QIODevice, Qt, Signal
 from python_qt_binding.QtGui import QIcon, QImage, QPainter
 from python_qt_binding.QtWidgets import QCompleter, QFileDialog, QGraphicsScene, QWidget, QLabel
+from python_qt_binding.QtSvg import QSvgRenderer
 
 
 class ToolpathGui(Plugin):
@@ -52,6 +53,13 @@ class ToolpathGui(Plugin):
 
         self.files = []
         self.loaded_toolpath = Toolpath()
+
+        # Display stock toolpath
+        svg_file = os.path.join(get_package_share_directory('ram_gui'), 'resource', 'medpor_large.svg')
+        self._widget.graphics_view = QSvgRenderer(svg_file)
+
+        self.painter = QPainter()
+        self._widget.graphics_view.render(self.painter)
 
     def set_status(self, message):
         self._widget.label_status.setText(message)
@@ -121,7 +129,7 @@ class ToolpathGui(Plugin):
             self.set_status("Toolpath planner failed to execute the toolpath")
 
     def __del__(self):
-        self._node.get_logger().warn("Destroying logger plugin")
+        self._node.get_logger().warn("Destroying toolpath plugin")
         self.client_setup_toolpath.destroy()
         self.client_execute_toolpath.destroy()
         self.client_load_toolpath.destroy()
