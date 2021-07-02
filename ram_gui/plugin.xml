@@ -1,0 +1,17 @@
+<library path="ram_gui">
+    <class name="ToolpathGui" type="ram_gui.toolpath_gui.ToolpathGui" base_class_type="rqt_gui_py::Plugin">
+        <description>
+            A Python GUI plugin to load and execute toolpaths
+        </description>
+        <qtgui>
+            <group>
+                <label>Robot Assisted Manufacturing Tools</label>
+                <icon type="theme">folder</icon>
+                <statustip>Plugins related to the Robot Assisted Manufacturing project.</statustip>
+            </group>
+            <label>Toolpath Interface</label>
+            <icon type="theme">applications-other</icon>
+            <statustip>A Python GUI plugin to load and execute toolpaths.</statustip>
+        </qtgui>
+    </class>
+</library>

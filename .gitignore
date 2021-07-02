@@ -5,3 +5,6 @@ cmake-build-debug/
 */.idea
 *.ikcache
 */*/__pycache__/
+
+core
+*/core
