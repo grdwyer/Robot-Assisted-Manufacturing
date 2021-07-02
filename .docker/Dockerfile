@@ -99,6 +99,9 @@ RUN ["/bin/bash", "-c", "source /opt/ros/foxy/setup.bash &&\
     apt update && \
     rosdep install -r --from-paths . --ignore-src --rosdistro foxy -y"]
 
+# reduce size by removing apt cache
+RUN ["/bin/bash", "-c", "rm -rf /var/lib/apt/lists/*"]
+
 WORKDIR /moveit_ws
 RUN ["/bin/bash", "-c", "source /opt/ros/foxy/setup.bash &&\
     colcon build --executor sequential --cmake-args -DCMAKE_BUILD_TYPE=Release"]
