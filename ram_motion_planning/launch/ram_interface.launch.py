@@ -121,14 +121,14 @@ def generate_launch_description():
                      )
     nodes.append(rviz_node)
 
-    rqt_node = Node(package='rqt',
-                    executable='rqt',
+    rqt_node = Node(package='rqt_gui',
+                    executable='rqt_gui',
                     name='rqt',
                     output='own_log',
                     )
     nodes.append(rqt_node)
 
-    planner = IncludeLaunchDescription(PythonLaunchDescriptionSource(
-        get_package_share_directory('ram_motion_planning') + '/launch/toolpath_planner.py'))
+    planner_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(
+        get_package_share_directory('ram_motion_planning') + '/launch/toolpath_planner.launch.py'))
 
-    return LaunchDescription(declared_arguments + nodes + planner)
+    return LaunchDescription(declared_arguments + nodes + [planner_launch])
