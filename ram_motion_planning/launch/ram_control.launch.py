@@ -50,15 +50,12 @@ def generate_launch_description():
                                                 description="IP address of the kuka KONI"),
                           DeclareLaunchArgument("robot_port", default_value="30200",
                                                 description="Port used by the FRI (30200 - 30209"),
-                          DeclareLaunchArgument("real_manipulator", default_value="false",
-                                                description="Type of manipulator to startup (fake/false or real/true)"),
-                          DeclareLaunchArgument("rviz", default_value="true", description="If rviz should run")]
-    # specific arguments
+                          DeclareLaunchArgument("real_manipulator", default_value="true",
+                                                description="Type of manipulator to startup (fake/false or real/true)")]
 
     robot_ip = LaunchConfiguration("robot_ip")
     robot_port = LaunchConfiguration("robot_port")
     manipulator = LaunchConfiguration("real_manipulator")
-    rviz = LaunchConfiguration("rviz")
 
     # Component yaml files are grouped in separate namespaces
     ######################
@@ -83,7 +80,6 @@ def generate_launch_description():
             " ",
         ]
     )
-    print(robot_description_content)
     robot_description = {"robot_description": robot_description_content}
 
     robot_description_semantic_config = load_file('ram_moveit_config', 'config/iiwa_workcell.srdf')
@@ -128,23 +124,6 @@ def generate_launch_description():
                                        planning_scene_monitor_parameters
                                        ])
     nodes.append(move_group_node)
-
-    # RViz
-    rviz_config_file = get_package_share_directory('ram_motion_planning') + "/launch/moveit_dev_setup.rviz"
-
-    rviz_node = Node(package='rviz2',
-                     executable='rviz2',
-                     name='rviz2',
-                     output='own_log',
-                     arguments=['-d', rviz_config_file],
-                     parameters=[robot_description,
-                                 robot_description_semantic,
-                                 ompl_planning_pipeline_config,
-                                 kinematics_yaml,
-                                 ],
-                     condition=IfCondition(rviz)
-                     )
-    nodes.append(rviz_node)
 
     # Publish TF
     robot_state_publisher = Node(package='robot_state_publisher',
