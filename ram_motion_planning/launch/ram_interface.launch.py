@@ -132,3 +132,4 @@ def generate_launch_description():
         get_package_share_directory('ram_motion_planning') + '/launch/toolpath_planner.launch.py'))
 
     return LaunchDescription(declared_arguments + nodes + [planner_launch])
+
