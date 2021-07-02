@@ -28,7 +28,7 @@ class ToolpathGui(Plugin):
         loadUi(ui_file, self._widget)
         self._widget.setObjectName('Toolpath Interface')
         self.setObjectName('Toolpath Interface')
-        self._widget.setWindowTitle(self._widget.windowTitle())
+        self._widget.setWindowTitle('Toolpath Interface')
         if context.serial_number() > 1:
             self._widget.setWindowTitle(self._widget.windowTitle() + ('(%d)' % context.serial_number()))
             # Add widget to the user interface
@@ -55,11 +55,11 @@ class ToolpathGui(Plugin):
         self.loaded_toolpath = Toolpath()
 
         # Display stock toolpath
-        svg_file = os.path.join(get_package_share_directory('ram_gui'), 'resource', 'medpor_large.svg')
-        self._widget.graphics_view = QSvgRenderer(svg_file)
-
-        self.painter = QPainter()
-        self._widget.graphics_view.render(self.painter)
+        # svg_file = os.path.join(get_package_share_directory('ram_gui'), 'resource', 'medpor_large.svg')
+        # self._widget.graphics_view = QSvgRenderer(svg_file)
+        #
+        # self.painter = QPainter()
+        # self._widget.graphics_view.render(self.painter)
 
     def set_status(self, message):
         self._widget.label_status.setText(message)
