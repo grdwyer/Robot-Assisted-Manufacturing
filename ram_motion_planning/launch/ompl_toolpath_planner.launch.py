@@ -2,6 +2,8 @@ import os
 import yaml
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
 import xacro
 
@@ -48,18 +50,22 @@ def generate_launch_description():
     kinematics_yaml = load_yaml('ram_moveit_config', 'config/kinematics.yaml')
 
     node_config = load_yaml("ram_motion_planning", "config/toolpath_follower_defaults.yaml")
-    print(node_config)
+
     nodes = []
     # Start the actual move_group interface node
     toolpath_planner = Node(name='toolpath_planner',
-                             package='ram_motion_planning',
-                             executable='ompl_toolpath_planner',
-                             output='screen',
-                             parameters=[node_config,
-                                         robot_description,
-                                         robot_description_semantic,
-                                         kinematics_yaml
-                                         ])
+                            package='ram_motion_planning',
+                            executable='ompl_toolpath_planner',
+                            output='screen',
+                            parameters=[node_config,
+                                        robot_description,
+                                        robot_description_semantic,
+                                        kinematics_yaml
+                                        ])
     nodes.append(toolpath_planner)
+
+    interface_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(
+            get_package_share_directory('ram_motion_planning') + '/launch/ram_interface.launch.py'))
+    nodes.append(interface_launch)
 
     return LaunchDescription(nodes)

@@ -15,22 +15,27 @@ Current packages:
 This launches RVIZ, move_group node, sim iiwa controller, sim gripper controller, toolpath handler and stock handler.
 Now includes some arguments that can be set (just for the ros control side at the moment)
 
-Default (fake controller)
+Defaults to real robot now
 ```
-ros2 launch ram_motion_planning moveit_dev_setup.launch.py 
+ros2 launch ram_motion_planning ram_control.launch.py 
+```
+Add `robot_port:=30200 robot_ip:=192.170.10.2` to set the robot ip and port (make sure you also set that on the robot 
+controller)
+
+Use Sim robot
+```
+ros2 launch ram_motion_planning ram_control.launch.py real_manipulator:=false 
 ```
 
-Real kuka
-```
-ros2 launch ram_motion_planning moveit_dev_setup.launch.py real_manipulator:=true robot_port:=30200 robot_ip:=192.170.10.2
-```
-
-This launches the moveit movegroup interface for fully constrained toolpaths (6DoF) quite simple at the moment.
+This launches the moveit movegroup interface for fully constrained toolpaths (6DoF) quite simple at the moment or the 
+ompl constrained (also very simple)
 ```
 ros2 launch ram_motion_planning toolpath_planner.launch.py  
+
+ros2 launch ram_motion_planning ompl_toolpath_planner.launch.py
 ```
-When both launch files are running (wait for rviz to load), these service calls can be used
-toolpath_setup will:
+
+When both launch files are running (wait for rviz to load), the rqt gui or these service calls can be used to:
   * load the toolpath from the toolpath handler
   * Compute the part to tool transform
   * Plan to the approach pose
