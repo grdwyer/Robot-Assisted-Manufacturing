@@ -126,4 +126,6 @@ RUN ["/bin/bash", "-c", "source /opt/ros/$ROSDISTRO/setup.bash &&\
     colcon build --symlink-install \
     "]
 
+RUN ["/bin/bash", "-c", "cp /dev_ws/src/ram/.docker/entrypoint.sh / && chmod 777 /entrypoint.sh"]
+ENTRYPOINT [ "/entrypoint.sh" ]
 CMD ["bash"]
