@@ -2,11 +2,12 @@ import os
 import yaml
 from ament_index_python.packages import get_package_share_directory
 import xacro
-from launch import LaunchDescription
+from launch import LaunchDescription, LaunchContext
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.conditions import IfCondition
-from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution, TextSubstitution
+from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution, TextSubstitution, \
+    PythonExpression
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
@@ -47,9 +48,7 @@ def load_xacro(package_name, file_path, mappings):
 
 def generate_launch_description():
     # Adding arguments
-    declared_arguments = [DeclareLaunchArgument("planner", default_value="base",
-                                                description="The toolpath planner to run (e.g. base, ompl, servo"),
-                          DeclareLaunchArgument("robot_ip", default_value="192.170.10.2",
+    declared_arguments = [DeclareLaunchArgument("robot_ip", default_value="192.170.10.2",
                                                 description="IP address of the kuka KONI"),
                           DeclareLaunchArgument("robot_port", default_value="30200",
                                                 description="Port used by the FRI (30200 - 30209"),
@@ -62,7 +61,6 @@ def generate_launch_description():
     robot_port = LaunchConfiguration("robot_port")
     manipulator = LaunchConfiguration("real_manipulator")
     rviz = LaunchConfiguration("rviz")
-    planner = LaunchConfiguration("planner")
 
     # Component yaml files are grouped in separate namespaces
     ######################
@@ -121,15 +119,27 @@ def generate_launch_description():
                      )
     nodes.append(rviz_node)
 
+    rqt_perspective_file = get_package_share_directory('ram_gui') + "/resource/ram.perspective"
     rqt_node = Node(package='rqt_gui',
                     executable='rqt_gui',
                     name='rqt',
                     output='own_log',
+                    arguments=['--force-discover', '-p', rqt_perspective_file]
                     )
     nodes.append(rqt_node)
 
-    planner_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(
-        get_package_share_directory('ram_motion_planning') + '/launch/toolpath_planner.launch.py'))
+    # print(PythonExpression([planner, " == base"]))
+    # if planner.variable_name[0] == "base":
+    #     planner_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(
+    #         get_package_share_directory('ram_motion_planning') + '/launch/toolpath_planner.launch.py'),
+    #         condition=IfCondition(PythonExpression([planner, " == base"])))
+    #     nodes.append(planner_launch)
+    # elif planner.variable_name[0] == "ompl":
+    #     planner_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(
+    #         get_package_share_directory('ram_motion_planning') + '/launch/ompl_toolpath_planner.launch.py'))
+    #     nodes.append(planner_launch)
+    # else:
+    #     print("\n\n\nUnknown planner given as {}\n\n\n".format(planner.variable_name[0].describe()))
 
-    return LaunchDescription(declared_arguments + nodes + [planner_launch])
+    return LaunchDescription(declared_arguments + nodes)
 
