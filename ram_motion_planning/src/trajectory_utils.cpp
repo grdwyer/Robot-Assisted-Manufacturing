@@ -92,6 +92,80 @@ bool retime_trajectory_constant_velocity(moveit::planning_interface::MoveGroupIn
     return false;
 }
 
+bool retime_trajectory_trapezoidal_velocity(moveit::planning_interface::MoveGroupInterface::Plan &plan,
+                                         moveit::core::RobotStatePtr robot_state, double desired_velocity,
+                                         double desired_acceleration,
+                                         moveit::planning_interface::MoveGroupInterface::Plan &retimed_plan) {
+
+    const moveit::core::JointModelGroup* joint_model_group = robot_state->getJointModelGroup("iiwa");
+    Eigen::Isometry3d p_start, p_end;
+    double distance, time_between_points;
+    rclcpp::Duration new_time_from_start = rclcpp::Duration(0, 0);
+    retimed_plan.trajectory_ = plan.trajectory_;
+    retimed_plan.planning_time_ = plan.planning_time_;
+    retimed_plan.start_state_ = plan.start_state_;
+
+    std::vector<double> distance_between_points, desired_velocities;
+
+
+    for(ulong i = 0; i < plan.trajectory_.joint_trajectory.points.size(); i++) {
+        if (i > 0) {
+            robot_state->setJointGroupPositions(joint_model_group,
+                                                plan.trajectory_.joint_trajectory.points[i - 1].positions);
+            p_start = robot_state->getGlobalLinkTransform("gripper_jaw_centre");
+
+            robot_state->setJointGroupPositions(joint_model_group,
+                                                plan.trajectory_.joint_trajectory.points[i].positions);
+            p_end = robot_state->getGlobalLinkTransform("gripper_jaw_centre");
+
+            distance_between_points.emplace_back((p_end.translation() - p_start.translation()).norm());
+        }
+    }
+
+    double acc_time = desired_velocity / desired_acceleration;
+    double current_desired_velocity, distance_from_start, distance_to_end, distance_acceleration, total_distance = 0;
+
+    for(const auto &dist : distance_between_points){
+        total_distance += dist;
+    }
+    distance_acceleration = pow(desired_velocity,2) / (2 * desired_acceleration);
+    distance_from_start = distance_between_points[0];
+
+    for(ulong i = 0; i < plan.trajectory_.joint_trajectory.points.size(); i++){
+        if (i > 0) {
+            distance_from_start += distance_between_points[i];
+            distance_to_end = total_distance - distance_from_start;
+
+            if(distance_from_start < distance_acceleration){
+                current_desired_velocity = sqrt(2 * desired_acceleration * distance_from_start);
+                time_between_points = distance / current_desired_velocity;
+                desired_velocities.emplace_back(current_desired_velocity);
+            }else if(distance_to_end < distance_acceleration){
+                current_desired_velocity = sqrt(2 * desired_acceleration * distance_to_end);
+                time_between_points = distance / current_desired_velocity;
+                desired_velocities.emplace_back(current_desired_velocity);
+            } else{
+                time_between_points = distance / desired_velocity;
+                desired_velocities.emplace_back(desired_velocity);
+            }
+
+            new_time_from_start = rclcpp::Duration(retimed_plan.trajectory_.joint_trajectory.points[i-1].time_from_start) + \
+                    rclcpp::Duration::from_seconds(time_between_points);
+
+            RCLCPP_DEBUG_STREAM(LOGGER, "Point " << i << " of " << plan.trajectory_.joint_trajectory.points.size()
+                                                 << "\nOriginal time from start: " << rclcpp::Duration(retimed_plan.trajectory_.joint_trajectory.points[i].time_from_start).seconds()
+                                                 << "\nDistance between points: " << distance << "\nRecalculated time from start: " << new_time_from_start.seconds() << std::endl);
+
+            retimed_plan.trajectory_.joint_trajectory.points[i].time_from_start = new_time_from_start;
+        } else{
+            // TODO: take the start state and determine distance from start to first point.
+
+        }
+
+    }
+    return false;
+}
+
 void interpolate_pose_trajectory(std::vector<geometry_msgs::msg::PoseStamped> &original, double max_distance,
                                  double max_angle, std::vector<geometry_msgs::msg::PoseStamped> &interpolated) {
     double dist, angle;

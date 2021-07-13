@@ -153,7 +153,7 @@ bool BaseToolpathPlanner::construct_plan_request() {
     RCLCPP_INFO_STREAM(LOGGER, "Cartesian planning for toolpath using Waypoints: \n" << interpolated_waypoints);
     const double jump_threshold = 0.0;
     const double eef_step = 0.001;
-    double fraction = move_group_->computeCartesianPath(interpolated_waypoints, eef_step, jump_threshold, trajectory_toolpath_);
+    double fraction = move_group_->computeCartesianPath(waypoints, eef_step, jump_threshold, trajectory_toolpath_);
     RCLCPP_INFO(LOGGER, "Visualizing Cartesian path (%.2f%% acheived)", fraction * 100.0);
     moveit::planning_interface::MoveGroupInterface::Plan plan, retimed_plan;
     robot_state_ = move_group_->getCurrentState(2.0);
