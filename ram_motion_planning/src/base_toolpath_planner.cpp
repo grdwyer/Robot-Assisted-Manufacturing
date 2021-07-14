@@ -158,7 +158,7 @@ bool BaseToolpathPlanner::construct_plan_request() {
     moveit::planning_interface::MoveGroupInterface::Plan plan, retimed_plan;
     robot_state_ = move_group_->getCurrentState(2.0);
     plan.trajectory_ = trajectory_toolpath_;
-    retime_trajectory_constant_velocity(plan, robot_state_, 0.08, retimed_plan);
+    retime_trajectory_trapezoidal_velocity(plan, robot_state_, 0.08, 0.08, retimed_plan);
     trajectory_toolpath_ = retimed_plan.trajectory_;
     return fraction > 0.99;
     }

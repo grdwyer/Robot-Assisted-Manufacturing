@@ -30,5 +30,9 @@ void interpolate_pose_trajectory(std::vector<geometry_msgs::msg::Pose> &original
 // Trajectory manipulation
 bool retime_trajectory_constant_velocity(moveit::planning_interface::MoveGroupInterface::Plan &plan, moveit::core::RobotStatePtr robot_state, double desired_velocity, moveit::planning_interface::MoveGroupInterface::Plan &retimed_plan);
 
+bool retime_trajectory_trapezoidal_velocity(moveit::planning_interface::MoveGroupInterface::Plan &plan,
+                                            moveit::core::RobotStatePtr robot_state, double desired_velocity,
+                                            double desired_acceleration,
+                                            moveit::planning_interface::MoveGroupInterface::Plan &retimed_plan);
 
 #endif //RAM_TRAJECTORY_UTILS_H

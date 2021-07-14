@@ -129,12 +129,14 @@ bool retime_trajectory_trapezoidal_velocity(moveit::planning_interface::MoveGrou
         total_distance += dist;
     }
     distance_acceleration = pow(desired_velocity,2) / (2 * desired_acceleration);
-    distance_from_start = distance_between_points[0];
+    distance_from_start = 0;
 
     for(ulong i = 0; i < plan.trajectory_.joint_trajectory.points.size(); i++){
         if (i > 0) {
-            distance_from_start += distance_between_points[i];
+            distance_from_start += distance_between_points[i-1];
             distance_to_end = total_distance - distance_from_start;
+
+            distance = distance_between_points[i-1];
 
             if(distance_from_start < distance_acceleration){
                 current_desired_velocity = sqrt(2 * desired_acceleration * distance_from_start);
@@ -142,6 +144,10 @@ bool retime_trajectory_trapezoidal_velocity(moveit::planning_interface::MoveGrou
                 desired_velocities.emplace_back(current_desired_velocity);
             }else if(distance_to_end < distance_acceleration){
                 current_desired_velocity = sqrt(2 * desired_acceleration * distance_to_end);
+                if(current_desired_velocity < 1e-3){
+                    RCLCPP_WARN_STREAM(LOGGER, "Replacing velocity with previous set velocity");
+                    current_desired_velocity = desired_velocities.back();
+                }
                 time_between_points = distance / current_desired_velocity;
                 desired_velocities.emplace_back(current_desired_velocity);
             } else{
@@ -152,7 +158,7 @@ bool retime_trajectory_trapezoidal_velocity(moveit::planning_interface::MoveGrou
             new_time_from_start = rclcpp::Duration(retimed_plan.trajectory_.joint_trajectory.points[i-1].time_from_start) + \
                     rclcpp::Duration::from_seconds(time_between_points);
 
-            RCLCPP_DEBUG_STREAM(LOGGER, "Point " << i << " of " << plan.trajectory_.joint_trajectory.points.size()
+            RCLCPP_INFO_STREAM(LOGGER, "Point " << i << " of " << plan.trajectory_.joint_trajectory.points.size()
                                                  << "\nOriginal time from start: " << rclcpp::Duration(retimed_plan.trajectory_.joint_trajectory.points[i].time_from_start).seconds()
                                                  << "\nDistance between points: " << distance << "\nRecalculated time from start: " << new_time_from_start.seconds() << std::endl);
 
