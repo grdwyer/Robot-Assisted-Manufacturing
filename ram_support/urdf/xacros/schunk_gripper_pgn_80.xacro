@@ -4,7 +4,28 @@
   <xacro:property name="max_effort" value="300"/> <!-- Should be changed to match the robots specs -->
   
   <xacro:macro name="schunk_gripper" params="hardware_interface robot_name">
-    
+    <link name="${robot_name}_link_iiwa_attachment">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/pgn_80/visual/gripper_iiwa_attachment.dae"/>
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/pgn_80/collision/gripper_iiwa_attachment.stl"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="${robot_name}_iiwa_attachment_joint" type="fixed">
+      <parent link="${robot_name}_link_iiwa_attachment"/>
+      <child link="${robot_name}_link_main_body"/>
+      <origin xyz="0 0 0.0195" rpy="0 0 -${pi/4}"/>
+    </joint>
+
     <link name="${robot_name}_link_main_body">
       
       <visual>

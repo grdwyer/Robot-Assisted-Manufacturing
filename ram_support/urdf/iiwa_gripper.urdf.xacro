@@ -7,7 +7,7 @@
     <link name="world"/>
 
     <xacro:include filename="$(find ram_support)/urdf/xacros/iiwa_14.xacro"/>
-    <xacro:include filename="$(find ram_support)/urdf/xacros/schunk_gripper_pgn_100.xacro"/>
+    <xacro:include filename="$(find ram_support)/urdf/xacros/schunk_gripper_pgn_80.xacro"/>
     <xacro:include filename="$(find ram_support)/urdf/xacros/optical_table.xacro"/>
     <xacro:include filename="$(find ram_support)/urdf/xacros/iiwa_14_mounting_plate.xacro"/>
 
@@ -42,9 +42,10 @@
     </xacro:iiwa14>
 
     <joint name="$(arg iiwa_name)_to_$(arg gripper_name)_joint" type="fixed">
-        <parent link="$(arg iiwa_name)_link_ee"/>
-        <child link="$(arg gripper_name)_link_main_body"/>
-        <origin xyz="0 0 0.006" rpy="0.0 0.0 ${pi/2}"/>
+<!--        <parent link="$(arg iiwa_name)_link_ee"/>-->
+        <parent link="world"/>
+        <child link="$(arg gripper_name)_link_iiwa_attachment"/>
+        <origin xyz="0 0 0.00" rpy="0.0 0.0 0.0"/> <!-- ${pi/2} -->
     </joint>
 
     <xacro:schunk_gripper hardware_interface="$(arg hardware_interface)" robot_name="$(arg gripper_name)">

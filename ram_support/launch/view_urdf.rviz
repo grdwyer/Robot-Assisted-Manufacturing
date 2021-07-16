@@ -63,24 +63,16 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        a_implant:
+        cutting_plate:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        a_implant_tab_centre:
+        cutting_plate_base:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        a_implant_tab_left:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        a_implant_tab_right:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        cutting_plate:
+        cutting_tool:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -93,32 +85,23 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        gripper_finger_left:
+        gripper_jaw_centre:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gripper_jaw_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gripper_jaw_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gripper_link_iiwa_attachment:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        gripper_finger_right:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        gripper_finger_tip_left:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        gripper_finger_tip_right:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        gripper_gripper_mount_left:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        gripper_gripper_mount_right:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         gripper_link_left:
           Alpha: 1
           Show Axes: false
@@ -134,6 +117,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        home_a_implant:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         iiwa_link_0:
           Alpha: 1
           Show Axes: false
@@ -188,20 +175,6 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
         iiwa_mounting_plate_front_left_bolt:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        milling_plate:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        milling_tool_base:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        milling_tool_tip:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -242,36 +215,32 @@ Visualization Manager:
         All Enabled: false
         a_implant:
           Value: false
-        a_implant_tab_centre:
-          Value: true
-        a_implant_tab_left:
-          Value: false
-        a_implant_tab_right:
-          Value: false
         cutting_plate:
           Value: false
+        cutting_plate_base:
+          Value: true
+        cutting_tool:
+          Value: true
         cutting_tool_base:
           Value: false
         cutting_tool_tip:
           Value: false
-        gripper_finger_left:
-          Value: false
-        gripper_finger_right:
-          Value: false
-        gripper_finger_tip_left:
+        gripper_jaw_centre:
           Value: true
-        gripper_finger_tip_right:
+        gripper_jaw_left:
           Value: true
-        gripper_gripper_mount_left:
-          Value: false
-        gripper_gripper_mount_right:
-          Value: false
+        gripper_jaw_right:
+          Value: true
+        gripper_link_iiwa_attachment:
+          Value: true
         gripper_link_left:
           Value: false
         gripper_link_main_body:
           Value: false
         gripper_link_right:
           Value: false
+        home_a_implant:
+          Value: true
         iiwa_link_0:
           Value: false
         iiwa_link_1:
@@ -296,12 +265,6 @@ Visualization Manager:
           Value: false
         iiwa_mounting_plate_front_left_bolt:
           Value: false
-        milling_plate:
-          Value: true
-        milling_tool_base:
-          Value: false
-        milling_tool_tip:
-          Value: false
         optical_table:
           Value: false
         optical_table_back_left_bolt:
@@ -322,20 +285,13 @@ Visualization Manager:
       Tree:
         world:
           a_implant:
-            a_implant_tab_centre:
-              {}
-            a_implant_tab_left:
-              {}
-            a_implant_tab_right:
-              {}
+            {}
           optical_table:
             optical_table_back_left_bolt:
-              {}
+              home_a_implant:
+                {}
             optical_table_back_right_bolt:
-              milling_plate:
-                milling_tool_base:
-                  milling_tool_tip:
-                    {}
+              {}
             optical_table_front_left_bolt:
               iiwa_mounting_plate_front_left_bolt:
                 iiwa_mounting_plate:
@@ -349,22 +305,24 @@ Visualization Manager:
                                 iiwa_link_6:
                                   iiwa_link_7:
                                     iiwa_link_ee:
-                                      gripper_link_main_body:
-                                        gripper_link_left:
-                                          gripper_gripper_mount_left:
-                                            gripper_finger_left:
-                                              gripper_finger_tip_left:
-                                                {}
-                                        gripper_link_right:
-                                          gripper_gripper_mount_right:
-                                            gripper_finger_right:
-                                              gripper_finger_tip_right:
-                                                {}
+                                      gripper_link_iiwa_attachment:
+                                        gripper_link_main_body:
+                                          gripper_jaw_centre:
+                                            {}
+                                          gripper_link_left:
+                                            gripper_jaw_left:
+                                              {}
+                                          gripper_link_right:
+                                            gripper_jaw_right:
+                                              {}
             optical_table_front_right_bolt:
               cutting_plate:
-                cutting_tool_base:
-                  cutting_tool_tip:
-                    {}
+                cutting_plate_base:
+                  cutting_tool:
+                    cutting_tool_base:
+                      {}
+                    cutting_tool_tip:
+                      {}
       Update Interval: 0
       Value: true
   Enabled: true
@@ -410,25 +368,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 0.5848851203918457
+      Distance: 0.471799373626709
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.27565014362335205
-        Y: -0.18066884577274323
-        Z: 1.3831944465637207
+        X: -0.29902905225753784
+        Y: 0.29000580310821533
+        Z: 1.3236267566680908
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.16039778292179108
+      Pitch: 0.5853978991508484
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz_default_plugins)
-      Yaw: 1.5635751485824585
+      Yaw: 3.0585756301879883
     Saved: ~
 Window Geometry:
   Displays:
