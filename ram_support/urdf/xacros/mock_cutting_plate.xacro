@@ -7,14 +7,14 @@
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://ram_support/meshes/tools/visual/us_cutter_enclosure.dae"/>
+          <mesh filename="package://ram_support/meshes/tools/visual/mock_cutting_plate.dae"/>
         </geometry>
       </visual>
 
       <collision>
-        <origin xyz="0 0 0" rpy="0 0 ${-pi/2}"/>
+        <origin xyz="0 0 0.125" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://ram_support/meshes/tools/collision/us_cutter_enclosure.stl"/>
+          <box size="0.25 0.25 0.25"/>
         </geometry>
       </collision>
     </link>
@@ -22,7 +22,7 @@
     <joint name="cutting_plate_surface_joint" type="fixed">
       <parent link="cutting_plate"/>
       <child link="cutting_plate_base"/>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="0 0 0.25" rpy="0 0 0"/>
     </joint>
 
     <link name="cutting_plate_base"/>
@@ -50,7 +50,7 @@
     <joint name="cutting_tool_joint" type="fixed">
       <parent link="cutting_plate_base"/>
       <child link="cutting_tool"/>
-      <origin xyz="0.017 0 -0.0035" rpy="0 0 0"/>
+      <origin xyz="0 0 -0.0035" rpy="0 0 0"/>
     </joint>
 
     <joint name="cutting_tool_base_joint" type="fixed">

@@ -10,8 +10,7 @@
     <xacro:include filename="$(find ram_support)/urdf/xacros/schunk_gripper_pgn_80.xacro"/>
     <xacro:include filename="$(find ram_support)/urdf/xacros/optical_table.xacro"/>
     <xacro:include filename="$(find ram_support)/urdf/xacros/iiwa_14_mounting_plate.xacro"/>
-    <xacro:include filename="$(find ram_support)/urdf/xacros/milling_plate.xacro"/>
-    <xacro:include filename="$(find ram_support)/urdf/xacros/mock_cutting_plate.xacro"/>
+    <xacro:include filename="$(find ram_support)/urdf/xacros/cutting_plate.xacro"/>
     <xacro:include filename="$(find ram_support)/urdf/xacros/medpor_stock.xacro"/>
 
     <xacro:arg name="iiwa_name" default="iiwa"/>
@@ -29,7 +28,7 @@
     <joint name="$(arg iiwa_name)_mounting_plate_base_joint" type="fixed">
         <parent link="optical_table_front_left_bolt"/>
         <child link="$(arg iiwa_name)_mounting_plate_front_left_bolt"/>
-        <origin xyz="0.125 0.125 0.00" rpy="0.0 0.0 0"/>
+        <origin xyz="0.175 0.150 0.00" rpy="0.0 0.0 0"/>
     </joint>
 
     <xacro:iiwa_14_mounting_plate robot_name="$(arg iiwa_name)"/>
@@ -52,21 +51,11 @@
     <xacro:schunk_gripper hardware_interface="$(arg hardware_interface)" robot_name="$(arg gripper_name)">
     </xacro:schunk_gripper>
 
-<!--    <xacro:implant_grasp_fingers gripper_name="$(arg gripper_name)"/>-->
-
-<!--    <joint name="milling_plate_base_joint" type="fixed">-->
-<!--        <parent link="optical_table_back_right_bolt"/>-->
-<!--        <child link="milling_plate"/>-->
-<!--        <origin xyz="-0.2 -0.2 0.00" rpy="0.0 0.0 0"/>-->
-<!--    </joint>-->
-
-<!--    <xacro:milling_plate tool_length="0.005" tool_diameter="0.002"/>-->
-
     <joint name="cutting_plate_base_joint" type="fixed">
-        <parent link="optical_table_front_right_bolt"/>
+        <parent link="optical_table_back_left_bolt"/>
         <child link="cutting_plate"/>
 <!--        <origin xyz="0.0 0.2 0.30" rpy="0.0 -${pi/2} 0"/>-->
-        <origin xyz="-0.35 0.2 0.0" rpy="0 0 0"/>
+        <origin xyz="-0.17351 -0.237 0.051" rpy="0 0 0"/>
     </joint>
 
     <xacro:cutting_plate />

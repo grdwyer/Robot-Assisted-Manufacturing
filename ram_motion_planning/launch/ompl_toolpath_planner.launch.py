@@ -41,7 +41,7 @@ def generate_launch_description():
     ######################
     #### Config Files ####
     ######################
-    doc = load_xacro('ram_support', 'urdf/mock_iiwa_workcell.urdf.xacro')
+    doc = load_xacro('ram_support', 'urdf/iiwa_workcell.urdf.xacro')
     robot_description = {'robot_description': doc}
 
     robot_description_semantic_config = load_file('ram_moveit_config', 'config/iiwa_workcell.srdf')
