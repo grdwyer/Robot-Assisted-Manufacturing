@@ -31,9 +31,8 @@
     <disable_collisions link1="cutting_plate" link2="iiwa_link_2" reason="Never"/>
     <disable_collisions link1="cutting_plate" link2="iiwa_link_3" reason="Never"/>
     <disable_collisions link1="cutting_plate" link2="iiwa_mounting_plate" reason="Never"/>
-    <disable_collisions link1="cutting_plate" link2="milling_plate" reason="Never"/>
-    <disable_collisions link1="cutting_plate" link2="milling_tool_base" reason="Never"/>
     <disable_collisions link1="cutting_plate" link2="optical_table" reason="Adjacent"/>
+    <disable_collisions link1="gripper_link_iiwa_attachment" link2="gripper_link_main_body" reason="Adjacent"/>
     <disable_collisions link1="gripper_link_left" link2="gripper_link_main_body" reason="Adjacent"/>
     <disable_collisions link1="gripper_link_left" link2="gripper_link_right" reason="Never"/>
     <disable_collisions link1="gripper_link_left" link2="iiwa_link_1" reason="Never"/>
@@ -43,7 +42,6 @@
     <disable_collisions link1="gripper_link_left" link2="iiwa_link_5" reason="Never"/>
     <disable_collisions link1="gripper_link_left" link2="iiwa_link_6" reason="Never"/>
     <disable_collisions link1="gripper_link_left" link2="iiwa_link_7" reason="Never"/>
-    <disable_collisions link1="gripper_link_left" link2="milling_tool_base" reason="Never"/>
     <disable_collisions link1="gripper_link_main_body" link2="gripper_link_right" reason="Adjacent"/>
     <disable_collisions link1="gripper_link_main_body" link2="iiwa_link_1" reason="Never"/>
     <disable_collisions link1="gripper_link_main_body" link2="iiwa_link_2" reason="Never"/>
@@ -64,8 +62,6 @@
     <disable_collisions link1="iiwa_link_0" link2="iiwa_link_3" reason="Never"/>
     <disable_collisions link1="iiwa_link_0" link2="iiwa_link_4" reason="Never"/>
     <disable_collisions link1="iiwa_link_0" link2="iiwa_mounting_plate" reason="Adjacent"/>
-    <disable_collisions link1="iiwa_link_0" link2="milling_plate" reason="Never"/>
-    <disable_collisions link1="iiwa_link_0" link2="milling_tool_base" reason="Never"/>
     <disable_collisions link1="iiwa_link_0" link2="optical_table" reason="Never"/>
     <disable_collisions link1="iiwa_link_1" link2="iiwa_link_2" reason="Adjacent"/>
     <disable_collisions link1="iiwa_link_1" link2="iiwa_link_3" reason="Never"/>
@@ -74,8 +70,6 @@
     <disable_collisions link1="iiwa_link_1" link2="iiwa_link_6" reason="Never"/>
     <disable_collisions link1="iiwa_link_1" link2="iiwa_link_7" reason="Never"/>
     <disable_collisions link1="iiwa_link_1" link2="iiwa_mounting_plate" reason="Never"/>
-    <disable_collisions link1="iiwa_link_1" link2="milling_plate" reason="Never"/>
-    <disable_collisions link1="iiwa_link_1" link2="milling_tool_base" reason="Never"/>
     <disable_collisions link1="iiwa_link_1" link2="optical_table" reason="Never"/>
     <disable_collisions link1="iiwa_link_2" link2="iiwa_link_3" reason="Adjacent"/>
     <disable_collisions link1="iiwa_link_2" link2="iiwa_link_4" reason="Never"/>
@@ -83,29 +77,19 @@
     <disable_collisions link1="iiwa_link_2" link2="iiwa_link_6" reason="Never"/>
     <disable_collisions link1="iiwa_link_2" link2="iiwa_link_7" reason="Never"/>
     <disable_collisions link1="iiwa_link_2" link2="iiwa_mounting_plate" reason="Never"/>
-    <disable_collisions link1="iiwa_link_2" link2="milling_plate" reason="Never"/>
-    <disable_collisions link1="iiwa_link_2" link2="milling_tool_base" reason="Never"/>
     <disable_collisions link1="iiwa_link_2" link2="optical_table" reason="Never"/>
     <disable_collisions link1="iiwa_link_3" link2="iiwa_link_4" reason="Adjacent"/>
     <disable_collisions link1="iiwa_link_3" link2="iiwa_link_5" reason="Never"/>
     <disable_collisions link1="iiwa_link_3" link2="iiwa_link_6" reason="Never"/>
     <disable_collisions link1="iiwa_link_3" link2="iiwa_link_7" reason="Never"/>
     <disable_collisions link1="iiwa_link_3" link2="iiwa_mounting_plate" reason="Never"/>
-    <disable_collisions link1="iiwa_link_3" link2="milling_plate" reason="Never"/>
-    <disable_collisions link1="iiwa_link_3" link2="milling_tool_base" reason="Never"/>
     <disable_collisions link1="iiwa_link_3" link2="optical_table" reason="Never"/>
     <disable_collisions link1="iiwa_link_4" link2="iiwa_link_5" reason="Adjacent"/>
     <disable_collisions link1="iiwa_link_4" link2="iiwa_link_6" reason="Never"/>
     <disable_collisions link1="iiwa_link_4" link2="iiwa_link_7" reason="Never"/>
     <disable_collisions link1="iiwa_link_4" link2="iiwa_mounting_plate" reason="Never"/>
-    <disable_collisions link1="iiwa_link_4" link2="milling_plate" reason="Never"/>
-    <disable_collisions link1="iiwa_link_4" link2="milling_tool_base" reason="Never"/>
     <disable_collisions link1="iiwa_link_5" link2="iiwa_link_6" reason="Adjacent"/>
     <disable_collisions link1="iiwa_link_6" link2="iiwa_link_7" reason="Adjacent"/>
-    <disable_collisions link1="iiwa_mounting_plate" link2="milling_plate" reason="Never"/>
-    <disable_collisions link1="iiwa_mounting_plate" link2="milling_tool_base" reason="Never"/>
+    <disable_collisions link1="iiwa_link_7" link2="gripper_link_iiwa_attachment" reason="Adjacent"/>
     <disable_collisions link1="iiwa_mounting_plate" link2="optical_table" reason="Adjacent"/>
-    <disable_collisions link1="milling_plate" link2="milling_tool_base" reason="Adjacent"/>
-    <disable_collisions link1="milling_plate" link2="optical_table" reason="Adjacent"/>
-    <disable_collisions link1="milling_tool_base" link2="optical_table" reason="Never"/>
 </robot>

@@ -70,7 +70,7 @@ def generate_launch_description():
         [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
-            PathJoinSubstitution([FindPackageShare('ram_support'), "urdf", 'mock_iiwa_workcell.urdf.xacro']),
+            PathJoinSubstitution([FindPackageShare('ram_support'), "urdf", 'iiwa_workcell.urdf.xacro']),
             " ",
             "robot_ip:=",
             robot_ip,

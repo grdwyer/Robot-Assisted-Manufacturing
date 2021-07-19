@@ -52,7 +52,7 @@ def generate_launch_description():
                                                 description="Port used by the FRI (30200 - 30209"),
                           DeclareLaunchArgument("real_manipulator", default_value="false",
                                                 description="Type of manipulator to startup (fake/false or real/true)"),
-                          DeclareLaunchArgument("rviz", default_value="true", description="If rviz should run")]
+                          DeclareLaunchArgument("rviz", default_value="false", description="If rviz should run")]
     # specific arguments
 
     robot_ip = LaunchConfiguration("robot_ip")
@@ -68,7 +68,7 @@ def generate_launch_description():
         [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
-            PathJoinSubstitution([FindPackageShare('ram_support'), "urdf", 'mock_iiwa_workcell.urdf.xacro']),
+            PathJoinSubstitution([FindPackageShare('ram_support'), "urdf", 'iiwa_workcell.urdf.xacro']),
             " ",
             "robot_ip:=",
             robot_ip,

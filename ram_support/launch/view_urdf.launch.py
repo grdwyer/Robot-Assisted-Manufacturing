@@ -31,7 +31,7 @@ def load_yaml(package_name, file_path):
 def generate_launch_description():
     # Component yaml files are grouped in separate namespaces
     package_path = get_package_share_directory('ram_support')
-    absolute_file_path = os.path.join(package_path, 'urdf/mock_iiwa_workcell.urdf.xacro')
+    absolute_file_path = os.path.join(package_path, 'urdf/iiwa_workcell.urdf.xacro')
     doc = xacro.process_file(absolute_file_path).toprettyxml(indent='  ')
 
     robot_description = {'robot_description' : doc}
