@@ -83,7 +83,10 @@ RUN pip3 install -U \
     pytest-repeat \
     pytest-rerunfailures \
     pytest \
-    pyassimp==4.1.3
+    pyassimp==4.1.3 \
+    gpiozero \
+    pigpio
+
 
 # Moveit 2 build process
 RUN mkdir -p /moveit_ws/src
@@ -119,6 +122,8 @@ COPY . /dev_ws/src/ram/
 WORKDIR /dev_ws
 RUN ["/bin/bash", "-c", "source /opt/ros/$ROSDISTRO/setup.bash &&\
     source /moveit_ws/install/setup.bash &&\
+    vcs import src < ./src/ram/dependencies.rosinstall &&\
+    vcs pull src || true &&\
     colcon build --symlink-install \
     "]
 
