@@ -19,6 +19,8 @@ BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): N
     this->declare_parameter<int>("moveit_planning_attempts", 5);
     this->declare_parameter<double>("desired_cartesian_velocity", 0.08);
     this->declare_parameter<double>("desired_cartesian_acceleration", 0.08);
+    this->declare_parameter<double>("approach_offset", 0.02);
+    this->declare_parameter<double>("retreat_offset", 0.02);
 
     // Initialise
     auto move_group_node = std::make_shared<rclcpp::Node>("moveit", rclcpp::NodeOptions());
@@ -76,7 +78,9 @@ void BaseToolpathPlanner::configuration_message() {
     "\n\t\tPlanning time: " << this->get_parameter("moveit_planning_time").as_double() <<
     "\n\t\tPlanning attempts: " << this->get_parameter("moveit_planning_attempts").as_int() <<
     "\n\tDesired cartesian velocity: " << this->get_parameter("desired_cartesian_velocity").as_double() <<
-    "\n\tDesired cartesian acceleration: " << this->get_parameter("desired_cartesian_acceleration").as_double()
+    "\n\tDesired cartesian acceleration: " << this->get_parameter("desired_cartesian_acceleration").as_double() <<
+    "\n\tApproach pose offset: " << this->get_parameter("approach_offset").as_double() <<
+    "\n\tRetreat pose offset: " << this->get_parameter("retreat_offset").as_double()
     );
 }
 
@@ -115,7 +119,8 @@ bool BaseToolpathPlanner::construct_plan_request() {
     geometry_msgs::msg::Pose approach_pose;
     KDL::Frame initial_path_frame, approach_frame;
     initial_path_frame = ee_cartesian_path.front();
-    approach_frame = KDL::Frame(KDL::Vector(-0.01,0,0)) * initial_path_frame; // TODO: param this
+    double approach_offset = std::max(this->get_parameter("approach_offset").as_double(), 0.001);
+    approach_frame = KDL::Frame(KDL::Vector(-approach_offset,0,0)) * initial_path_frame; // TODO: param this
     tf_trans = tf2::kdlToTransform(approach_frame);
     tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
     tf_trans.header.stamp = this->get_clock()->now();
@@ -126,8 +131,9 @@ bool BaseToolpathPlanner::construct_plan_request() {
     // Determine an retreat pose for the toolpath
     geometry_msgs::msg::Pose retreat_pose;
     KDL::Frame end_path_frame, retreat_frame;
+    double retreat_offset = std::max(this->get_parameter("retreat_offset").as_double(), 0.001);
     end_path_frame = ee_cartesian_path.back();
-    retreat_frame = KDL::Frame(KDL::Vector(0.01,0,0)) * end_path_frame; // TODO: param this
+    retreat_frame = KDL::Frame(KDL::Vector(retreat_offset,0,0)) * end_path_frame; // TODO: param this
     tf_trans = tf2::kdlToTransform(retreat_frame);
     tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
     tf_trans.header.stamp = this->get_clock()->now();
