@@ -4,3 +4,9 @@ moveit_planning_group: 'iiwa'
 tool_reference_frame: 'cutting_tool_tip'
 end_effector_reference_frame: 'gripper_jaw_centre'
 part_reference_frame: 'implant'
+moveit_scale_velocity: 0.2
+moveit_scale_acceleration: 1.0
+moveit_planning_time: 30.0
+moveit_planning_attempts: 5
+desired_cartesian_velocity: 0.08
+desired_cartesian_acceleration: 0.08
