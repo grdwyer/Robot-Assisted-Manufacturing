@@ -119,7 +119,7 @@ def generate_launch_description():
     # Gripper control
     sim_gripper_controller = Node(package="ram_gripper_control",
                                   executable="sim_gripper_controller",
-                                  name="sim_gripper_controller",
+                                  name="gripper_controller",
                                   output="screen",
                                   condition=UnlessCondition(gripper)
                                   )

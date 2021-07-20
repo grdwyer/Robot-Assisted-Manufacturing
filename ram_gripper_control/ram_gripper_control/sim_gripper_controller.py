@@ -18,7 +18,7 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 class SimGripperController(Node):
     def __init__(self):
-        super().__init__('sim_gripper_controller')
+        super().__init__('gripper_controller')
 
         # two service servers with empty requests for open and close.
         self.service_open = self.create_service(std_srvs.srv.Trigger, '{}/open'.format(self.get_name()),
