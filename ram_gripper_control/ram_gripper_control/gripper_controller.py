@@ -47,7 +47,7 @@ class GripperController(Node):
         success = self.client_daq_output.wait_for_service(20)
         if success:
             # configure pins
-            request = ModifyGPIOSetup()
+            request = ModifyGPIOSetup.Request()
             request.pin_numbers.append(self.get_parameter("open_solenoid").get_parameter_value().integer_value)
             request.pin_numbers.append(self.get_parameter("close_solenoid").get_parameter_value().integer_value)
             request.operations.append(ModifyGPIOSetup.Request.OUTPUT)
