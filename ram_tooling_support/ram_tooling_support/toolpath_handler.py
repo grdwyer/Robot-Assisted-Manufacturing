@@ -82,6 +82,7 @@ class ToolPathHandler(Node):
         self.pub_marker.publish(msg)
 
     def callback_load_toolpath(self, request, response):
+        self.timer_rviz_display.cancel()
         self.load_toolpath_file()
 
         if self.toolpath_config is not None:
@@ -90,6 +91,8 @@ class ToolPathHandler(Node):
             response.message = "Loaded toolpath from {}, containing {} points".format(
                 self.get_parameter("toolpath_file").get_parameter_value().string_value,
                 len(self.toolpath_config["cut"]["points"]))
+            if self.timer_rviz_display.is_canceled():  # Make sure it is already stopped
+                self.timer_rviz_display.reset()
         else:
             response.success = False
             response.message = "Attempted to load toolpath from {} but failed".format(
