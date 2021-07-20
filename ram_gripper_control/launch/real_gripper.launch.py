@@ -125,10 +125,16 @@ def generate_launch_description():
                                   )
     nodes.append(sim_gripper_controller)
 
+    gripper_config = os.path.join(
+        get_package_share_directory('ram_gripper_control'),
+        'config',
+        'gripper_config.yaml'
+    )
     gripper_controller = Node(package="ram_gripper_control",
                               executable="gripper_controller",
                               name="gripper_controller",
                               output="screen",
+                              parameters=[gripper_config],
                               condition=IfCondition(gripper)
                               )
     nodes.append(gripper_controller)

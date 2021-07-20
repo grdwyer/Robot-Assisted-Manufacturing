@@ -58,6 +58,15 @@ class GripperController(Node):
 
         self.get_logger().info("Gripper Controller started up")
 
+    def __del__(self):
+        self.get_logger().warn("Shutting down, setting both pins to off")
+        request = SetGPIOValues.Request()
+        request.gpio.name.append(self.get_parameter("open_solenoid").get_parameter_value().integer_value)
+        request.gpio.value.append(0)
+        request.gpio.name.append(self.get_parameter("close_solenoid").get_parameter_value().integer_value)
+        request.gpio.value.append(0)
+        self.client_daq_output.call_async(request)
+
     def send_joint_command(self, position):
         msg = Float64MultiArray()
         dim = MultiArrayDimension()
