@@ -14,9 +14,10 @@ import tf2_py
 import PyKDL
 from control_msgs.action import FollowJointTrajectory
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+from daq_interfaces.srv import SetGPIOValues, ModifyGPIOSetup
 
 
-class SimGripperController(Node):
+class GripperController(Node):
     def __init__(self):
         super().__init__('gripper_controller')
 
@@ -28,33 +29,43 @@ class SimGripperController(Node):
         self.service_attach_implant = self.create_service(std_srvs.srv.Trigger,
                                                           '{}/attach_implant'.format(self.get_name()),
                                                           self.callback_attach_implant)
+        self.client_daq_output = self.create_client(SetGPIOValues, "/daq_server/set_output")
+        self.client_daq_configure = self.create_client(ModifyGPIOSetup, "/daq_server/configure_pins")
 
         # publisher for implant handler
         self.publisher_implant_transform = self.create_publisher(TransformStamped, "implant_transform", 10)
 
         # publisher for gripper joints
-        # self.publisher_joint_state = self.create_publisher(JointState, "joint_states", 10)
         self.publisher_joint_state = self.create_publisher(Float64MultiArray,
                                                            "gripper_forward_command_controller_position/commands", 10)
 
         self.gripper_open = True
 
-        # self.timer_joint_states = self.create_timer(1/30.0, self.callback_gripper_joint_state)
-        self.get_logger().info("Sim Gripper Controller started up")
+        self.declare_parameter("open_solenoid")
+        self.declare_parameter("close_solenoid")
 
-    def callback_gripper_joint_state(self):
-        js = JointState()
-        js.header.stamp = self.get_clock().now().to_msg()
-        js.name.append("gripper_joint_left")
-        # js.name.append("gripper_joint_right")
-
-        # TODO: use the urdf for the joint limits
-        if self.gripper_open:
-            js.position.append(0.004)  # Switched zero position to be closed for PGN-80 (different to PGN-100 config)
+        success = self.client_daq_output.wait_for_service(20)
+        if success:
+            # configure pins
+            request = ModifyGPIOSetup.Request()
+            request.pin_numbers.append(self.get_parameter("open_solenoid").get_parameter_value().integer_value)
+            request.pin_numbers.append(self.get_parameter("close_solenoid").get_parameter_value().integer_value)
+            request.operations.append(ModifyGPIOSetup.Request.OUTPUT)
+            request.operations.append(ModifyGPIOSetup.Request.OUTPUT)
+            self.client_daq_configure.call_async(request)
         else:
-            js.position.append(0.00)
+            self.get_logger().error("Wait for service timed out, DAQ server is not running")
 
-        self.publisher_joint_state.publish(js)
+        self.get_logger().info("Gripper Controller started up")
+
+    def __del__(self):
+        self.get_logger().warn("Shutting down, setting both pins to off")
+        request = SetGPIOValues.Request()
+        request.gpio.name.append(self.get_parameter("open_solenoid").get_parameter_value().integer_value)
+        request.gpio.value.append(0)
+        request.gpio.name.append(self.get_parameter("close_solenoid").get_parameter_value().integer_value)
+        request.gpio.value.append(0)
+        self.client_daq_output.call_async(request)
 
     def send_joint_command(self, position):
         msg = Float64MultiArray()
@@ -77,6 +88,13 @@ class SimGripperController(Node):
         """
         self.get_logger().info("request to open gripper received")
         self.send_joint_command(0.004)
+        request = SetGPIOValues.Request()
+        request.gpio.name.append(self.get_parameter("open_solenoid").get_parameter_value().integer_value)
+        request.gpio.value.append(1)
+        request.gpio.name.append(self.get_parameter("close_solenoid").get_parameter_value().integer_value)
+        request.gpio.value.append(0)
+        self.client_daq_output.call_async(request)
+
         self.gripper_open = True
         response.success = True
         return response
@@ -92,6 +110,12 @@ class SimGripperController(Node):
         """
         self.get_logger().info("request to close gripper received")
         self.send_joint_command(0.00)
+        request = SetGPIOValues.Request()
+        request.gpio.name.append(self.get_parameter("open_solenoid").get_parameter_value().integer_value)
+        request.gpio.value.append(0)
+        request.gpio.name.append(self.get_parameter("close_solenoid").get_parameter_value().integer_value)
+        request.gpio.value.append(1)
+        self.client_daq_output.call_async(request)
         self.gripper_open = False
         response.success = True
         return response
@@ -122,7 +146,7 @@ class SimGripperController(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    controller = SimGripperController()
+    controller = GripperController()
     try:
         rclpy.spin(controller)
     except KeyboardInterrupt:

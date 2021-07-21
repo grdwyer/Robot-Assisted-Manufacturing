@@ -1,0 +1,5 @@
+gripper_controller:
+  ros__parameters:
+    open_solenoid: 15
+    close_solenoid: 14
+

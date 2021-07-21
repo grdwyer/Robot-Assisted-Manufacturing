@@ -1,3 +1,5 @@
+import os
+from glob import glob
 from setuptools import setup
 
 package_name = 'ram_gripper_control'
@@ -10,6 +12,8 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name), glob('launch/*.launch.py')),
+        (os.path.join(os.path.join('share', package_name), "config"), glob('config/*.yaml'))
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -21,7 +25,8 @@ setup(
     entry_points={
         'console_scripts': [
             'implant_handler = ram_gripper_control.implant_handler_tf_pub:main',
-            'sim_gripper_controller = ram_gripper_control.sim_gripper_controller:main'
+            'sim_gripper_controller = ram_gripper_control.sim_gripper_controller:main',
+            'gripper_controller = ram_gripper_control.gripper_controller:main'
         ],
     },
 )

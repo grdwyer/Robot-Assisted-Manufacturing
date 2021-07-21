@@ -125,14 +125,14 @@ bool StockHelper::modify_touch_link(std::string link_name, bool operation) {
 
 GripperHelper::GripperHelper(rclcpp::Node::SharedPtr &node) {
     node_ = std::move(node);
-    client_gripper_open_ = node_->create_client<std_srvs::srv::Trigger>("/sim_gripper_controller/open");
-    client_gripper_close_ = node_->create_client<std_srvs::srv::Trigger>("/sim_gripper_controller/close");
+    client_gripper_open_ = node_->create_client<std_srvs::srv::Trigger>("/gripper_controller/open");
+    client_gripper_close_ = node_->create_client<std_srvs::srv::Trigger>("/gripper_controller/close");
 }
 
 GripperHelper::GripperHelper() {
     node_ = rclcpp::Node::make_shared("gripper_helper");
-    client_gripper_open_ = node_->create_client<std_srvs::srv::Trigger>("/sim_gripper_controller/open");
-    client_gripper_close_ = node_->create_client<std_srvs::srv::Trigger>("/sim_gripper_controller/close");
+    client_gripper_open_ = node_->create_client<std_srvs::srv::Trigger>("/gripper_controller/open");
+    client_gripper_close_ = node_->create_client<std_srvs::srv::Trigger>("/gripper_controller/close");
 }
 
 bool GripperHelper::gripper(bool open) {

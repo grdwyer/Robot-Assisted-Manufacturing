@@ -6,7 +6,7 @@
   <description>TODO: Package description</description>
   <maintainer email="george.dwyer@ucl.ac.uk">George Dwyer</maintainer>
   <license>TODO: License declaration</license>
-
+  <depend>daq_interfaces</depend>
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
