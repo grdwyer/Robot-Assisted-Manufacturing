@@ -13,23 +13,24 @@ BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): N
     this->declare_parameter<std::string>("end_effector_reference_frame", "gripper_jaw_centre");
     this->declare_parameter<std::string>("part_reference_frame", "implant");
     this->declare_parameter<int>("debug_wait_time", 500);
+    this->declare_parameter<double>("moveit_scale_velocity", 0.2);
+    this->declare_parameter<double>("moveit_scale_acceleration", 1.0);
+    this->declare_parameter<double>("moveit_planning_time", 30.0);
+    this->declare_parameter<int>("moveit_planning_attempts", 5);
+    this->declare_parameter<double>("desired_cartesian_velocity", 0.08);
+    this->declare_parameter<double>("desired_cartesian_acceleration", 0.08);
+    this->declare_parameter<double>("approach_offset", 0.02);
+    this->declare_parameter<double>("retreat_offset", 0.02);
 
     // Initialise
     auto move_group_node = std::make_shared<rclcpp::Node>("moveit", rclcpp::NodeOptions());
-//    auto move_group_node = this->create_sub_node("");
     move_group_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(move_group_node,
             this->get_parameter("moveit_planning_group").as_string());
 
-//    auto sub_node = this->create_sub_node("state");
-//    std::shared_ptr<planning_scene_monitor::CurrentStateMonitor> state_monitor = std::make_shared<planning_scene_monitor::CurrentStateMonitor>(sub_node, move_group_->getRobotModel(), std::shared_ptr<tf2_ros::Buffer>());
-//    state_monitor->startStateMonitor("/joint_states");
-//    std::this_thread::sleep_for(std::chrono::seconds(2));
-//    robot_state_ = state_monitor->getCurrentState();
-
-    move_group_->setMaxVelocityScalingFactor(0.1);
-    move_group_->setMaxAccelerationScalingFactor(1.0);
-    move_group_->setPlanningTime(30.0);
-    move_group_->setNumPlanningAttempts(5);
+    move_group_->setMaxVelocityScalingFactor(this->get_parameter("moveit_scale_velocity").as_double());
+    move_group_->setMaxAccelerationScalingFactor(this->get_parameter("moveit_scale_acceleration").as_double());
+    move_group_->setPlanningTime(this->get_parameter("moveit_planning_time").as_double());
+    move_group_->setNumPlanningAttempts(this->get_parameter("moveit_planning_attempts").as_int());
 
     auto toolpath_node = this->create_sub_node("toolpath");
     auto stock_node = this->create_sub_node("stock");
@@ -71,7 +72,16 @@ void BaseToolpathPlanner::configuration_message() {
     "\n\tMoveit planning group: " << this->get_parameter("moveit_planning_group").as_string() <<
     "\n\tTool reference frame: " << this->get_parameter("tool_reference_frame").as_string() <<
     "\n\tEnd-effector reference frame: " << this->get_parameter("end_effector_reference_frame").as_string() <<
-    "\n\tPart reference frame: " << this->get_parameter("part_reference_frame").as_string());
+    "\n\tPart reference frame: " << this->get_parameter("part_reference_frame").as_string() <<
+    "\n\tMoveit\n\t\tScaled motion velocity: " << this->get_parameter("moveit_scale_velocity").as_double() <<
+    "\n\t\tScaled motion acceleration: " << this->get_parameter("moveit_scale_acceleration").as_double() <<
+    "\n\t\tPlanning time: " << this->get_parameter("moveit_planning_time").as_double() <<
+    "\n\t\tPlanning attempts: " << this->get_parameter("moveit_planning_attempts").as_int() <<
+    "\n\tDesired cartesian velocity: " << this->get_parameter("desired_cartesian_velocity").as_double() <<
+    "\n\tDesired cartesian acceleration: " << this->get_parameter("desired_cartesian_acceleration").as_double() <<
+    "\n\tApproach pose offset: " << this->get_parameter("approach_offset").as_double() <<
+    "\n\tRetreat pose offset: " << this->get_parameter("retreat_offset").as_double()
+    );
 }
 
 bool BaseToolpathPlanner::load_toolpath() {
@@ -109,7 +119,8 @@ bool BaseToolpathPlanner::construct_plan_request() {
     geometry_msgs::msg::Pose approach_pose;
     KDL::Frame initial_path_frame, approach_frame;
     initial_path_frame = ee_cartesian_path.front();
-    approach_frame = KDL::Frame(KDL::Vector(-0.01,0,0)) * initial_path_frame; // TODO: param this
+    double approach_offset = std::max(this->get_parameter("approach_offset").as_double(), 0.001);
+    approach_frame = KDL::Frame(KDL::Vector(-approach_offset,0,0)) * initial_path_frame; // TODO: param this
     tf_trans = tf2::kdlToTransform(approach_frame);
     tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
     tf_trans.header.stamp = this->get_clock()->now();
@@ -120,8 +131,9 @@ bool BaseToolpathPlanner::construct_plan_request() {
     // Determine an retreat pose for the toolpath
     geometry_msgs::msg::Pose retreat_pose;
     KDL::Frame end_path_frame, retreat_frame;
+    double retreat_offset = std::max(this->get_parameter("retreat_offset").as_double(), 0.001);
     end_path_frame = ee_cartesian_path.back();
-    retreat_frame = KDL::Frame(KDL::Vector(0.01,0,0)) * end_path_frame; // TODO: param this
+    retreat_frame = KDL::Frame(KDL::Vector(retreat_offset,0,0)) * end_path_frame; // TODO: param this
     tf_trans = tf2::kdlToTransform(retreat_frame);
     tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
     tf_trans.header.stamp = this->get_clock()->now();
@@ -158,7 +170,8 @@ bool BaseToolpathPlanner::construct_plan_request() {
     moveit::planning_interface::MoveGroupInterface::Plan plan, retimed_plan;
     robot_state_ = move_group_->getCurrentState(2.0);
     plan.trajectory_ = trajectory_toolpath_;
-    retime_trajectory_constant_velocity(plan, robot_state_, 0.08, retimed_plan);
+    RCLCPP_INFO_STREAM(LOGGER, "Retiming trajectory for constant cartesaian velocity of " << this->get_parameter("desired_cartesian_velocity").as_double());
+    retime_trajectory_constant_velocity(plan, robot_state_, this->get_parameter("desired_cartesian_velocity").as_double(), retimed_plan);
     trajectory_toolpath_ = retimed_plan.trajectory_;
     return fraction > 0.99;
     }
