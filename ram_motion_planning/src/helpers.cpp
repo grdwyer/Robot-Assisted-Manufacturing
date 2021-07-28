@@ -179,6 +179,34 @@ bool ServoHelper::enable_servo() {
     return true;
 }
 
+USCutterHelper::USCutterHelper() {
+    node_ = rclcpp::Node::make_shared("us_cutter_helper");
+    client_us_enable_ = node_->create_client<std_srvs::srv::SetBool>("/us_cutter_controller/enable");
+}
+
+USCutterHelper::USCutterHelper(rclcpp::Node::SharedPtr &node) {
+    node_ = std::move(node);
+    client_us_enable_ = node_->create_client<std_srvs::srv::SetBool>("/us_cutter_controller/enable");
+}
+
+bool USCutterHelper::enable(bool open) {
+    auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
+    request->data = open;
+
+    using ServiceResponseFuture =
+    rclcpp::Client<std_srvs::srv::SetBool>::SharedFuture;
+    auto response_received_callback = [this](ServiceResponseFuture future) {
+        auto result = future.get();
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("US cutter helper"), result.get()->message);
+    };
+    auto result = client_us_enable_->async_send_request(request, response_received_callback);
+    return true;
+}
+
+bool USCutterHelper::exists() {
+    return client_us_enable_->wait_for_service(std::chrono::seconds(1));
+}
+
 std::ostream& operator<<(std::ostream& os, const geometry_msgs::msg::Point32& point)
 {
     os << "X:" << point.x << ", Y: " << point.y << ", Z: " << point.z;
@@ -231,5 +259,4 @@ std::ostream& operator<<(std::ostream& os, const geometry_msgs::msg::TransformSt
 
     return os;
 }
-
 

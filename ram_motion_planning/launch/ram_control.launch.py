@@ -53,12 +53,15 @@ def generate_launch_description():
                           DeclareLaunchArgument("real_manipulator", default_value="true",
                                                 description="Type of manipulator to startup (fake/false or real/true)"),
                           DeclareLaunchArgument("real_gripper", default_value="false",
-                                                description="Type of gripper to startup (fake/false or real/true)")]
+                                                description="Type of gripper to startup (fake/false or real/true)"),
+                          DeclareLaunchArgument("us_cutter", default_value="false",
+                                                description="Load up the US cutter controller")]
 
     robot_ip = LaunchConfiguration("robot_ip")
     robot_port = LaunchConfiguration("robot_port")
     manipulator = LaunchConfiguration("real_manipulator")
     gripper = LaunchConfiguration("real_gripper")
+    us_cutter = LaunchConfiguration("us_cutter")
 
     # Component yaml files are grouped in separate namespaces
     ######################
@@ -199,6 +202,14 @@ def generate_launch_description():
                       condition=IfCondition(gripper)
                       )
     nodes.append(daq_server)
+
+    us_cutter_controller = Node(package="ram_tooling_support",
+                                executable="us_cutter_controller",
+                                name="us_cutter_controller",
+                                output="screen",
+                                condition=IfCondition(us_cutter)
+                                )
+    nodes.append(us_cutter_controller)
 
     # medpor config file
     stock_config_file = get_package_share_directory('ram_tooling_support') + "/config/medpor_configuration.yaml"
