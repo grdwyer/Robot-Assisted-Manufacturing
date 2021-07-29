@@ -65,7 +65,6 @@
       <origin xyz="0 0 0.0087" rpy="0 0 0"/>
     </joint>
 
-
   </xacro:macro>
 
 </robot>
