@@ -104,7 +104,7 @@ class ToolPathHandler(Node):
             self.toolpath_config = yaml.load(file, Loader=yaml.FullLoader)
 
     def callback_timer_marker_publish(self):
-        self.get_logger().info("subcriber_count: {}".format(self.pub_marker.get_subscription_count()))
+        self.get_logger().debug("subcriber_count: {}".format(self.pub_marker.get_subscription_count()))
         msg = self.create_rviz_marker()
         self.pub_marker.publish(msg)
 
