@@ -1,7 +1,7 @@
 #toolpath_planner:
 #  ros__parameters:
 moveit_planning_group: 'iiwa'
-tool_reference_frame: 'cutting_tool_tip'
+tool_reference_frame: 'cutting_tool_base'
 end_effector_reference_frame: 'gripper_jaw_centre'
 part_reference_frame: 'implant'
 moveit_scale_velocity: 0.2
@@ -12,3 +12,4 @@ desired_cartesian_velocity: 0.08
 desired_cartesian_acceleration: 0.08
 approach_offset: 0.03
 retreat_offset: 0.03
+retreat_height: 0.01
