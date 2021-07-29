@@ -79,7 +79,7 @@ bool OMPLToolpathPlanner::construct_plan_request() {
     if(move_group_->plan(approach_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS){
         move_group_->execute(approach_plan);
     }
-    stockHelper_->modify_touch_link("cutting_tool", true);
+    stock_helper_->modify_touch_link("cutting_tool", true);
 
     rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
 

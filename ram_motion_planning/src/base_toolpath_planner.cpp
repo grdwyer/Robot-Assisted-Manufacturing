@@ -35,9 +35,11 @@ BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): N
     auto toolpath_node = this->create_sub_node("toolpath");
     auto stock_node = this->create_sub_node("stock");
     auto gripper_node = this->create_sub_node("gripper");
+    auto us_cutter_node = this->create_sub_node("us_cutter");
     toolpath_helper_ = std::make_shared<ToolpathHelper>();
-    stockHelper_ = std::make_shared<StockHelper>(stock_node);
-    gripperHelper_ = std::make_shared<GripperHelper>(gripper_node);
+    stock_helper_ = std::make_shared<StockHelper>(stock_node);
+    gripper_helper_ = std::make_shared<GripperHelper>(gripper_node);
+    us_cutter_helper_ = std::make_shared<USCutterHelper>(us_cutter_node);
 
     // TODO: put service names into node namespace
     auto planner_node = this->create_sub_node("planner");
@@ -150,7 +152,7 @@ bool BaseToolpathPlanner::construct_plan_request() {
     if(move_group_->plan(approach_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS){
         move_group_->execute(approach_plan);
     }
-    stockHelper_->modify_touch_link("cutting_tool", true);
+    stock_helper_->modify_touch_link("cutting_tool", true);
 
     rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
 
@@ -222,9 +224,9 @@ bool BaseToolpathPlanner::move_to_setup() {
     move_group_->setPoseTarget(pose);
 
     // TODO: remove this, it will be handled by the manager
-    stockHelper_->load_stock(true);
-    stockHelper_->attach_stock(true);
-    gripperHelper_->gripper(false);
+    stock_helper_->load_stock(true);
+    stock_helper_->attach_stock(true);
+    gripper_helper_->gripper(false);
 
     moveit::planning_interface::MoveGroupInterface::Plan my_plan;
 
@@ -240,10 +242,20 @@ bool BaseToolpathPlanner::move_to_setup() {
 }
 
 bool BaseToolpathPlanner::execute_trajectory() {
+    bool us_cutter = false;
+    if(us_cutter_helper_->exists()){
+        RCLCPP_WARN_STREAM(LOGGER, "Enabling US cutter");
+        us_cutter = true;
+        us_cutter_helper_->enable(true);
+    }
     if (!trajectory_toolpath_.joint_trajectory.points.empty()){
         bool success = (move_group_->execute(trajectory_toolpath_) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
         // Remove tool from touch links
-        stockHelper_->modify_touch_link("cutting_tool", false); // TODO: param this
+        stock_helper_->modify_touch_link("cutting_tool", false); // TODO: param this
+        if(us_cutter){
+            RCLCPP_WARN_STREAM(LOGGER, "Disabling US cutter");
+            us_cutter_helper_->enable(false);
+        }
         return success;
     } else{
         RCLCPP_WARN(LOGGER, "Toolpath trajectory is empty, try construct the plan request first.");

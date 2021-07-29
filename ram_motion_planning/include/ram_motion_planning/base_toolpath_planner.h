@@ -126,8 +126,9 @@ protected:
     void run_helper_executor();
 
     std::shared_ptr<ToolpathHelper> toolpath_helper_;
-    std::shared_ptr<StockHelper> stockHelper_;
-    std::shared_ptr<GripperHelper> gripperHelper_;
+    std::shared_ptr<StockHelper> stock_helper_;
+    std::shared_ptr<GripperHelper> gripper_helper_;
+    std::shared_ptr<USCutterHelper> us_cutter_helper_;
 
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_setup_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_execute_;

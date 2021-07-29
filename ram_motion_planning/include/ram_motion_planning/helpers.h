@@ -62,6 +62,18 @@ private:
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_gripper_close_;
 };
 
+class USCutterHelper{
+public:
+    USCutterHelper();
+    explicit USCutterHelper(rclcpp::Node::SharedPtr  &node);
+    bool enable(bool open);
+    bool exists();
+
+private:
+    rclcpp::Node::SharedPtr  node_;
+    rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_us_enable_;
+};
+
 class ServoHelper{
 public:
     ServoHelper();
