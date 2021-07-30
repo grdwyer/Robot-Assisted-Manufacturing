@@ -13,6 +13,7 @@ BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): N
     this->declare_parameter<std::string>("end_effector_reference_frame", "gripper_jaw_centre");
     this->declare_parameter<std::string>("part_reference_frame", "implant");
     this->declare_parameter<int>("debug_wait_time", 500);
+    this->declare_parameter<bool>("debug_mode", true);
     this->declare_parameter<double>("moveit_scale_velocity", 0.2);
     this->declare_parameter<double>("moveit_scale_acceleration", 1.0);
     this->declare_parameter<double>("moveit_planning_time", 30.0);
@@ -139,7 +140,7 @@ bool BaseToolpathPlanner::construct_plan_request() {
     double retreat_height = std::max(this->get_parameter("retreat_height").as_double(), 0.001);
     end_path_frame = ee_cartesian_path.back();
     retreat_frame = KDL::Frame(KDL::Vector(retreat_offset,0,0)) * end_path_frame;
-    raised_retreat_frame = KDL::Frame(KDL::Vector(retreat_offset,0,0)) * end_path_frame;
+    raised_retreat_frame = KDL::Frame(KDL::Vector(retreat_offset,0,retreat_height)) * end_path_frame;
     tf_trans = tf2::kdlToTransform(retreat_frame);
     tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
     tf_trans.header.stamp = this->get_clock()->now();
@@ -148,6 +149,7 @@ bool BaseToolpathPlanner::construct_plan_request() {
 
     //Add to the waypoints vector for now, look into a nicer way of doing this during the cleanup possibly check the stock size and see if the toolpath already includes the retreat.
     ee_cartesian_path.push_back(retreat_frame);
+    ee_cartesian_path.push_back(raised_retreat_frame);
     rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
 
     approach_pose = tf2::toMsg(approach_frame);
