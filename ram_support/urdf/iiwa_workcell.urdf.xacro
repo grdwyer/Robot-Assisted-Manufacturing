@@ -28,7 +28,7 @@
     <joint name="$(arg iiwa_name)_mounting_plate_base_joint" type="fixed">
         <parent link="optical_table_front_left_bolt"/>
         <child link="$(arg iiwa_name)_mounting_plate_front_left_bolt"/>
-        <origin xyz="0.175 0.150 0.00" rpy="0.0 0.0 0"/>
+        <origin xyz="0.125 0.125 0.00" rpy="0.0 0.0 0"/>
     </joint>
 
     <xacro:iiwa_14_mounting_plate robot_name="$(arg iiwa_name)"/>
