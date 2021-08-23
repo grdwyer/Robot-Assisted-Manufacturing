@@ -9,8 +9,8 @@
 
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("ompl_constrained_planning_demo");
 static const std::string PLANNING_GROUP = "iiwa";
-static const double PLANNING_TIME_S = 30.0;
-static const double PLANNING_ATTEMPTS = 5.0;
+static const double PLANNING_TIME_S = 60.0;
+static const double PLANNING_ATTEMPTS = 20.0;
 
 class ConstrainedPlanning
 {
@@ -25,6 +25,18 @@ public:
 
         ref_link_ = move_group_->getPoseReferenceFrame();
         ee_link_ = move_group_->getEndEffectorLink();
+        RCLCPP_INFO_STREAM(LOGGER, "Setting ref link as " << ref_link_ << " and end-effector link as " << ee_link_);
+    }
+
+    void run(){
+        moveToStart();
+        // 1. Box Constraints
+        planBoxConstraints();
+        deleteAllMarkers();
+
+        moveToStart();
+        planLineConstraints();
+        deleteAllMarkers();
     }
 
     void moveToStart()
@@ -36,19 +48,35 @@ public:
 
         RCLCPP_INFO(LOGGER, "moveToStart");
 
+        const moveit_msgs::msg::RobotState goal_state = createRobotState("test_start");
         move_group_->setStartStateToCurrentState();
-        geometry_msgs::msg::Pose goal;
-        goal.position.x = 0.307;
-        goal.position.y = 0.25;
-        goal.position.z = 0.59;
-
-        goal.orientation.x = 1;
-        goal.orientation.y = 0.000199082;
-        goal.orientation.z = -3.463e-12;
-        goal.orientation.w = 3.4637e-12;
-
-        move_group_->setPoseTarget(goal);
+        move_group_->setJointValueTarget(goal_state.joint_state);
         move_group_->move();
+    }
+
+    moveit_msgs::msg::PositionConstraint createBoxConstraint()
+    {
+        moveit_msgs::msg::PositionConstraint pcm;
+        pcm.header.frame_id = ref_link_;
+        pcm.link_name = ee_link_;
+        pcm.weight = 1.0;
+
+        shape_msgs::msg::SolidPrimitive cbox;
+        cbox.type = shape_msgs::msg::SolidPrimitive::BOX;
+        cbox.dimensions = { 0.1, 0.4, 0.4 };
+        pcm.constraint_region.primitives.emplace_back(cbox);
+
+        geometry_msgs::msg::PoseStamped pose = move_group_->getCurrentPose();
+
+        geometry_msgs::msg::Pose cbox_pose;
+        cbox_pose.position.x = pose.pose.position.x;
+        cbox_pose.position.y = pose.pose.position.y + 0.15;
+        cbox_pose.position.z = pose.pose.position.z - 0.15;
+        pcm.constraint_region.primitive_poses.emplace_back(cbox_pose);
+
+        displayBox(cbox_pose, cbox.dimensions);
+
+        return pcm;
     }
 
     void planBoxConstraints()
@@ -58,121 +86,29 @@ public:
 
         RCLCPP_INFO(LOGGER, "planBoxConstraints");
 
-//        const moveit_msgs::msg::RobotState start_state = createRobotState("ready");
-        auto start_state = move_group_->getCurrentState();
-        const geometry_msgs::msg::PoseStamped pose_goal = createPoseGoal(0.0, 0.3, 0);
-        moveit_msgs::msg::PositionConstraint pcm;
-
-        pcm.header.frame_id = ref_link_;
-        pcm.link_name = ee_link_;
-        pcm.weight = 1.0;
-
-        shape_msgs::msg::SolidPrimitive cbox;
-        cbox.type = shape_msgs::msg::SolidPrimitive::BOX;
-        cbox.dimensions = { 0.1, 0.4, 0.1 };
-        pcm.constraint_region.primitives.emplace_back(cbox);
-
-        geometry_msgs::msg::PoseStamped pose = move_group_->getCurrentPose();
-
-        geometry_msgs::msg::Pose cbox_pose;
-        cbox_pose.position.x = pose.pose.position.x;
-        cbox_pose.position.y = 0.4;
-        cbox_pose.position.z = 0.6;
-        pcm.constraint_region.primitive_poses.emplace_back(cbox_pose);
-
-        displayBox(cbox_pose, cbox.dimensions);
+        const moveit_msgs::msg::RobotState start_state = createRobotState("test_start");
+        const geometry_msgs::msg::PoseStamped pose_goal = createPoseGoal(0.0, 0.3, -0.3);
+        const moveit_msgs::msg::PositionConstraint pcm = createBoxConstraint();
 
         moveit_msgs::msg::Constraints path_constraints;
         path_constraints.name = "box constraints";
         path_constraints.position_constraints.emplace_back(pcm);
 
-        move_group_->setStartState(*start_state);
+        move_group_->setStartState(start_state);
         move_group_->setPoseTarget(pose_goal);
         move_group_->setPathConstraints(path_constraints);
 
         moveit::planning_interface::MoveGroupInterface::Plan plan1;
         const bool plan_success = (move_group_->plan(plan1) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
         RCLCPP_INFO(LOGGER, "Plan 1 (box constraint) %s", plan_success ? "SUCCEEDED" : "FAILED");
+        if (plan_success){
+            move_group_->move();
+        }
 
-        move_group_->move();
     }
 
-    void planPlaneConstraints()
+    moveit_msgs::msg::PositionConstraint createLineConstraint()
     {
-        move_group_->clearPoseTargets();
-        move_group_->clearPathConstraints();
-
-        RCLCPP_INFO(LOGGER, "planPlaneConstraints");
-        const geometry_msgs::msg::PoseStamped pose_goal = createPoseGoal(0.0, 0.0, -0.3);
-        const moveit_msgs::msg::PositionConstraint pcm = verticlePlaneConstraint();
-
-        moveit_msgs::msg::Constraints path_constraints;
-
-        // For equality constraints set to: "use_equality_constraints"
-        path_constraints.name = "use_equality_constraints";
-
-        path_constraints.position_constraints.emplace_back(pcm);
-
-        move_group_->setStartStateToCurrentState();
-        move_group_->setPoseTarget(pose_goal);
-        move_group_->setPathConstraints(path_constraints);
-
-        moveit::planning_interface::MoveGroupInterface::Plan plan2;
-        const bool plan_success = (move_group_->plan(plan2) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-        RCLCPP_INFO(LOGGER, "Plan 2 (plane equality constraint) %s", plan_success ? "SUCCEEDED" : "FAILED");
-
-        move_group_->move();
-    }
-
-    void planOrientationConstraints()
-    {
-        move_group_->clearPoseTargets();
-        move_group_->clearPathConstraints();
-
-        RCLCPP_INFO(LOGGER, "planOrientationConstraints");
-
-        const std::vector<double> angle_tol = { 1.0, 1.0, 1.0 };  // orientation tolerances (rad)
-        const geometry_msgs::msg::PoseStamped pose_goal = createPoseGoal(0.0, 0.5, 0.0);
-
-        RCLCPP_INFO(LOGGER, "Pose goal position [x y z] : %f, %f, %f orientation [x y z w] %f, %f, %f, %f:",
-                    pose_goal.pose.position.x, pose_goal.pose.position.y, pose_goal.pose.position.z,
-                    pose_goal.pose.orientation.x, pose_goal.pose.orientation.y, pose_goal.pose.orientation.z,
-                    pose_goal.pose.orientation.w);
-
-        // Create an orientation constraint
-        moveit_msgs::msg::OrientationConstraint ocm;
-        ocm.header.frame_id = ref_link_;
-        ocm.link_name = ee_link_;
-        ocm.orientation = pose_goal.pose.orientation;
-        ocm.absolute_x_axis_tolerance = angle_tol.at(0);
-        ocm.absolute_y_axis_tolerance = angle_tol.at(1);
-        ocm.absolute_z_axis_tolerance = angle_tol.at(2);
-        ocm.weight = 1.0;
-
-        moveit_msgs::msg::Constraints cm;
-        cm.name = "orientation constraints";
-        cm.orientation_constraints.emplace_back(ocm);
-
-        move_group_->setStartStateToCurrentState();
-        move_group_->setPoseTarget(pose_goal);
-        move_group_->setPathConstraints(cm);
-
-        // Plan and move
-        moveit::planning_interface::MoveGroupInterface::Plan plan1;
-        const bool plan_success = (move_group_->plan(plan1) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-        RCLCPP_INFO(LOGGER, "Plan 1 (box constraint) %s", plan_success ? "SUCCEEDED" : "FAILED");
-
-        move_group_->move();
-    }
-
-    void planLineConstraints()
-    {
-        move_group_->clearPoseTargets();
-        move_group_->clearPathConstraints();
-
-        auto start_state = move_group_->getCurrentState();
-        const geometry_msgs::msg::PoseStamped pose_goal = createPoseGoal(0.0, 0.0, -0.1);
-
         moveit_msgs::msg::PositionConstraint pcm;
         pcm.header.frame_id = ref_link_;
         pcm.link_name = ee_link_;
@@ -182,7 +118,7 @@ public:
         cbox.type = shape_msgs::msg::SolidPrimitive::BOX;
 
         // For equality constraint set box dimension to: 1e-3 > 0.0005 > 1e-4
-        cbox.dimensions = { 0.0005, 0.0005, 1.0 };
+        cbox.dimensions = { 0.005, 0.005, 1.0 };
         pcm.constraint_region.primitives.emplace_back(cbox);
 
         geometry_msgs::msg::PoseStamped pose = move_group_->getCurrentPose();
@@ -203,47 +139,37 @@ public:
 
         displayBox(cbox_pose, cbox.dimensions);
 
+        return pcm;
+    }
+
+    void planLineConstraints()
+    {
+        move_group_->clearPoseTargets();
+        move_group_->clearPathConstraints();
+
+        const moveit_msgs::msg::RobotState start_state = createRobotState("test_start");
+        const geometry_msgs::msg::PoseStamped pose_goal = createPoseGoal(0.0, 0.0, -0.1);
+        const moveit_msgs::msg::PositionConstraint pcm = createLineConstraint();
+
         moveit_msgs::msg::Constraints path_constraints;
 
         // For equality constraints set to: "use_equality_constraints"
         path_constraints.name = "use_equality_constraints";
+//        path_constraints.name = "box constraints";
 
         path_constraints.position_constraints.emplace_back(pcm);
 
-        move_group_->setStartState(*start_state);
+        move_group_->setStartState(start_state);
         move_group_->setPoseTarget(pose_goal);
         move_group_->setPathConstraints(path_constraints);
 
         moveit::planning_interface::MoveGroupInterface::Plan plan3;
         const bool plan_success = (move_group_->plan(plan3) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
         RCLCPP_INFO(LOGGER, "Plan 3 (line equality constraint) %s", plan_success ? "SUCCEEDED" : "FAILED");
-    }
 
-    void planVerticlePlaneConstraints()
-    {
-        move_group_->clearPoseTargets();
-        move_group_->clearPathConstraints();
-
-        auto start_state = move_group_->getCurrentState();
-        const geometry_msgs::msg::PoseStamped pose_goal = createPoseGoal(0.1, 0.0, -0.3);
-        const moveit_msgs::msg::PositionConstraint pcm = verticlePlaneConstraint();
-
-        moveit_msgs::msg::Constraints path_constraints;
-
-        // For equality constraints set to: "use_equality_constraints"
-        path_constraints.name = "use_equality_constraints";
-
-        path_constraints.position_constraints.emplace_back(pcm);
-
-        addObstacle("box1");
-
-        move_group_->setStartState(*start_state);
-        move_group_->setPoseTarget(pose_goal);
-        move_group_->setPathConstraints(path_constraints);
-
-        moveit::planning_interface::MoveGroupInterface::Plan plan4;
-        const bool plan_success = (move_group_->plan(plan4) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-        RCLCPP_INFO(LOGGER, "Plan 4 (verticle plane equality constraint) %s", plan_success ? "SUCCEEDED" : "FAILED");
+        if (plan_success){
+            move_group_->move();
+        }
     }
 
     void deleteAllMarkers()
@@ -259,7 +185,6 @@ public:
         marker_count_ = 0;
     }
 
-private:
     moveit_msgs::msg::RobotState createRobotState(const std::string& name) const
     {
         RCLCPP_INFO(LOGGER, "createRobotState");
@@ -292,127 +217,6 @@ private:
         displaySphere(pose.pose, "green");
 
         return pose;
-    }
-
-    moveit_msgs::msg::PositionConstraint createBoxConstraint()
-    {
-        moveit_msgs::msg::PositionConstraint pcm;
-        pcm.header.frame_id = ref_link_;
-        pcm.link_name = ee_link_;
-        pcm.weight = 1.0;
-
-        shape_msgs::msg::SolidPrimitive cbox;
-        cbox.type = shape_msgs::msg::SolidPrimitive::BOX;
-        cbox.dimensions = { 0.1, 0.4, 0.4 };
-        pcm.constraint_region.primitives.emplace_back(cbox);
-
-        geometry_msgs::msg::PoseStamped pose = move_group_->getCurrentPose();
-
-        geometry_msgs::msg::Pose cbox_pose;
-        cbox_pose.position.x = pose.pose.position.x;
-        cbox_pose.position.y = 0.4;
-        cbox_pose.position.z = 0.45;
-        pcm.constraint_region.primitive_poses.emplace_back(cbox_pose);
-
-        displayBox(cbox_pose, cbox.dimensions);
-
-        return pcm;
-    }
-
-    moveit_msgs::msg::PositionConstraint createPlaneConstraint()
-    {
-        moveit_msgs::msg::PositionConstraint pcm;
-        pcm.header.frame_id = ref_link_;
-        pcm.link_name = ee_link_;
-        pcm.weight = 1.0;
-
-        shape_msgs::msg::SolidPrimitive cbox;
-        cbox.type = shape_msgs::msg::SolidPrimitive::BOX;
-
-        // For equality constraint set box dimension to: 1e-3 > 0.0005 > 1e-4
-        cbox.dimensions = { 1.0, 0.0005, 1.0 };
-        pcm.constraint_region.primitives.emplace_back(cbox);
-
-        geometry_msgs::msg::PoseStamped pose = move_group_->getCurrentPose();
-
-        geometry_msgs::msg::Pose cbox_pose;
-        cbox_pose.position = pose.pose.position;
-
-        // turn the constraint region 45 degrees around the x-axis
-        tf2::Quaternion quat;
-        quat.setRPY(M_PI / 4.0, 0.0, 0.0);
-
-        cbox_pose.orientation.x = quat.x();
-        cbox_pose.orientation.y = quat.y();
-        cbox_pose.orientation.z = quat.z();
-        cbox_pose.orientation.w = quat.w();
-
-        pcm.constraint_region.primitive_poses.emplace_back(cbox_pose);
-
-        displayBox(cbox_pose, cbox.dimensions);
-
-        return pcm;
-    }
-
-    moveit_msgs::msg::PositionConstraint verticlePlaneConstraint()
-    {
-        moveit_msgs::msg::PositionConstraint pcm;
-        pcm.header.frame_id = ref_link_;
-        pcm.link_name = ee_link_;
-        pcm.weight = 1.0;
-
-        shape_msgs::msg::SolidPrimitive cbox;
-        cbox.type = shape_msgs::msg::SolidPrimitive::BOX;
-
-        // For equality constraint set box dimension to: 1e-3 > 0.0005 > 1e-4
-        cbox.dimensions = { 1.0, 0.0005, 1.0 };
-        pcm.constraint_region.primitives.emplace_back(cbox);
-
-        geometry_msgs::msg::PoseStamped pose = move_group_->getCurrentPose();
-
-        geometry_msgs::msg::Pose cbox_pose;
-        cbox_pose.position = pose.pose.position;
-
-        pcm.constraint_region.primitive_poses.emplace_back(cbox_pose);
-
-        displayBox(cbox_pose, cbox.dimensions);
-
-        return pcm;
-    }
-
-    moveit_msgs::msg::PositionConstraint createLineConstraint()
-    {
-        moveit_msgs::msg::PositionConstraint pcm;
-        pcm.header.frame_id = ref_link_;
-        pcm.link_name = ee_link_;
-        pcm.weight = 1.0;
-
-        shape_msgs::msg::SolidPrimitive cbox;
-        cbox.type = shape_msgs::msg::SolidPrimitive::BOX;
-
-        // For equality constraint set box dimension to: 1e-3 > 0.0005 > 1e-4
-        cbox.dimensions = { 0.0005, 0.0005, 1.0 };
-        pcm.constraint_region.primitives.emplace_back(cbox);
-
-        geometry_msgs::msg::PoseStamped pose = move_group_->getCurrentPose();
-
-        geometry_msgs::msg::Pose cbox_pose;
-        cbox_pose.position = pose.pose.position;
-
-        // turn the constraint region 45 degrees around the x-axis
-        tf2::Quaternion quat;
-        quat.setRPY(0.0, 0.0, 0.0);
-
-        cbox_pose.orientation.x = quat.x();
-        cbox_pose.orientation.y = quat.y();
-        cbox_pose.orientation.z = quat.z();
-        cbox_pose.orientation.w = quat.w();
-
-        pcm.constraint_region.primitive_poses.emplace_back(cbox_pose);
-
-        displayBox(cbox_pose, cbox.dimensions);
-
-        return pcm;
     }
 
     void displayBox(const geometry_msgs::msg::Pose& pose,
@@ -478,36 +282,6 @@ private:
         marker_count_++;
     }
 
-    void addObstacle(const std::string& object_id) const
-    {
-        moveit_msgs::msg::CollisionObject collision_object;
-        collision_object.header.frame_id = ref_link_;
-        collision_object.id = object_id;
-
-        shape_msgs::msg::SolidPrimitive primitive;
-        primitive.type = primitive.BOX;
-        primitive.dimensions.resize(3);
-        primitive.dimensions[0] = 0.2;
-        primitive.dimensions[1] = 0.4;
-        primitive.dimensions[2] = 0.1;
-
-        geometry_msgs::msg::Pose box_pose;
-        box_pose.orientation.w = 1.0;
-        box_pose.position.x = 0.5;
-        box_pose.position.y = 0.0;
-        box_pose.position.z = 0.5;
-
-        collision_object.primitives.emplace_back(primitive);
-        collision_object.primitive_poses.emplace_back(box_pose);
-        collision_object.operation = collision_object.ADD;
-
-        std::vector<moveit_msgs::msg::CollisionObject> collision_objects;
-        collision_objects.push_back(collision_object);
-
-        // Now, let's add the collision object into the world
-        planning_scene_interface_.addCollisionObjects(collision_objects);
-    }
-
 private:
     rclcpp::Node::SharedPtr node_;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
@@ -534,45 +308,10 @@ int main(int argc, char** argv)
 
     std::thread run_demo([&constrained_planning]() {
         // Wait for rviz
-        rclcpp::sleep_for(std::chrono::seconds(5));
-
-        // Note: see See moveit_core/kinematic_constraints/src/utils.cpp
-        // contains helper functions to automate constructing constraint messages.
-        constrained_planning.moveToStart();
-        // 1. Box Constraints
-        constrained_planning.planBoxConstraints();
-        constrained_planning.deleteAllMarkers();
-
-        constrained_planning.moveToStart();
-        constrained_planning.planLineConstraints();
-        constrained_planning.deleteAllMarkers();
-
-//        constrained_planning.moveToStart();
-//
-//        // 2. Equality Constraints
-//        // If you make a box really thin along one dimension, you get something plane like.
-//        // When solving the problem, you can tell the planner to model this really thin box as an equality constraint.
-//        // This is achieved by setting the name of the constraint to :code:`"use_equality_constraints"`.
-//        // In addition, any dimension of the box below a treshold of :code:`0.001` will be considered an equality
-//        // constraint. However, if we make it too small, the box will be thinner that the tolerance used by OMPL to evaluate
-//        // constraints (:code:`1e-4` by default). MoveIt will use the stricter tolerance (the box width) to check the
-//        // constraints, and many states will appear invalid. That's where the number :code:`0.0005` comes from, it is
-//        // between :code:`0.00001` and :code:`0.001`.
-//        constrained_planning.planPlaneConstraints();
-//        constrained_planning.deleteAllMarkers();
-//
-//        constrained_planning.moveToStart();
-//
-//        // 3. Orientation Constraints
-//        constrained_planning.planOrientationConstraints();
-//        constrained_planning.deleteAllMarkers();
-
-        // Additional examples with line constraints and obstacles
-
-
-//        constrained_planning.moveToStart();
-//         constrained_planning.planVerticlePlaneConstraints();
-//        constrained_planning.deleteAllMarkers();
+        rclcpp::sleep_for(std::chrono::seconds(1));
+        constrained_planning.run();
+        RCLCPP_INFO_STREAM(LOGGER, "Finished demo procedure ready to exit");
+        return 0;
     });
 
     rclcpp::spin(node);

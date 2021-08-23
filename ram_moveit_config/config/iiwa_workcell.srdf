@@ -23,6 +23,15 @@
         <joint name="gripper_joint_left"/>
         <joint name="gripper_joint_right"/>
     </group>
+    <group_state group="iiwa" name="test_start">
+        <joint name="iiwa_joint_1" value="0.8"/>
+        <joint name="iiwa_joint_2" value="0.7854"/>
+        <joint name="iiwa_joint_3" value="0"/>
+        <joint name="iiwa_joint_4" value="-1.5708"/>
+        <joint name="iiwa_joint_5" value="0"/>
+        <joint name="iiwa_joint_6" value="0.7854"/>
+        <joint name="iiwa_joint_7" value="0"/>
+    </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
     <end_effector name="gripper" parent_link="iiwa_link_ee" group="gripper"/>
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->

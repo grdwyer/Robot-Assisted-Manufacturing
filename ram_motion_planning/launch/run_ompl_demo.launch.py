@@ -50,13 +50,13 @@ def generate_launch_description():
     nodes = []
     # Start the actual move_group interface node
     ompl_demo = Node(name='ompl_demo',
-                             package='ram_motion_planning',
-                             executable='ompl_demo',
-                             output='screen',
-                             parameters=[robot_description,
-                                         robot_description_semantic,
-                                         kinematics_yaml
-                                         ])
+                     package='ram_motion_planning',
+                     executable='ompl_demo',
+                     output='screen',
+                     parameters=[robot_description,
+                                 robot_description_semantic,
+                                 kinematics_yaml
+                                 ])
     nodes.append(ompl_demo)
 
     return LaunchDescription(nodes)

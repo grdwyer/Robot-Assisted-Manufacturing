@@ -92,7 +92,7 @@ RUN pip3 install -U \
 RUN mkdir -p /moveit_ws/src
 WORKDIR /moveit_ws/src
 RUN ["/bin/bash", "-c", "source /opt/ros/foxy/setup.bash &&\
-    git clone https://github.com/ros-planning/moveit2.git -b main &&\
+    git clone https://github.com/ros-planning/moveit2.git -b foxy &&\
     vcs-import < moveit2/moveit2.repos || true && \
     apt update && \
     rosdep install -r --from-paths . --ignore-src --rosdistro foxy -y"]
