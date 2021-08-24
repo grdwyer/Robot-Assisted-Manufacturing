@@ -29,10 +29,10 @@ public:
     }
 
     void run(){
-        moveToStart();
-        // 1. Box Constraints
-        planBoxConstraints();
-        deleteAllMarkers();
+//        moveToStart();
+//        // 1. Box Constraints
+//        planBoxConstraints();
+//        deleteAllMarkers();
 
         moveToStart();
         planLineConstraints();
@@ -118,7 +118,7 @@ public:
         cbox.type = shape_msgs::msg::SolidPrimitive::BOX;
 
         // For equality constraint set box dimension to: 1e-3 > 0.0005 > 1e-4
-        cbox.dimensions = { 0.005, 0.005, 1.0 };
+        cbox.dimensions = { 0.004, 0.004, 1.0 };
         pcm.constraint_region.primitives.emplace_back(cbox);
 
         geometry_msgs::msg::PoseStamped pose = move_group_->getCurrentPose();
@@ -170,6 +170,16 @@ public:
         if (plan_success){
             move_group_->move();
         }
+    }
+
+    void planDecaySpiral(){
+        move_group_->clearPoseTargets();
+        move_group_->clearPathConstraints();
+
+        const moveit_msgs::msg::RobotState start_state = createRobotState("test_start");
+        geometry_msgs::msg::PoseStamped pose = move_group_->getCurrentPose();
+        std::vector<geometry_msgs::msg::Pose>
+
     }
 
     void deleteAllMarkers()
@@ -276,6 +286,40 @@ public:
         else
         {
             RCLCPP_ERROR(LOGGER, "Sphere color not specified");
+        }
+
+        marker_pub_->publish(marker);
+        marker_count_++;
+    }
+
+    void displayLine(const std::vector<geometry_msgs::msg::Pose>& pose_list)
+    {
+        visualization_msgs::msg::Marker marker;
+        marker.header.frame_id = ref_link_;
+        marker.header.stamp = node_->now();
+        marker.ns = "/";
+        marker.id = marker_count_;
+
+        marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
+        marker.action = visualization_msgs::msg::Marker::ADD;
+        marker.lifetime = rclcpp::Duration(0);
+
+        marker.pose.orientation.w = 1.0;
+        marker.scale.x = 0.05;
+        marker.scale.y = 0.05;
+        marker.scale.z = 0.05;
+
+        marker.color.r = 0.0;
+        marker.color.g = 1.0;
+        marker.color.b = 0.0;
+        marker.color.a = 1.0;
+
+        for( const auto pose : pose_list){
+            geometry_msgs::msg::Point point;
+            point.x = pose.position.x;
+            point.y = pose.position.y;
+            point.z = pose.position.z;
+            marker.points.emplace_back(point);
         }
 
         marker_pub_->publish(marker);
