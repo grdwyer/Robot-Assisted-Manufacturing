@@ -178,7 +178,7 @@ public:
 
         const moveit_msgs::msg::RobotState start_state = createRobotState("test_start");
         geometry_msgs::msg::PoseStamped pose = move_group_->getCurrentPose();
-        std::vector<geometry_msgs::msg::Pose>
+        std::vector<geometry_msgs::msg::Pose> spiral_pose;
 
     }
 
