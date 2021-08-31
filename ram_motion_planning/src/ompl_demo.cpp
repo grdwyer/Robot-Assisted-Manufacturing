@@ -34,8 +34,12 @@ public:
 //        planBoxConstraints();
 //        deleteAllMarkers();
 
+//        moveToStart();
+//        planLineConstraints();
+//        deleteAllMarkers();
+
         moveToStart();
-        planLineConstraints();
+        planDecaySpiral();
         deleteAllMarkers();
     }
 
@@ -177,9 +181,48 @@ public:
         move_group_->clearPathConstraints();
 
         const moveit_msgs::msg::RobotState start_state = createRobotState("test_start");
-        geometry_msgs::msg::PoseStamped pose = move_group_->getCurrentPose();
-        std::vector<geometry_msgs::msg::Pose> spiral_pose;
+        geometry_msgs::msg::PoseStamped start_pose = move_group_->getCurrentPose();
+        std::vector<geometry_msgs::msg::Pose> spiral_path;
+        geometry_msgs::msg::Pose tmp_pose = start_pose.pose;
 
+        /* depth of travel, radius, decay_rate, interpolation, num_turns
+         * num_points = ceil(depth/interpolation)
+         * xy_step = (num_turns * 2pi) / num_points
+         * for number of points:
+         *   x = original_x + radius * cos(xy_step*i)
+         *   y = original_y + radius * sin(xy_step*i)
+         *   z = original_z + interpolation * i
+         *   spiral_path.pushback(pose)
+         *
+        */
+        double z_depth = 0.15, radius = 0.02, decay_rate, interpolation = 0.001, num_turns = 3;
+        int num_points = ceil(z_depth/interpolation);
+        double xy_step = (num_turns * 2 * M_PI) / num_points;
+        double dx, dy;
+        for(int i = 0; i < num_points; i++){
+            dx = (radius * ((float)(num_points - i) / num_points)) * cos(xy_step*i);
+            dy = (radius * ((float)(num_points - i) / num_points)) * sin(xy_step*i);
+            tmp_pose.position.x = start_pose.pose.position.x + dx;
+            tmp_pose.position.y = start_pose.pose.position.y + dy;
+            tmp_pose.position.z = start_pose.pose.position.z - interpolation * i;
+            spiral_path.push_back(tmp_pose);
+        }
+
+        displayLine(spiral_path);
+
+        const double jump_threshold = 0.0;
+        const double eef_step = 0.001;
+        moveit_msgs::msg::RobotTrajectory trajectory_toolpath;
+        double fraction = move_group_->computeCartesianPath(spiral_path, eef_step, jump_threshold, trajectory_toolpath);
+        rclcpp::sleep_for(std::chrono::seconds(3));
+        RCLCPP_INFO(LOGGER, "Visualizing Cartesian path (%.2f%% acheived)", fraction * 100.0);
+        bool success = (move_group_->execute(trajectory_toolpath) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+        if(success){
+            RCLCPP_INFO_STREAM(LOGGER, "spiral success!!!!!!!!!!!!");
+        }
+        else{
+            RCLCPP_INFO_STREAM(LOGGER, "spiral failed :( ");
+        }
     }
 
     void deleteAllMarkers()
@@ -305,13 +348,13 @@ public:
         marker.lifetime = rclcpp::Duration(0);
 
         marker.pose.orientation.w = 1.0;
-        marker.scale.x = 0.05;
-        marker.scale.y = 0.05;
-        marker.scale.z = 0.05;
+        marker.scale.x = 0.01;
+        marker.scale.y = 0.01;
+        marker.scale.z = 0.01;
 
         marker.color.r = 0.0;
-        marker.color.g = 1.0;
-        marker.color.b = 0.0;
+        marker.color.g = 0.0;
+        marker.color.b = 1.0;
         marker.color.a = 1.0;
 
         for( const auto pose : pose_list){
@@ -349,16 +392,18 @@ int main(int argc, char** argv)
 
     rclcpp::Node::SharedPtr node = rclcpp::Node::make_shared("run_ompl_constrained_planning", node_options);
     ConstrainedPlanning constrained_planning(node);
-
-    std::thread run_demo([&constrained_planning]() {
+    bool demo_on = true;
+    std::thread run_demo([&constrained_planning, &demo_on]() {
         // Wait for rviz
         rclcpp::sleep_for(std::chrono::seconds(1));
         constrained_planning.run();
+        demo_on = false;
         RCLCPP_INFO_STREAM(LOGGER, "Finished demo procedure ready to exit");
         return 0;
     });
-
-    rclcpp::spin(node);
+    while(demo_on){
+        rclcpp::spin_some(node);
+    }
     run_demo.join();
 
     rclcpp::shutdown();
