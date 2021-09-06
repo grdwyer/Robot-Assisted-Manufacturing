@@ -81,6 +81,10 @@ def generate_launch_description():
             "hardware:=",
             manipulator,
             " ",
+            " ",
+            "blade_height:=",
+            "0.0025",
+            " "
         ]
     )
     print(robot_description_content)

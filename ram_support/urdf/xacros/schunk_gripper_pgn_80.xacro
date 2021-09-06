@@ -42,6 +42,50 @@
         </geometry>
       </collision>
     </link>
+
+    <joint name="${robot_name}_joint_implant_holder" type="fixed">
+      <parent link="${robot_name}_link_main_body"/>
+      <child link="${robot_name}_implant_holder"/>
+      <origin xyz="0 0 0.0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="${robot_name}_implant_holder">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/pgn_80/visual/implant_holder.dae"/>
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/pgn_80/collision/implant_holder.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="${robot_name}_joint_implant_support" type="fixed">
+      <parent link="${robot_name}_link_main_body"/>
+      <child link="${robot_name}_implant_support"/>
+      <origin xyz="0 0 0.0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="${robot_name}_implant_support">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/pgn_80/visual/implant_support.dae"/>
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://ram_support/meshes/schunk_gripper/pgn_80/collision/implant_support.stl" />
+        </geometry>
+      </collision>
+    </link>
     
     <!-- joint between main body and left jaw -->
     <joint name="${robot_name}_joint_left" type="prismatic">
@@ -99,21 +143,21 @@
     <joint name="${robot_name}_jaw_centre_joint" type="fixed">
       <parent link="${robot_name}_link_main_body"/>
       <child link="${robot_name}_jaw_centre"/>
-      <origin xyz="0 0 0.078850" rpy="0 0 0"/>
+      <origin xyz="0 0 0.065850" rpy="0 0 0"/>
     </joint>
 
     <link name="${robot_name}_jaw_left"/>
     <joint name="${robot_name}_jaw_left_joint" type="fixed">
       <parent link="${robot_name}_link_left"/>
       <child link="${robot_name}_jaw_left"/>
-      <origin xyz="0.000524 0 0.078850" rpy="0 0 0"/>
+      <origin xyz="0.000524 0 0.065850" rpy="0 0 0"/>
     </joint>
 
     <link name="${robot_name}_jaw_right"/>
     <joint name="${robot_name}_jaw_right_joint" type="fixed">
       <parent link="${robot_name}_link_right"/>
       <child link="${robot_name}_jaw_right"/>
-      <origin xyz="0.000524 0 0.078850" rpy="0 0 ${pi}"/>
+      <origin xyz="0.000524 0 0.065850" rpy="0 0 ${pi}"/>
     </joint>
 
     <xacro:include filename="$(find ram_support)/urdf/xacros/control/gripper.ros2_control.xacro" />

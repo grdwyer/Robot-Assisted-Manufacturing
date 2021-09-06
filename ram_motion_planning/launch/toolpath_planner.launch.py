@@ -4,7 +4,9 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution, TextSubstitution
 from ament_index_python.packages import get_package_share_directory
+from launch_ros.substitutions import FindPackageShare
 import xacro
 
 
@@ -41,8 +43,48 @@ def generate_launch_description():
     ######################
     #### Config Files ####
     ######################
-    doc = load_xacro('ram_support', 'urdf/iiwa_workcell.urdf.xacro')
-    robot_description = {'robot_description': doc}
+    declared_arguments = [DeclareLaunchArgument("robot_ip", default_value="192.170.10.2",
+                                                description="IP address of the kuka KONI"),
+                          DeclareLaunchArgument("robot_port", default_value="30200",
+                                                description="Port used by the FRI (30200 - 30209"),
+                          DeclareLaunchArgument("real_manipulator", default_value="false",
+                                                description="Type of manipulator to startup (fake/false or real/true)"),
+                          DeclareLaunchArgument("rviz", default_value="false", description="If rviz should run")]
+    # specific arguments
+
+    robot_ip = LaunchConfiguration("robot_ip")
+    robot_port = LaunchConfiguration("robot_port")
+    manipulator = LaunchConfiguration("real_manipulator")
+    rviz = LaunchConfiguration("rviz")
+
+    # Component yaml files are grouped in separate namespaces
+    ######################
+    #### Config Files ####
+    ######################
+    robot_description_content = Command(
+        [
+            PathJoinSubstitution([FindExecutable(name="xacro")]),
+            " ",
+            PathJoinSubstitution([FindPackageShare('ram_support'), "urdf", 'iiwa_workcell.urdf.xacro']),
+            " ",
+            "robot_ip:=",
+            robot_ip,
+            " ",
+            " ",
+            "robot_port:=",
+            robot_port,
+            " ",
+            " ",
+            "hardware:=",
+            manipulator,
+            " ",
+            " ",
+            "blade_height:=",
+            "0.0025",
+            " "
+        ]
+    )
+    robot_description = {'robot_description': robot_description_content}
 
     robot_description_semantic_config = load_file('ram_moveit_config', 'config/iiwa_workcell.srdf')
     robot_description_semantic = {'robot_description_semantic': robot_description_semantic_config}
@@ -68,4 +110,4 @@ def generate_launch_description():
         get_package_share_directory('ram_motion_planning') + '/launch/ram_interface.launch.py'))
     nodes.append(interface_launch)
 
-    return LaunchDescription(nodes)
+    return LaunchDescription(declared_arguments + nodes)

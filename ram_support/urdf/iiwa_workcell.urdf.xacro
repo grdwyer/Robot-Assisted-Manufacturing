@@ -1,8 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="iiwa_workcell">
-    
-    <xacro:arg name="hardware_interface" default="PositionJointInterface"/>
-    <xacro:arg name="initial_z" default="0.0"/>   
+
+    <xacro:arg name="blade_height" default="0.0025"/>
     
     <link name="world"/>
 
@@ -58,7 +57,8 @@
         <origin xyz="-0.17351 -0.237 0.1109" rpy="0 0 0"/>
     </joint>
 
-    <xacro:cutting_plate />
+    <xacro:cutting_plate blade_height="$(arg blade_height)"/>
+<!--    <xacro:cutting_plate />-->
 
     <link name="home_a_implant"/>
     <joint name="home_a_implant_joint" type="fixed">

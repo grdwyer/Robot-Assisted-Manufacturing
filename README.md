@@ -66,8 +66,10 @@ docker run -it \
     --volume="/etc/shadow:/etc/shadow:ro" \
     --volume="/etc/sudoers.d:/etc/sudoers.d:ro" \
     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+    --net=host
     gdwyer/ram:<branch>
 ```
+If on a computer with nvidia-docker2 installed add `--gpus 'all,"capabilities=compute,display,graphics,utility"'` before the image.
 Full docker info [here](https://github.com/grdwyer/Robot-Assisted-Manufacturing/wiki/Docker)
 
 ## Hardware Support
