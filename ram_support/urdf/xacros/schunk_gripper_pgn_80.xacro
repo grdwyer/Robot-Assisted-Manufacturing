@@ -79,12 +79,12 @@
         </geometry>
       </visual>
 
-      <collision>
-        <origin xyz="0 0 0" rpy="0 0 0"/>
-        <geometry>
-          <mesh filename="package://ram_support/meshes/schunk_gripper/pgn_80/collision/implant_support.stl" />
-        </geometry>
-      </collision>
+<!--      <collision>-->
+<!--        <origin xyz="0 0 0" rpy="0 0 0"/>-->
+<!--        <geometry>-->
+<!--          <mesh filename="package://ram_support/meshes/schunk_gripper/pgn_80/collision/implant_support.stl" />-->
+<!--        </geometry>-->
+<!--      </collision>-->
     </link>
     
     <!-- joint between main body and left jaw -->

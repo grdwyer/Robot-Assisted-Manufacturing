@@ -14,10 +14,11 @@ stock_handler:
       pose:
         x: 0
         y: 0
-        z: 0.001
+        z: 0.0015
         qx: 0.0
         qy: 1.0
         qz: 0.0
         qw: 6.12e-17
         frame: gripper_jaw_centre
     stock_frame: implant
+    touch_links: [gripper_implant_support, gripper_link_left, gripper_link_right]

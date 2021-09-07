@@ -64,7 +64,8 @@ class StockHandler(Node):
         super().__init__('stock_handler', allow_undeclared_parameters=True)
 
         # Node interfaces
-        self.srv_stock_loader = self.create_service(SetBool, '{}/load_stock'.format(self.get_name()), self.callback_load_stock)
+        self.srv_stock_loader = self.create_service(SetBool, '{}/load_stock'.format(self.get_name()),
+                                                    self.callback_load_stock)
         self.srv_attach_stock = self.create_service(SetBool, '{}/attach_stock'.format(self.get_name()),
                                                     self.callback_attach_stock)
 
@@ -105,6 +106,7 @@ class StockHandler(Node):
 
         # the robot
         self.declare_parameter("stock_frame", "implant")
+        self.declare_parameter("touch_links")
         self.declare_parameter("stock_description")
 
         stock_path = os.path.join(get_package_share_directory("ram_support"), 'meshes/stock/collision/medpor_large.stl')
@@ -186,6 +188,7 @@ class StockHandler(Node):
         :param res:
         :return:
         """
+        self.touch_links = self.get_parameter("touch_links").get_parameter_value().string_array_value
         if req.data is True and self.stock_in_scene and not self.stock_attached:
             #  Attach stock
             msg = AttachedCollisionObject()
@@ -197,7 +200,9 @@ class StockHandler(Node):
 
             msg.object = stock_object
             msg.link_name = self.get_parameter("attach.frame").get_parameter_value().string_value
-            self.get_logger().info("attaching stock to link")
+            msg.touch_links = self.touch_links
+            self.get_logger().info("attaching stock to link {} and allowing the following touch links {}". \
+                                   format(msg.link_name, msg.touch_links))
             self.pub_moveit_attached_collision.publish(msg)
             self.static_transform_publisher.sendTransform(self.create_stock_tf("attach"))
             self.stock_attached = True
@@ -211,6 +216,8 @@ class StockHandler(Node):
             msg.object.operation = CollisionObject.REMOVE
             msg.object.id = self.get_parameter("stock_frame").get_parameter_value().string_value
             msg.link_name = self.get_parameter("attach.frame").get_parameter_value().string_value
+            msg.touch_links = self.touch_links
+
             self.get_logger().info("detaching stock from link")
             self.pub_moveit_attached_collision.publish(msg)
             self.static_transform_publisher.sendTransform(self.create_stock_tf("start"))

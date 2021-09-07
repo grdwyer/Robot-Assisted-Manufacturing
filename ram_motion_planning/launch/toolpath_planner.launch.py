@@ -80,7 +80,7 @@ def generate_launch_description():
             " ",
             " ",
             "blade_height:=",
-            "0.0025",
+            "0.0015",
             " "
         ]
     )
