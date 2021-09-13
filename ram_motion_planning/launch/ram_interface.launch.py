@@ -83,6 +83,10 @@ def generate_launch_description():
             "hardware:=",
             manipulator,
             " ",
+            " ",
+            "blade_height:=",
+            "0.0015",
+            " "
         ]
     )
 
