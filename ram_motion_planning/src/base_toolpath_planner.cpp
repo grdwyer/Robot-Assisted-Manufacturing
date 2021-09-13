@@ -178,8 +178,15 @@ bool BaseToolpathPlanner::construct_plan_request() {
     moveit::planning_interface::MoveGroupInterface::Plan plan, retimed_plan;
     robot_state_ = move_group_->getCurrentState(2.0);
     plan.trajectory_ = trajectory_toolpath_;
-    RCLCPP_INFO_STREAM(LOGGER, "Retiming trajectory for constant cartesaian velocity of " << this->get_parameter("desired_cartesian_velocity").as_double());
-    retime_trajectory_constant_velocity(plan, robot_state_, this->get_parameter("desired_cartesian_velocity").as_double(), retimed_plan);
+
+    RCLCPP_INFO_STREAM(LOGGER, "Retiming trajectory for trapezoidal velocity profile of: \n\tMax Velocity: "
+    << this->get_parameter("desired_cartesian_velocity").as_double() << "\n\tMax Acceleration: "
+    << this->get_parameter("desired_cartesian_acceleration").as_double());
+    retime_trajectory_trapezoidal_velocity(plan, robot_state_,
+                                           this->get_parameter("desired_cartesian_velocity").as_double(),
+                                           this->get_parameter("desired_cartesian_acceleration").as_double(),
+                                           retimed_plan);
+
     trajectory_toolpath_ = retimed_plan.trajectory_;
     return fraction > 0.99;
     }

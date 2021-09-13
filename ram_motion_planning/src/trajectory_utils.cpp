@@ -107,60 +107,81 @@ bool retime_trajectory_trapezoidal_velocity(moveit::planning_interface::MoveGrou
 
     std::vector<double> distance_between_points, desired_velocities;
 
-
+    // Find the cartesian distance between each joint trajectory point
     for(ulong i = 0; i < plan.trajectory_.joint_trajectory.points.size(); i++) {
+        // If it's past the first point then set the joint position to the previous otherwise use the value from the
+        // robot state as it should be the current /start state
         if (i > 0) {
             robot_state->setJointGroupPositions(joint_model_group,
                                                 plan.trajectory_.joint_trajectory.points[i - 1].positions);
-            p_start = robot_state->getGlobalLinkTransform("gripper_jaw_centre");
-
-            robot_state->setJointGroupPositions(joint_model_group,
-                                                plan.trajectory_.joint_trajectory.points[i].positions);
-            p_end = robot_state->getGlobalLinkTransform("gripper_jaw_centre");
-
-            distance_between_points.emplace_back((p_end.translation() - p_start.translation()).norm());
         }
+
+        p_start = robot_state->getGlobalLinkTransform("gripper_jaw_centre"); // TODO: have this as an arg for the function, maybe have a default if robot_state has an ee link
+        robot_state->setJointGroupPositions(joint_model_group,
+                                            plan.trajectory_.joint_trajectory.points[i].positions);
+        p_end = robot_state->getGlobalLinkTransform("gripper_jaw_centre");
+        distance_between_points.emplace_back((p_end.translation() - p_start.translation()).norm());
     }
 
-    double acc_time = desired_velocity / desired_acceleration;
     double current_desired_velocity, distance_from_start, distance_to_end, distance_acceleration, total_distance = 0;
 
+    // Calculate the total distance travelled, this is to know when to decelerate .
     for(const auto &dist : distance_between_points){
         total_distance += dist;
     }
+    // Calculate the distance needed to accelerate and decelerate at the required value
     distance_acceleration = pow(desired_velocity,2) / (2 * desired_acceleration);
-    distance_from_start = distance_between_points[0];
+
+    if(2 * distance_acceleration > total_distance){
+        RCLCPP_WARN_STREAM(LOGGER, "The total distance of the trajectory is too low for the end-effector "
+                                   "to get to full speed. \nTotal distance: " << total_distance << \
+                                   "\nAcceleration distance: " << distance_acceleration
+        );
+    }
+
+    distance_from_start = 0;
 
     for(ulong i = 0; i < plan.trajectory_.joint_trajectory.points.size(); i++){
-        if (i > 0) {
-            distance_from_start += distance_between_points[i];
-            distance_to_end = total_distance - distance_from_start;
 
-            if(distance_from_start < distance_acceleration){
-                current_desired_velocity = sqrt(2 * desired_acceleration * distance_from_start);
-                time_between_points = distance / current_desired_velocity;
-                desired_velocities.emplace_back(current_desired_velocity);
-            }else if(distance_to_end < distance_acceleration){
-                current_desired_velocity = sqrt(2 * desired_acceleration * distance_to_end);
-                time_between_points = distance / current_desired_velocity;
-                desired_velocities.emplace_back(current_desired_velocity);
-            } else{
-                time_between_points = distance / desired_velocity;
-                desired_velocities.emplace_back(desired_velocity);
-            }
+        distance_from_start += distance_between_points[i];
+        distance_to_end = total_distance - distance_from_start;
 
-            new_time_from_start = rclcpp::Duration(retimed_plan.trajectory_.joint_trajectory.points[i-1].time_from_start) + \
-                    rclcpp::Duration::from_seconds(time_between_points);
+        distance = distance_between_points[i];
 
-            RCLCPP_DEBUG_STREAM(LOGGER, "Point " << i << " of " << plan.trajectory_.joint_trajectory.points.size()
-                                                 << "\nOriginal time from start: " << rclcpp::Duration(retimed_plan.trajectory_.joint_trajectory.points[i].time_from_start).seconds()
-                                                 << "\nDistance between points: " << distance << "\nRecalculated time from start: " << new_time_from_start.seconds() << std::endl);
-
-            retimed_plan.trajectory_.joint_trajectory.points[i].time_from_start = new_time_from_start;
-        } else{
-            // TODO: take the start state and determine distance from start to first point.
-
+        if(distance_from_start < distance_acceleration){
+            current_desired_velocity = sqrt(2 * desired_acceleration * distance_from_start);
+            time_between_points = distance / current_desired_velocity;
+            desired_velocities.emplace_back(current_desired_velocity);
         }
+        else if(distance_to_end < distance_acceleration){
+            current_desired_velocity = sqrt(2 * desired_acceleration * distance_to_end);
+            time_between_points = distance / current_desired_velocity;
+            desired_velocities.emplace_back(current_desired_velocity);
+        } else{
+            time_between_points = distance / desired_velocity;
+            desired_velocities.emplace_back(desired_velocity);
+        }
+
+        // Check for NANs or negative values or infinite
+        if (isnan(time_between_points) || isinf(time_between_points) || time_between_points < 0){
+            RCLCPP_WARN_STREAM(LOGGER, "Time between points given as " << time_between_points << " setting as zero.");
+            time_between_points = 1e-5;
+        }
+
+        // Calculate the new time from start
+        if(i > 0) {
+            new_time_from_start =
+                    rclcpp::Duration(retimed_plan.trajectory_.joint_trajectory.points[i - 1].time_from_start) + \
+                rclcpp::Duration::from_seconds(time_between_points);
+        } else{
+            new_time_from_start = rclcpp::Duration::from_seconds(time_between_points);
+        }
+
+        RCLCPP_INFO_STREAM(LOGGER, "Point " << i << " of " << plan.trajectory_.joint_trajectory.points.size() - 1
+                                             << "\nOriginal time from start: " << rclcpp::Duration(retimed_plan.trajectory_.joint_trajectory.points[i].time_from_start).seconds()
+                                             << "\nDistance between points: " << distance << "\nRecalculated time from start: " << new_time_from_start.seconds() << std::endl);
+
+        retimed_plan.trajectory_.joint_trajectory.points[i].time_from_start = new_time_from_start;
 
     }
     return false;
@@ -171,7 +192,7 @@ void interpolate_pose_trajectory(std::vector<geometry_msgs::msg::PoseStamped> &o
     double dist, angle;
     int interp_size = 10, dist_size, ang_size;
     geometry_msgs::msg::PoseStamped p_start, p_end, p_interp;
-    for (int i = 0; i < original.size(); i++) {
+    for (ulong i = 0; i < original.size(); i++) {
         if (i < original.size() - 1) {
             p_start = original[i];
             p_end = original[i + 1];
@@ -201,7 +222,7 @@ void interpolate_pose_trajectory(std::vector<geometry_msgs::msg::Pose> &original
     double dist, angle;
     int interp_size = 10, dist_size, ang_size;
     geometry_msgs::msg::Pose p_start, p_end, p_interp;
-    for (int i = 0; i < original.size(); i++) {
+    for (ulong i = 0; i < original.size(); i++) {
         if (i < original.size() - 1) {
             p_start = original[i];
             p_end = original[i + 1];
@@ -248,7 +269,7 @@ double angular_distance_between_poses(geometry_msgs::msg::Pose a, geometry_msgs:
 double distance_along_trajectory(std::vector<geometry_msgs::msg::PoseStamped> &trajectory) {
     double total_dist = 0;
     geometry_msgs::msg::PoseStamped p_start, p_end;
-    for (int i = 0; i < trajectory.size() - 1; i++) {
+    for (ulong i = 0; i < trajectory.size() - 1; i++) {
         p_start = trajectory[i];
         p_end = trajectory[i + 1];
         total_dist += distance_between_poses(p_start.pose, p_end.pose);
