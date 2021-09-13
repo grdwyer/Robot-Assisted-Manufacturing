@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="cutting_plate">
-
+  <xacro:macro name="cutting_plate" params="blade_height:=^|0.0025">
+<!--    <xacro:arg name="blade_height" default="0.0025"/>-->
+    <xacro:property name="intersection_offset" value="0.00026" /> <!-- If there is a chisel tip this is the offset to the intersection point of the edges-->
     <link name="cutting_plate">
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -50,13 +51,13 @@
     <joint name="cutting_tool_joint" type="fixed">
       <parent link="cutting_plate_base"/>
       <child link="cutting_tool"/>
-      <origin xyz="0.017 0 -0.0035" rpy="0 0 0"/>
+      <origin xyz="0.017 0 ${-0.0087 + blade_height}" rpy="0 0 0"/>
     </joint>
 
     <joint name="cutting_tool_base_joint" type="fixed">
       <parent link="cutting_tool"/>
       <child link="cutting_tool_base"/>
-      <origin xyz="-0.003152 0 0.0035" rpy="0 0 0"/>
+      <origin xyz="${(blade_height + intersection_offset) * tan(30 * pi / 180)} 0 ${0.0087 - blade_height}" rpy="0 0 0"/>
     </joint>
 
     <joint name="cutting_tool_tip_joint" type="fixed">

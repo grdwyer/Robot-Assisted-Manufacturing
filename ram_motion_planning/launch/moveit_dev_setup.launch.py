@@ -81,6 +81,10 @@ def generate_launch_description():
             "hardware:=",
             manipulator,
             " ",
+            " ",
+            "blade_height:=",
+            "0.0015",
+            " "
         ]
     )
     print(robot_description_content)
@@ -197,7 +201,7 @@ def generate_launch_description():
     stock_handler = Node(package='ram_tooling_support',
                          executable='stock_handler',
                          name='stock_handler',
-                         output='log',
+                         output='screen',
                          parameters=[stock_config_file]
                          )
     nodes.append(stock_handler)

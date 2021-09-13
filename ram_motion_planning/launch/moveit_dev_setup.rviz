@@ -8,6 +8,7 @@ Panels:
         - /Status1
         - /MotionPlanning1
         - /MotionPlanning1/Planning Request1
+        - /TF1
         - /TF1/Frames1
         - /Marker1
         - /Marker1/Topic1
@@ -104,6 +105,16 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
+          gripper_implant_holder:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          gripper_implant_support:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           gripper_jaw_centre:
             Alpha: 1
             Show Axes: false
@@ -116,6 +127,11 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
+          gripper_link_iiwa_attachment:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           gripper_link_left:
             Alpha: 1
             Show Axes: false
@@ -284,6 +300,16 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
+          gripper_implant_holder:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          gripper_implant_support:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           gripper_jaw_centre:
             Alpha: 1
             Show Axes: false
@@ -296,6 +322,11 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
+          gripper_link_iiwa_attachment:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           gripper_link_left:
             Alpha: 1
             Show Axes: false
@@ -410,12 +441,16 @@ Visualization Manager:
         cutting_plate:
           Value: false
         cutting_plate_base:
-          Value: true
-        cutting_tool:
-          Value: true
-        cutting_tool_base:
           Value: false
+        cutting_tool:
+          Value: false
+        cutting_tool_base:
+          Value: true
         cutting_tool_tip:
+          Value: true
+        gripper_implant_holder:
+          Value: true
+        gripper_implant_support:
           Value: true
         gripper_jaw_centre:
           Value: false
@@ -423,6 +458,8 @@ Visualization Manager:
           Value: false
         gripper_jaw_right:
           Value: false
+        gripper_link_iiwa_attachment:
+          Value: true
         gripper_link_left:
           Value: false
         gripper_link_main_body:
@@ -476,6 +513,13 @@ Visualization Manager:
         world:
           optical_table:
             optical_table_back_left_bolt:
+              cutting_plate:
+                cutting_plate_base:
+                  cutting_tool:
+                    cutting_tool_base:
+                      {}
+                    cutting_tool_tip:
+                      {}
               home_a_implant:
                 {}
             optical_table_back_right_bolt:
@@ -493,23 +537,22 @@ Visualization Manager:
                                 iiwa_link_6:
                                   iiwa_link_7:
                                     iiwa_link_ee:
-                                      gripper_link_main_body:
-                                        gripper_jaw_centre:
-                                          {}
-                                        gripper_link_left:
-                                          gripper_jaw_left:
+                                      gripper_link_iiwa_attachment:
+                                        gripper_link_main_body:
+                                          gripper_implant_holder:
                                             {}
-                                        gripper_link_right:
-                                          gripper_jaw_right:
+                                          gripper_implant_support:
                                             {}
+                                          gripper_jaw_centre:
+                                            {}
+                                          gripper_link_left:
+                                            gripper_jaw_left:
+                                              {}
+                                          gripper_link_right:
+                                            gripper_jaw_right:
+                                              {}
             optical_table_front_right_bolt:
-              cutting_plate:
-                cutting_plate_base:
-                  cutting_tool:
-                    cutting_tool_base:
-                      {}
-                    cutting_tool_tip:
-                      {}
+              {}
       Update Interval: 0
       Value: true
     - Class: rviz_default_plugins/Marker
@@ -556,6 +599,16 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        gripper_implant_holder:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_implant_support:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         gripper_jaw_centre:
           Alpha: 1
           Show Axes: false
@@ -568,6 +621,11 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        gripper_link_iiwa_attachment:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         gripper_link_left:
           Alpha: 1
           Show Axes: false
@@ -736,25 +794,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/ThirdPersonFollower
-      Distance: 1.2283635139465332
+      Distance: 0.20373021066188812
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.02091395854949951
-        Y: -0.07502925395965576
-        Z: 3.4979200336238137e-07
+        X: -0.015321806073188782
+        Y: 0.08410844206809998
+        Z: 2.9763793918391457e-07
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5453981757164001
+      Pitch: 0.1853983998298645
       Target Frame: cutting_tool_base
       Value: ThirdPersonFollower (rviz_default_plugins)
-      Yaw: 4.699959754943848
+      Yaw: 1.0449610948562622
     Saved: ~
 Window Geometry:
   Displays:

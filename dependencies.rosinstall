@@ -1,1 +1,2 @@
 - git: {local-name: ros_pi_daq, uri: 'https://github.com/grdwyer/ros_pi_daq.git', version: main}
+- git: {local-name: rqt_tf_tools, uri: 'https://github.com/grdwyer/rqt_tf_tools.git', version: main}
