@@ -20,6 +20,8 @@ double angular_distance_between_poses(geometry_msgs::msg::Pose a, geometry_msgs:
 
 double distance_along_trajectory(std::vector<geometry_msgs::msg::PoseStamped> &trajectory);
 
+bool check_joint_velocities(moveit::core::RobotModelConstPtr robot_model, const std::map<std::string, double>& joint_diff);
+
 // Interpolation
 geometry_msgs::msg::Pose interpolate_between_pose(geometry_msgs::msg::Pose start, geometry_msgs::msg::Pose end, double factor);
 
@@ -34,5 +36,6 @@ bool retime_trajectory_trapezoidal_velocity(moveit::planning_interface::MoveGrou
                                             moveit::core::RobotStatePtr robot_state, double desired_velocity,
                                             double desired_acceleration,
                                             moveit::planning_interface::MoveGroupInterface::Plan &retimed_plan);
+
 
 #endif //RAM_TRAJECTORY_UTILS_H
