@@ -50,11 +50,11 @@ BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): N
     service_execute_ = planner_node->create_service<std_srvs::srv::Trigger>(this->get_fully_qualified_name() + std::string("/toolpath_execute"),
             std::bind(&BaseToolpathPlanner::callback_execute, this, std::placeholders::_1, std::placeholders::_2));
     publisher_toolpath_poses_ = planner_node->create_publisher<geometry_msgs::msg::PoseArray>(this->get_fully_qualified_name() + std::string("/planned_toolpath"), 10);
-
+    publisher_trajectory_ = planner_node->create_publisher<moveit_msgs::msg::DisplayTrajectory>("/retimed_planned_path", 10);
     //TF2
     tfl_ = std::make_shared<tf2_ros::TransformListener>(buffer_);
 
-//  Executor threads
+    // Executor threads
     executor_moveit_.add_node(move_group_node);
     thread_moveit_executor_ = std::thread(&BaseToolpathPlanner::run_moveit_executor, this);
 
@@ -139,7 +139,7 @@ bool BaseToolpathPlanner::construct_plan_request() {
     double retreat_offset = std::max(this->get_parameter("retreat_offset").as_double(), 0.001);
     double retreat_height = std::max(this->get_parameter("retreat_height").as_double(), 0.001);
     end_path_frame = ee_cartesian_path.back();
-    retreat_frame = KDL::Frame(KDL::Vector(retreat_offset,0,0)) * end_path_frame;
+    retreat_frame = KDL::Frame(KDL::Vector(retreat_offset/2,0,0)) * end_path_frame;
     raised_retreat_frame = KDL::Frame(KDL::Vector(retreat_offset,0,retreat_height)) * end_path_frame;
     tf_trans = tf2::kdlToTransform(retreat_frame);
     tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
@@ -188,6 +188,12 @@ bool BaseToolpathPlanner::construct_plan_request() {
                                            retimed_plan);
 
     trajectory_toolpath_ = retimed_plan.trajectory_;
+    RCLCPP_INFO_STREAM(LOGGER, "Sending retimed trajectory to be displayed");
+    moveit_msgs::msg::DisplayTrajectory msg;
+    msg.model_id = "iiwa_workcell";
+    msg.trajectory.push_back(trajectory_toolpath_);
+    moveit::core::robotStateToRobotStateMsg(*robot_state_, msg.trajectory_start);
+    publisher_trajectory_->publish(msg);
     return fraction > 0.99;
     }
 
