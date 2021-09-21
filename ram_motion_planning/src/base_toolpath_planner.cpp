@@ -25,7 +25,7 @@ BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): N
     this->declare_parameter<double>("retreat_height", 0.01);
 
     // Initialise
-    auto move_group_node = std::make_shared<rclcpp::Node>("moveit", rclcpp::NodeOptions());
+    auto move_group_node = std::make_shared<rclcpp::Node>("toolpath_moveit", rclcpp::NodeOptions());
     move_group_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(move_group_node,
             this->get_parameter("moveit_planning_group").as_string());
 
@@ -186,6 +186,9 @@ bool BaseToolpathPlanner::construct_plan_request() {
                                            this->get_parameter("desired_cartesian_velocity").as_double(),
                                            this->get_parameter("desired_cartesian_acceleration").as_double(),
                                            retimed_plan);
+//    retime_trajectory_constant_velocity(plan, robot_state_,
+//                                       this->get_parameter("desired_cartesian_velocity").as_double(),
+//                                       retimed_plan);
 
     trajectory_toolpath_ = retimed_plan.trajectory_;
     RCLCPP_INFO_STREAM(LOGGER, "Sending retimed trajectory to be displayed");

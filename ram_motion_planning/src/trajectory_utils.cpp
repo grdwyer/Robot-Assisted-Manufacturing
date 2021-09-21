@@ -182,7 +182,15 @@ bool retime_trajectory_trapezoidal_velocity(moveit::planning_interface::MoveGrou
             RCLCPP_WARN_STREAM(LOGGER, "Time between points given as " << time_between_points << " setting as zero.");
             time_between_points = 1e-5;
         } else if (isinf(time_between_points)){
-            time_between_points = distance / 1e-3; // Set to 1mm/s, this should only really happen at the deceleration phase.
+            RCLCPP_WARN_STREAM(LOGGER, "Time between points given as " << time_between_points << " setting as to 1mm/s or previous velocity if available.");
+            // If we don't have anything to go on make it slow
+            if(desired_velocities.empty()){
+                time_between_points = distance / 1e-3; // Set to 1mm/s, this should only really happen at the deceleration phase.
+            }
+            // Otherwise lets use the last velocity, there should be enough interpolation between points that this isn't crazy
+            else{
+                time_between_points = distance / desired_velocities[i-1];
+            }
         }
 
         // Calculate the new joint velocities proposed
@@ -204,7 +212,7 @@ bool retime_trajectory_trapezoidal_velocity(moveit::planning_interface::MoveGrou
             new_time_from_start = rclcpp::Duration::from_seconds(time_between_points);
         }
 
-        RCLCPP_DEBUG_STREAM(LOGGER, "Point " << i << " of " << plan.trajectory_.joint_trajectory.points.size() - 1
+        RCLCPP_INFO_STREAM(LOGGER, "Point " << i << " of " << plan.trajectory_.joint_trajectory.points.size() - 1
                                              << "\nOriginal time from start: " << rclcpp::Duration(retimed_plan.trajectory_.joint_trajectory.points[i].time_from_start).seconds()
                                              << "\nDistance between points: " << distance << "\nRecalculated time from start: " << new_time_from_start.seconds() << std::endl);
 
