@@ -9,7 +9,7 @@ moveit_scale_acceleration: 1.0
 moveit_planning_time: 30.0
 moveit_planning_attempts: 5
 desired_cartesian_velocity: 0.08
-desired_cartesian_acceleration: 0.08
+desired_cartesian_acceleration: 0.05
 approach_offset: 0.03
 retreat_offset: 0.03
 retreat_height: 0.01

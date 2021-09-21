@@ -13,6 +13,7 @@
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/robot_state/conversions.h>
 #include <moveit_msgs/msg/display_robot_state.hpp>
+#include <moveit_msgs/msg/display_trajectory.hpp>
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
 #include <utility>
 #include <std_srvs/srv/set_bool.hpp>
@@ -142,6 +143,7 @@ protected:
 
     //rviz pose array publisher
     rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr publisher_toolpath_poses_;
+    rclcpp::Publisher<moveit_msgs::msg::DisplayTrajectory>::SharedPtr publisher_trajectory_;
     geometry_msgs::msg::PoseArray toolpath_poses_;
     rclcpp::TimerBase::SharedPtr timer_toolpath_poses_;
 
