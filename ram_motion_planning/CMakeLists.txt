@@ -9,6 +9,8 @@ set(FastRTPS_LIBRARY_RELEASE /opt/ros/foxy/lib/libfastrtps.so)
 find_package(moveit_common REQUIRED)
 moveit_package()
 
+set(CMAKE_CXX_STANDARD 17)
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wpedantic)
 endif()

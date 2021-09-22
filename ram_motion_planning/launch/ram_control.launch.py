@@ -84,6 +84,10 @@ def generate_launch_description():
             "hardware:=",
             manipulator,
             " ",
+            " ",
+            "blade_height:=",
+            "0.0015",
+            " "
         ]
     )
     robot_description = {"robot_description": robot_description_content}
@@ -145,6 +149,7 @@ def generate_launch_description():
         'config',
         'ros_controllers.yaml'
     )
+
     ros2_control_node = Node(
         package='controller_manager',
         executable='ros2_control_node',
