@@ -48,6 +48,16 @@ ros2 service call /toolpath_planner/toolpath_execute std_srvs/srv/Trigger {}
 ```
 
 ## Docker
+### Helper scripts
+You can use the full commands below but also use the helper scripts in the .docker folder.  
+Currently implemented helpers (As always look through the scripts first before running them)  
+All should be run from the root directory of the repo.  
+`.docker/build_image.sh`  -- Build the image tagged as gdwyer/ram:<branch_name>-amd64  
+`.docker/run_user.sh` -- Runs the container as the user with x server etc (same as the command in the Run section below)  
+`.docker/run_user_nvidia.sh` -- Same as above but with access to a nvidia GPU added (Needs nvidia docker2 to be installed)  
+`.docker/run_control.sh` -- Runs the container as root with the kuka driver added to the repo but not built, container will delete itself after exit.  
+
+
 ### Build
 ```bash
 docker build --pull --rm -f ./.docker/Dockerfile  -t gdwyer/ram:<branch>-<platform> .
@@ -66,7 +76,7 @@ docker run -it \
     --volume="/etc/shadow:/etc/shadow:ro" \
     --volume="/etc/sudoers.d:/etc/sudoers.d:ro" \
     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-    --net=host
+    --net=host \
     gdwyer/ram:<branch>
 ```
 If on a computer with nvidia-docker2 installed add `--gpus 'all,"capabilities=compute,display,graphics,utility"'` before the image.
