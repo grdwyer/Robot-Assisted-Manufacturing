@@ -241,6 +241,7 @@ bool BaseToolpathPlanner::construct_plan_request() {
     //Add to the waypoints vector for now, look into a nicer way of doing this during the cleanup possibly check the stock size and see if the toolpath already includes the retreat.
     ee_cartesian_path.push_back(retreat_frame);
     ee_cartesian_path.push_back(raised_retreat_frame);
+    stock_helper_->modify_touch_link("cutting_plate", true);
     rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
 
     approach_pose = tf2::toMsg(approach_frame);
@@ -250,6 +251,7 @@ bool BaseToolpathPlanner::construct_plan_request() {
         move_group_->execute(approach_plan);
     }
     stock_helper_->modify_touch_link("cutting_tool", true);
+
 
     rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
 
@@ -365,6 +367,7 @@ bool BaseToolpathPlanner::execute_trajectory() {
         bool success = (move_group_->execute(trajectory_toolpath_) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
         // Remove tool from touch links
         stock_helper_->modify_touch_link("cutting_tool", false); // TODO: param this
+        stock_helper_->modify_touch_link("cutting_plate", false); // TODO: param this
         if(us_cutter){
             RCLCPP_WARN_STREAM(LOGGER, "Disabling US cutter");
             us_cutter_helper_->enable(false);
