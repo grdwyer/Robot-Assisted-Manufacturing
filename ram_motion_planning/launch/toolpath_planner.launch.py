@@ -91,15 +91,21 @@ def generate_launch_description():
 
     kinematics_yaml = load_yaml('ram_moveit_config', 'config/kinematics.yaml')
 
-    node_config = load_yaml("ram_motion_planning", "config/toolpath_follower_defaults.yaml")
-    print(node_config)
+    # node_config = load_yaml("ram_motion_planning", "config/toolpath_follower_defaults.yaml")
+    # print(node_config)
+
+    toolpath_planner_params = os.path.join(
+        get_package_share_directory('ram_motion_planning'),
+        'config',
+        'toolpath_follower_defaults.yaml'
+    )
     nodes = []
     # Start the actual move_group interface node
     toolpath_planner = Node(name='toolpath_planner',
                             package='ram_motion_planning',
                             executable='base_toolpath_planner',
                             output='screen',
-                            parameters=[node_config,
+                            parameters=[toolpath_planner_params,
                                         robot_description,
                                         robot_description_semantic,
                                         kinematics_yaml
