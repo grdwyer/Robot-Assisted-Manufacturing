@@ -123,6 +123,7 @@ public:
     void run();
 
 protected:
+    void setup_parameters();
     void run_moveit_executor();
     void run_helper_executor();
 

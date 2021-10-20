@@ -4,25 +4,11 @@
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("toolpath_planner");
 
 
-BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): Node("toolpath_follower", options),
+BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): Node("toolpath_planner", options),
                                                                                buffer_(this->get_clock()){
     // Declare parameters
     // TODO: add parameter decriptions for each
-    this->declare_parameter<std::string>("moveit_planning_group", "iiwa");
-    this->declare_parameter<std::string>("tool_reference_frame", "cutting_tool_tip");
-    this->declare_parameter<std::string>("end_effector_reference_frame", "gripper_jaw_centre");
-    this->declare_parameter<std::string>("part_reference_frame", "implant");
-    this->declare_parameter<int>("debug_wait_time", 500);
-    this->declare_parameter<bool>("debug_mode", true);
-    this->declare_parameter<double>("moveit_scale_velocity", 0.2);
-    this->declare_parameter<double>("moveit_scale_acceleration", 1.0);
-    this->declare_parameter<double>("moveit_planning_time", 30.0);
-    this->declare_parameter<int>("moveit_planning_attempts", 5);
-    this->declare_parameter<double>("desired_cartesian_velocity", 0.08);
-    this->declare_parameter<double>("desired_cartesian_acceleration", 0.08);
-    this->declare_parameter<double>("approach_offset", 0.02);
-    this->declare_parameter<double>("retreat_offset", 0.02);
-    this->declare_parameter<double>("retreat_height", 0.01);
+    setup_parameters();
 
     // Initialise
     auto move_group_node = std::make_shared<rclcpp::Node>("toolpath_moveit", rclcpp::NodeOptions());
@@ -67,6 +53,110 @@ BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): N
     configuration_message();
 }
 
+void BaseToolpathPlanner::setup_parameters(){
+    auto parameter_descriptor = rcl_interfaces::msg::ParameterDescriptor();
+    // Move group
+    parameter_descriptor.name = "moveit_planning_group";
+    parameter_descriptor.description = "The move group that will be used to plan for the manipulator.";
+    parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
+    parameter_descriptor.additional_constraints = "valid group as found in the loaded srdf";
+    this->declare_parameter<std::string>("moveit_planning_group", "iiwa", parameter_descriptor);
+
+    // Reference frame
+    // These are all quite similar and mostly require a valid frame name
+    parameter_descriptor.name = "tool_reference_frame";
+    parameter_descriptor.description = "The frame of the tool to be used.";
+    parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
+    parameter_descriptor.additional_constraints = "valid frame within the tf tree";
+    this->declare_parameter<std::string>("tool_reference_frame", "cutting_tool_tip", parameter_descriptor);
+
+    parameter_descriptor.name = "end_effector_reference_frame";
+    parameter_descriptor.description = "The frame of the end effector to be used.";
+    parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
+    parameter_descriptor.additional_constraints = "valid frame within the tf tree";
+    this->declare_parameter<std::string>("end_effector_reference_frame", "gripper_jaw_centre", parameter_descriptor);
+
+    parameter_descriptor.name = "part_reference_frame";
+    parameter_descriptor.description = "The frame of the stock to be used.";
+    parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
+    parameter_descriptor.additional_constraints = "must be the stock frame as given by the stock handler";
+    this->declare_parameter<std::string>("part_reference_frame", "implant", parameter_descriptor);
+
+    // Debug params
+    parameter_descriptor.name = "debug_wait_time";
+    parameter_descriptor.description = "Time to wait in milliseconds between each step when in debug mode.";
+    parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER;
+    parameter_descriptor.additional_constraints = "";
+    this->declare_parameter<int>("debug_wait_time", 500, parameter_descriptor);
+    parameter_descriptor.name = "debug_mode";
+    parameter_descriptor.description = "Outputs extra information and pauses longer in each processing step.";
+    parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_BOOL;
+    parameter_descriptor.additional_constraints = "";
+    this->declare_parameter<bool>("debug_mode", true, parameter_descriptor);
+
+    // Moveit params
+    parameter_descriptor.name = "moveit_scale_velocity";
+    parameter_descriptor.description = "Scaled joint velocity of moveit plans.";
+    parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE;
+    parameter_descriptor.additional_constraints = "value has to be between 0 and 1";
+    this->declare_parameter<double>("moveit_scale_velocity", 0.2, parameter_descriptor);
+
+    parameter_descriptor.name = "moveit_scale_acceleration";
+    parameter_descriptor.description = "Scaled joint acceleration of moveit plans.";
+    parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE;
+    parameter_descriptor.additional_constraints = "value has to be between 0 and 1";
+    this->declare_parameter<double>("moveit_scale_acceleration", 1.0, parameter_descriptor);
+
+    parameter_descriptor.name = "moveit_planning_time";
+    parameter_descriptor.description = "Time available to solve the motion plan";
+    parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE;
+    parameter_descriptor.additional_constraints = "value has to be more than 0 and is in seconds";
+    this->declare_parameter<double>("moveit_planning_time", 30.0, parameter_descriptor);
+
+    parameter_descriptor.name = "moveit_planning_attempts";
+    parameter_descriptor.description = "Number of attempts available to solve the motion plan";
+    parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER;
+    parameter_descriptor.additional_constraints = "value has to be more than 0 and is in seconds";
+    this->declare_parameter<int>("moveit_planning_attempts", 5, parameter_descriptor);
+
+    // Toolpath processing
+    parameter_descriptor.name = "desired_cartesian_velocity";
+    parameter_descriptor.description = "Desired cartesian velocity to retime the trajectory to";
+    parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE;
+    parameter_descriptor.additional_constraints = "value is in m/s and needs to be achievable by the robot";
+    this->declare_parameter<double>("desired_cartesian_velocity", 0.08, parameter_descriptor);
+
+    parameter_descriptor.name = "desired_cartesian_acceleration";
+    parameter_descriptor.description = "Desired cartesian acceleration to retime the trajectory to";
+    parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE;
+    parameter_descriptor.additional_constraints = "value is in m/s^2 and needs to be achievable by the robot";
+    this->declare_parameter<double>("desired_cartesian_acceleration", 0.08, parameter_descriptor);
+
+    parameter_descriptor.name = "approach_offset";
+    parameter_descriptor.description = "Offset distance from the first toolpath point to allow the robot to ramp up before the operation";
+    parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE;
+    parameter_descriptor.additional_constraints = "value is in m";
+    this->declare_parameter<double>("approach_offset", 0.02, parameter_descriptor);
+
+    parameter_descriptor.name = "retreat_offset";
+    parameter_descriptor.description = "Offset distance from the last toolpath point to allow the robot to ramp down after the operation";
+    parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE;
+    parameter_descriptor.additional_constraints = "value is in m";
+    this->declare_parameter<double>("retreat_offset", 0.02, parameter_descriptor);
+
+    parameter_descriptor.name = "retreat_height";
+    parameter_descriptor.description = "The height to raise the part by at the end of the operation";
+    parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE;
+    parameter_descriptor.additional_constraints = "value is in m";
+    this->declare_parameter<double>("retreat_height", 0.01, parameter_descriptor);
+
+    parameter_descriptor.name = "toolpath_height_offset";
+    parameter_descriptor.description = "A value to offset the height of the main toolpath to compensate for the slight differences in the model and tune the downward force applied.";
+    parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE;
+    parameter_descriptor.additional_constraints = "value is in m";
+    this->declare_parameter<double>("toolpath_height_offset", 0.0, parameter_descriptor);
+}
+
 void BaseToolpathPlanner::run_moveit_executor(){
     executor_moveit_.spin();
 }
@@ -83,6 +173,7 @@ void BaseToolpathPlanner::configuration_message() {
     "\n\t\tPlanning attempts: " << this->get_parameter("moveit_planning_attempts").as_int() <<
     "\n\tDesired cartesian velocity: " << this->get_parameter("desired_cartesian_velocity").as_double() <<
     "\n\tDesired cartesian acceleration: " << this->get_parameter("desired_cartesian_acceleration").as_double() <<
+    "\n\tToolpath height offset: " << this->get_parameter("toolpath_height_offset").as_double() <<
     "\n\tApproach pose offset: " << this->get_parameter("approach_offset").as_double() <<
     "\n\tRetreat pose offset: " << this->get_parameter("retreat_offset").as_double() <<
     "\n\tRetreat pose height: " << this->get_parameter("retreat_height").as_double()
@@ -337,12 +428,13 @@ bool BaseToolpathPlanner::process_toolpath(std::vector<KDL::Frame> &ee_cartesian
     KDL::Vector diff;
     geometry_msgs::msg::Pose pose;
     std::vector<KDL::Frame> ee_toolpath;
+    double height_offset = this->get_parameter("toolpath_height_offset").as_double();
 
     // transform toolpath to ee frame
     tool_base = get_ee_to_stock_transform();
 
     for(const auto &point : toolpath_.path.points){
-        ee_toolpath.push_back(tool_base * KDL::Frame(KDL::Vector((double)point.x, (double)point.y, (double)point.z)));
+        ee_toolpath.push_back(tool_base * KDL::Frame(KDL::Vector((double)point.x, (double)point.y, (double)point.z - height_offset)));
     }
     RCLCPP_INFO_STREAM(LOGGER, "EE Toolpath: \n" << ee_toolpath);
 
@@ -353,7 +445,7 @@ bool BaseToolpathPlanner::process_toolpath(std::vector<KDL::Frame> &ee_cartesian
         tf_trans.header.frame_id = move_group_->getEndEffectorLink();
         tf_trans.header.stamp = this->get_clock()->now();
         tf_trans.child_frame_id = "ee_toolpath_point";
-//        broadcaster.sendTransform(tf_trans);
+        broadcaster.sendTransform(tf_trans);
         rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
     }
 
@@ -372,7 +464,7 @@ bool BaseToolpathPlanner::process_toolpath(std::vector<KDL::Frame> &ee_cartesian
         tf_trans.header.frame_id = move_group_->getEndEffectorLink();
         tf_trans.header.stamp = this->get_clock()->now();
         tf_trans.child_frame_id = "ee_toolpath_point";
-//        broadcaster.sendTransform(tf_trans);
+        broadcaster.sendTransform(tf_trans);
 
         //Frame part to tool
         tf_trans = tf2::kdlToTransform(tool_pose.Inverse());
