@@ -7,7 +7,6 @@ static const rclcpp::Logger LOGGER = rclcpp::get_logger("toolpath_planner");
 BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): Node("toolpath_planner", options),
                                                                                buffer_(this->get_clock()){
     // Declare parameters
-    // TODO: add parameter decriptions for each
     setup_parameters();
 
     // Initialise
