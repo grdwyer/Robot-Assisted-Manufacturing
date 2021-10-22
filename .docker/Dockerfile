@@ -43,9 +43,8 @@ RUN apt-get update && apt-get install -y \
     ros-foxy-rqt-common-plugins \
     ros-foxy-rqt-action \
     ros-$ROSDISTRO-rviz2 \
-    python3-pykdl
-
-RUN apt-get update && apt-get install -y \
+    python3-pykdl \
+    libnlopt-cxx-dev \
     libbullet-dev \
     libasio-dev \
     libtinyxml2-dev \
