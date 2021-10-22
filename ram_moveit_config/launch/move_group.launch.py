@@ -2,6 +2,7 @@ import os
 import yaml
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from launch.actions import ExecuteProcess
 from ament_index_python.packages import get_package_share_directory
 import xacro
 
@@ -39,10 +40,8 @@ def generate_launch_description():
     ######################
     #### Config Files ####
     ######################
-    doc = load_xacro('ram_support', 'urdf/mock_iiwa_workcell.urdf.xacro')
+    doc = load_xacro('ram_support', 'urdf/iiwa_workcell.urdf.xacro')
     robot_description = {'robot_description': doc}
-
-    implant_description_doc = load_xacro('ram_support', 'urdf/implant.urdf.xacro')
 
     robot_description_semantic_config = load_file('ram_moveit_config', 'config/iiwa_workcell.srdf')
     robot_description_semantic = {'robot_description_semantic': robot_description_semantic_config}
@@ -106,29 +105,41 @@ def generate_launch_description():
 
     # Publish TF
 
-    # Fake joint driver
-    run_type = "sim"
-    # run_type = "real"
+    robot_state_publisher = Node(package='robot_state_publisher',
+                                 executable='robot_state_publisher',
+                                 name='robot_state_publisher',
+                                 output='both',
+                                 parameters=[robot_description])
+    nodes.append(robot_state_publisher)
 
-    if run_type == "sim":
-        robot_state_publisher = Node(package='robot_state_publisher',
-                                     executable='robot_state_publisher',
-                                     name='robot_state_publisher',
-                                     output='both',
-                                     parameters=[robot_description])
-        nodes.append(robot_state_publisher)
+    # Iiwa settings
+    iiwa_controller = os.path.join(
+        get_package_share_directory('ram_moveit_config'),
+        'config',
+        'ros_controllers.yaml'
+    )
+    ros2_control_node = Node(
+        package='controller_manager',
+        executable='ros2_control_node',
+        parameters=[robot_description, iiwa_controller],
+        prefix=['nice -n -20 '],
+        output={
+            'stdout': 'screen',
+            'stderr': 'screen',
+        }
+    )
+    nodes.append(ros2_control_node)
 
-        iiwa_fake_joint_driver_node = Node(package='fake_joint_driver',
-                                           executable='fake_joint_driver_node',
-                                           parameters=[{'controller_name': 'iiwa_arm_controller'},
-                                                       os.path.join(get_package_share_directory("ram_moveit_config"),
-                                                                    "config", "fake_controller_setup.yaml"),
-                                                       os.path.join(get_package_share_directory("ram_moveit_config"),
-                                                                    "config", "start_positions.yaml"),
-                                                       robot_description],
-                                           output="screen"
-                                           )
-        nodes.append(iiwa_fake_joint_driver_node)
+    load_controllers = []
+    for controller in ["iiwa_arm_controller", "joint_state_controller", "gripper_forward_command_controller_position"]:
+        load_controllers += [
+            ExecuteProcess(
+                cmd=["ros2 run controller_manager spawner.py {}".format(controller)],
+                shell=True,
+                output="screen",
+            )
+        ]
+    nodes += load_controllers
 
     sim_gripper_controller = Node(package="ram_gripper_control",
                                   executable="sim_gripper_controller",
