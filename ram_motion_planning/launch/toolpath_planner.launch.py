@@ -90,6 +90,8 @@ def generate_launch_description():
     robot_description_semantic = {'robot_description_semantic': robot_description_semantic_config}
 
     kinematics_yaml = load_yaml('ram_moveit_config', 'config/kinematics.yaml')
+    robot_description_kinematics = {'robot_description_kinematics': kinematics_yaml}
+    print(robot_description_kinematics)
 
     node_config = load_yaml("ram_motion_planning", "config/toolpath_follower_defaults.yaml")
     print(node_config)
@@ -102,7 +104,7 @@ def generate_launch_description():
                             parameters=[node_config,
                                         robot_description,
                                         robot_description_semantic,
-                                        kinematics_yaml
+                                        robot_description_kinematics
                                         ])
     nodes.append(toolpath_planner)
 
