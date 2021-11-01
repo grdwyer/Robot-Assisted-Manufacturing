@@ -95,7 +95,7 @@ def generate_launch_description():
     robot_description_semantic_config = load_file('ram_moveit_config', 'config/iiwa_workcell.srdf')
     robot_description_semantic = {'robot_description_semantic': robot_description_semantic_config}
 
-    kinematics_yaml = load_yaml('ram_moveit_config', 'config/kinematics.yaml')
+    kinematics_yaml = load_yaml('ram_moveit_config', 'config/kinematics_kdl.yaml')
 
     # Planning Functionality
     ompl_planning_pipeline_config = {'move_group': {
