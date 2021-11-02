@@ -217,6 +217,7 @@ bool BaseToolpathPlanner::construct_plan_request() {
     initial_path_frame = ee_cartesian_path.front();
     double approach_offset = std::max(this->get_parameter("approach_offset").as_double(), 0.001);
     approach_frame = KDL::Frame(KDL::Vector(-approach_offset,0,0)) * initial_path_frame; // TODO: param this
+
     if(this->get_parameter("debug_mode").as_bool()) {
         tf_trans = tf2::kdlToTransform(approach_frame);
         tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
@@ -234,6 +235,7 @@ bool BaseToolpathPlanner::construct_plan_request() {
     end_path_frame = ee_cartesian_path.back();
     retreat_frame = KDL::Frame(KDL::Vector(retreat_offset/2,0,0)) * end_path_frame;
     raised_retreat_frame = KDL::Frame(KDL::Vector(retreat_offset,0,retreat_height)) * end_path_frame;
+
     if(this->get_parameter("debug_mode").as_bool()) {
         tf_trans = tf2::kdlToTransform(retreat_frame);
         tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
@@ -255,8 +257,6 @@ bool BaseToolpathPlanner::construct_plan_request() {
         move_group_->execute(approach_plan);
     }
     stock_helper_->modify_touch_link("cutting_tool", true);
-
-
     debug_mode_wait();
 
     std::vector<geometry_msgs::msg::Pose> waypoints, interpolated_waypoints;
@@ -468,7 +468,6 @@ bool BaseToolpathPlanner::process_toolpath(std::vector<KDL::Frame> &ee_cartesian
                 broadcaster.sendTransform(tf_trans);
                 rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
             }
-
             // Frame on the implant
             tf_trans = tf2::kdlToTransform(tool_pose);
             tf_trans.header.frame_id = move_group_->getEndEffectorLink();
