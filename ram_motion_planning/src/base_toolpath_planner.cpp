@@ -87,6 +87,7 @@ void BaseToolpathPlanner::setup_parameters(){
     parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER;
     parameter_descriptor.additional_constraints = "";
     this->declare_parameter<int>("debug_wait_time", 500, parameter_descriptor);
+
     parameter_descriptor.name = "debug_mode";
     parameter_descriptor.description = "Outputs extra information and pauses longer in each processing step.";
     parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_BOOL;
@@ -216,12 +217,14 @@ bool BaseToolpathPlanner::construct_plan_request() {
     initial_path_frame = ee_cartesian_path.front();
     double approach_offset = std::max(this->get_parameter("approach_offset").as_double(), 0.001);
     approach_frame = KDL::Frame(KDL::Vector(-approach_offset,0,0)) * initial_path_frame; // TODO: param this
-    tf_trans = tf2::kdlToTransform(approach_frame);
-    tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
-    tf_trans.header.stamp = this->get_clock()->now();
-    tf_trans.child_frame_id = "approach_frame";
-    broadcaster.sendTransform(tf_trans);
-    rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
+    if(this->get_parameter("debug_mode").as_bool()) {
+        tf_trans = tf2::kdlToTransform(approach_frame);
+        tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
+        tf_trans.header.stamp = this->get_clock()->now();
+        tf_trans.child_frame_id = "approach_frame";
+        broadcaster.sendTransform(tf_trans);
+        rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
+    }
 
     // Determine an retreat pose for the toolpath
     geometry_msgs::msg::Pose retreat_pose;
@@ -231,17 +234,19 @@ bool BaseToolpathPlanner::construct_plan_request() {
     end_path_frame = ee_cartesian_path.back();
     retreat_frame = KDL::Frame(KDL::Vector(retreat_offset/2,0,0)) * end_path_frame;
     raised_retreat_frame = KDL::Frame(KDL::Vector(retreat_offset,0,retreat_height)) * end_path_frame;
-    tf_trans = tf2::kdlToTransform(retreat_frame);
-    tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
-    tf_trans.header.stamp = this->get_clock()->now();
-    tf_trans.child_frame_id = "retreat_frame";
-    broadcaster.sendTransform(tf_trans);
+    if(this->get_parameter("debug_mode").as_bool()) {
+        tf_trans = tf2::kdlToTransform(retreat_frame);
+        tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
+        tf_trans.header.stamp = this->get_clock()->now();
+        tf_trans.child_frame_id = "retreat_frame";
+        broadcaster.sendTransform(tf_trans);
+    }
 
     //Add to the waypoints vector for now, look into a nicer way of doing this during the cleanup possibly check the stock size and see if the toolpath already includes the retreat.
     ee_cartesian_path.push_back(retreat_frame);
     ee_cartesian_path.push_back(raised_retreat_frame);
     stock_helper_->modify_touch_link("cutting_plate", true);
-    rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
+    debug_mode_wait();
 
     approach_pose = tf2::toMsg(approach_frame);
     moveit::planning_interface::MoveGroupInterface::Plan approach_plan;
@@ -252,7 +257,7 @@ bool BaseToolpathPlanner::construct_plan_request() {
     stock_helper_->modify_touch_link("cutting_tool", true);
 
 
-    rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
+    debug_mode_wait();
 
     std::vector<geometry_msgs::msg::Pose> waypoints, interpolated_waypoints;
     for(const auto & frame : ee_cartesian_path){
@@ -440,16 +445,6 @@ bool BaseToolpathPlanner::process_toolpath(std::vector<KDL::Frame> &ee_cartesian
     }
     RCLCPP_INFO_STREAM(LOGGER, "EE Toolpath: \n" << ee_toolpath);
 
-    tf2_ros::TransformBroadcaster broadcaster(this);
-    // Run the marker across each untransformed
-    for(const auto &frame : ee_toolpath){
-        tf_trans = tf2::kdlToTransform(frame);
-        tf_trans.header.frame_id = move_group_->getEndEffectorLink();
-        tf_trans.header.stamp = this->get_clock()->now();
-        tf_trans.child_frame_id = "ee_toolpath_point";
-        broadcaster.sendTransform(tf_trans);
-        rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
-    }
 
     for(unsigned long i=0; i < ee_toolpath.size(); i++){
         if(i != ee_toolpath.size()-1){
@@ -459,26 +454,44 @@ bool BaseToolpathPlanner::process_toolpath(std::vector<KDL::Frame> &ee_cartesian
         }
 
         tool_pose = ee_toolpath[i] * reorient;
+        ee_cartesian_path.push_back(tool_pose.Inverse());
 
         // Debug tf frames
-        // Frame on the implant
-        tf_trans = tf2::kdlToTransform(tool_pose);
-        tf_trans.header.frame_id = move_group_->getEndEffectorLink();
-        tf_trans.header.stamp = this->get_clock()->now();
-        tf_trans.child_frame_id = "ee_toolpath_point";
-        broadcaster.sendTransform(tf_trans);
+        if(this->get_parameter("debug_mode").as_bool()) {
+            tf2_ros::TransformBroadcaster broadcaster(this);
+            // Run the marker across each untransformed
+            for (const auto &frame : ee_toolpath) {
+                tf_trans = tf2::kdlToTransform(frame);
+                tf_trans.header.frame_id = move_group_->getEndEffectorLink();
+                tf_trans.header.stamp = this->get_clock()->now();
+                tf_trans.child_frame_id = "ee_toolpath_point";
+                broadcaster.sendTransform(tf_trans);
+                rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
+            }
 
-        //Frame part to tool
-        tf_trans = tf2::kdlToTransform(tool_pose.Inverse());
-        tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
-        tf_trans.header.stamp = this->get_clock()->now();
-        tf_trans.child_frame_id = "planned_ee_pose";
-//        broadcaster.sendTransform(tf_trans);
-        rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
+            // Frame on the implant
+            tf_trans = tf2::kdlToTransform(tool_pose);
+            tf_trans.header.frame_id = move_group_->getEndEffectorLink();
+            tf_trans.header.stamp = this->get_clock()->now();
+            tf_trans.child_frame_id = "ee_toolpath_point";
+            broadcaster.sendTransform(tf_trans);
 
-        ee_cartesian_path.push_back(tool_pose.Inverse());
+            //Frame part to tool
+            tf_trans = tf2::kdlToTransform(tool_pose.Inverse());
+            tf_trans.header.frame_id = move_group_->getPoseReferenceFrame();
+            tf_trans.header.stamp = this->get_clock()->now();
+            tf_trans.child_frame_id = "planned_ee_pose";
+            broadcaster.sendTransform(tf_trans);
+            rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
+        }
     }
     return !ee_cartesian_path.empty() && ee_cartesian_path.size() == toolpath_.path.points.size();
+}
+
+void BaseToolpathPlanner::debug_mode_wait() {
+    if(this->get_parameter("debug_mode").as_bool()){
+        rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
+    }
 }
 
 
