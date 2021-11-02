@@ -130,7 +130,7 @@ void BaseToolpathPlanner::setup_parameters(){
     parameter_descriptor.description = "Desired cartesian acceleration to retime the trajectory to";
     parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE;
     parameter_descriptor.additional_constraints = "value is in m/s^2 and needs to be achievable by the robot";
-    this->declare_parameter<double>("desired_cartesian_acceleration", 0.08, parameter_descriptor);
+    this->declare_parameter<double>("desired_cartesian_acceleration", 0.2, parameter_descriptor);
 
     parameter_descriptor.name = "approach_offset";
     parameter_descriptor.description = "Offset distance from the first toolpath point to allow the robot to ramp up before the operation";
