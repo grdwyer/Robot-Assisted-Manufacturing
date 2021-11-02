@@ -123,8 +123,11 @@ public:
     void run();
 
 protected:
+    void setup_parameters();
     void run_moveit_executor();
     void run_helper_executor();
+
+    void debug_mode_wait();
 
     std::shared_ptr<ToolpathHelper> toolpath_helper_;
     std::shared_ptr<StockHelper> stock_helper_;
