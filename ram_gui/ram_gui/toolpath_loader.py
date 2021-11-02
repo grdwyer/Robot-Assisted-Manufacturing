@@ -18,13 +18,13 @@ from python_qt_binding.QtWidgets import QCompleter, QFileDialog, QGraphicsScene,
 from python_qt_binding.QtSvg import QSvgRenderer
 
 
-class ToolpathGui(Plugin):
+class ToolpathLoader(Plugin):
     def __init__(self, context):
-        super(ToolpathGui, self).__init__(context)
+        super(ToolpathLoader, self).__init__(context)
         self._widget = QWidget()
         self._node = context.node
 
-        ui_file = os.path.join(get_package_share_directory('ram_gui'), 'resource', 'toolpath_gui.ui')
+        ui_file = os.path.join(get_package_share_directory('ram_gui'), 'resource', 'toolpath_loader.ui')
         loadUi(ui_file, self._widget)
         self._widget.setObjectName('Toolpath Interface')
         self.setObjectName('Toolpath Interface')
@@ -53,6 +53,7 @@ class ToolpathGui(Plugin):
 
         self.files = []
         self.loaded_toolpath = Toolpath()
+        self.cb_refresh_list()
 
         # Display stock toolpath
         # svg_file = os.path.join(get_package_share_directory('ram_gui'), 'resource', 'medpor_large.svg')
@@ -129,7 +130,7 @@ class ToolpathGui(Plugin):
             self.set_status("Toolpath planner failed to execute the toolpath")
 
     def __del__(self):
-        self._node.get_logger().warn("Destroying toolpath plugin")
+        self._node.get_logger().warn("Destroying toolpath loader plugin")
         self.client_setup_toolpath.destroy()
         self.client_execute_toolpath.destroy()
         self.client_load_toolpath.destroy()
