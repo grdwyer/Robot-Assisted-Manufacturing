@@ -1,4 +1,4 @@
-ARG ROSDISTRO=foxy
+ARG ROSDISTRO=galactic
 
 FROM ros:$ROSDISTRO
 
@@ -29,20 +29,21 @@ RUN apt-get update && apt-get install -y \
     python3-vcstool \
     wget \
     ros-$ROSDISTRO-rqt \
-    ros-foxy-rqt-topic \
-    ros-foxy-rqt-top \
-    ros-foxy-rqt-srv \
-    ros-foxy-rqt-shell \
-    ros-foxy-rqt-service-caller \
-    ros-foxy-rqt-publisher \
-    ros-foxy-rqt-reconfigure \
-    ros-foxy-rqt-plot \
-    ros-foxy-rqt-msg \
-    ros-foxy-rqt-graph \
-    ros-foxy-rqt-console \
-    ros-foxy-rqt-common-plugins \
-    ros-foxy-rqt-action \
+    ros-$ROSDISTRO-rqt-topic \
+    ros-$ROSDISTRO-rqt-top \
+    ros-$ROSDISTRO-rqt-srv \
+    ros-$ROSDISTRO-rqt-shell \
+    ros-$ROSDISTRO-rqt-service-caller \
+    ros-$ROSDISTRO-rqt-publisher \
+    ros-$ROSDISTRO-rqt-reconfigure \
+    ros-$ROSDISTRO-rqt-plot \
+    ros-$ROSDISTRO-rqt-msg \
+    ros-$ROSDISTRO-rqt-graph \
+    ros-$ROSDISTRO-rqt-console \
+    ros-$ROSDISTRO-rqt-common-plugins \
+    ros-$ROSDISTRO-rqt-action \
     ros-$ROSDISTRO-rviz2 \
+    # ros-$ROSDISTRO-moveit \
     python3-pykdl \
     libnlopt-cxx-dev \
     libbullet-dev \
@@ -86,22 +87,27 @@ RUN pip3 install -U \
     gpiozero \
     pigpio
 
-
 # Moveit 2 build process
 RUN mkdir -p /moveit_ws/src
 WORKDIR /moveit_ws/src
-RUN ["/bin/bash", "-c", "source /opt/ros/foxy/setup.bash &&\
+RUN ["/bin/bash", "-c", "source /opt/ros/$ROSDISTRO/setup.bash &&\
     git clone https://github.com/ros-planning/moveit2.git -b foxy &&\
     vcs-import < moveit2/moveit2.repos || true && \
     apt update && \
-    rosdep install -r --from-paths . --ignore-src --rosdistro foxy -y"]
+    rosdep install -r --from-paths . --ignore-src --rosdistro $ROSDISTRO -y"]
+
+# RUN ["/bin/bash", "-c", "source /opt/ros/$ROSDISTRO/setup.bash &&\
+#     git clone https://github.com/ros-planning/moveit2.git -b main &&\
+#     for repo in moveit2/moveit2.repos $(f="moveit2/moveit2.repos"; test -r $f && echo $f); do vcs import < "$repo"; done &&\
+#     rosdep install -r --from-paths . --ignore-src --rosdistro $ROS_DISTRO -y"] 
+
+WORKDIR /moveit_ws
+RUN ["/bin/bash", "-c", "source /opt/ros/$ROSDISTRO/setup.bash &&\
+    colcon build --executor sequential --cmake-args -DCMAKE_BUILD_TYPE=Release"]
+
 
 # reduce size by removing apt cache
 RUN ["/bin/bash", "-c", "rm -rf /var/lib/apt/lists/*"]
-
-WORKDIR /moveit_ws
-RUN ["/bin/bash", "-c", "source /opt/ros/foxy/setup.bash &&\
-    colcon build --executor sequential --cmake-args -DCMAKE_BUILD_TYPE=Release"]
 
 # # Tesseract build process
 # RUN ["/bin/bash", "-c", "if["$TESSERACT" = "true"]; then \
@@ -119,7 +125,7 @@ COPY . /dev_ws/src/ram/
 
 # RAM stack build 
 WORKDIR /dev_ws
-RUN ["/bin/bash", "-c", "source /opt/ros/$ROSDISTRO/setup.bash &&\
+RUN ["/bin/bash", "-c", "source /opt/ros/galactic/setup.bash &&\
     source /moveit_ws/install/setup.bash &&\
     vcs import src < ./src/ram/dependencies.rosinstall &&\
     vcs pull src || true &&\
