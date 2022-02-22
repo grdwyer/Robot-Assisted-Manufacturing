@@ -9,14 +9,14 @@ controller_manager:
       type: forward_command_controller/ForwardCommandController
 
     joint_state_controller:
-      type: joint_state_controller/JointStateController
+      type: joint_state_broadcaster/JointStateBroadcaster
 
     iiwa_arm_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
 joint_state_controller:
   ros__parameters:
-    type:         joint_state_controller/JointStateController
+    type:         joint_state_broadcaster/JointStateBroadcaster
     publish_rate: 500
 
 iiwa_arm_controller:
