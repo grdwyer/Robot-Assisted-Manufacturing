@@ -1,6 +1,6 @@
 ARG ROSDISTRO=foxy
 
-FROM ros:$ROSDISTRO
+FROM gdwyer/ros:$ROSDISTRO
 
 ARG ROSDISTRO
 ARG MOVEIT2=true
@@ -14,36 +14,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install any needed packages then clean up apt cache
 # Build tools and general ROS tools
 RUN apt-get update && apt-get install -y \
-    software-properties-common \
-    ssh \
-    git \
-    python3-pip \
-    python3-vcstool \
-    build-essential \
-    cmake \
-    python3-colcon-common-extensions \
-    python3-flake8 \
-    python3-pytest-cov \
-    python3-rosdep \
-    python3-setuptools \
-    python3-vcstool \
-    wget \
-    ros-$ROSDISTRO-rqt \
-    ros-foxy-rqt-topic \
-    ros-foxy-rqt-top \
-    ros-foxy-rqt-srv \
-    ros-foxy-rqt-shell \
-    ros-foxy-rqt-service-caller \
-    ros-foxy-rqt-publisher \
-    ros-foxy-rqt-reconfigure \
-    ros-foxy-rqt-plot \
-    ros-foxy-rqt-msg \
-    ros-foxy-rqt-graph \
-    ros-foxy-rqt-console \
-    ros-foxy-rqt-common-plugins \
-    ros-foxy-rqt-action \
-    ros-$ROSDISTRO-rviz2 \
-    python3-pykdl \
     libnlopt-cxx-dev \
     libbullet-dev \
     libasio-dev \
@@ -70,38 +40,12 @@ RUN apt-get update && apt-get install -y \
 #     qt514-meta-full
 
 RUN pip3 install -U \
-    argcomplete \
-    flake8-blind-except \
-    flake8-builtins \
-    flake8-class-newline \
-    flake8-comprehensions \
-    flake8-deprecated \
-    flake8-docstrings \
-    flake8-import-order \
-    flake8-quotes \
-    pytest-repeat \
-    pytest-rerunfailures \
-    pytest \
     pyassimp==4.1.3 \
     gpiozero \
     pigpio
 
-
-# Moveit 2 build process
-RUN mkdir -p /moveit_ws/src
-WORKDIR /moveit_ws/src
-RUN ["/bin/bash", "-c", "source /opt/ros/foxy/setup.bash &&\
-    git clone https://github.com/ros-planning/moveit2.git -b foxy &&\
-    vcs-import < moveit2/moveit2.repos || true && \
-    apt update && \
-    rosdep install -r --from-paths . --ignore-src --rosdistro foxy -y"]
-
 # reduce size by removing apt cache
 RUN ["/bin/bash", "-c", "rm -rf /var/lib/apt/lists/*"]
-
-WORKDIR /moveit_ws
-RUN ["/bin/bash", "-c", "source /opt/ros/foxy/setup.bash &&\
-    colcon build --executor sequential --cmake-args -DCMAKE_BUILD_TYPE=Release"]
 
 # # Tesseract build process
 # RUN ["/bin/bash", "-c", "if["$TESSERACT" = "true"]; then \
