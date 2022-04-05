@@ -13,16 +13,20 @@ class USCutterController(Node):
         self.service_enable = self.create_service(std_srvs.srv.SetBool, '{}/enable'.format(self.get_name()),
                                                   self.callback_enable)
 
+        self.service_activate = self.create_service(std_srvs.srv.SetBool, '{}/activate'.format(self.get_name()),
+                                                  self.callback_activate)
+
         self.client_daq_output = self.create_client(SetGPIOValues, "/daq_server/set_output")
         self.client_daq_configure = self.create_client(ModifyGPIOSetup, "/daq_server/configure_pins")
 
-        self.declare_parameter("us_enable", 18)
+        self.declare_parameter("us_activate", 18)
 
+        self.enable = False
         success = self.client_daq_output.wait_for_service(20)
         if success:
             # configure pins
             request = ModifyGPIOSetup.Request()
-            request.pin_numbers.append(self.get_parameter("us_enable").get_parameter_value().integer_value)
+            request.pin_numbers.append(self.get_parameter("us_activate").get_parameter_value().integer_value)
             request.operations.append(ModifyGPIOSetup.Request.OUTPUT)
             self.client_daq_configure.call_async(request)
         else:
@@ -33,13 +37,13 @@ class USCutterController(Node):
     def __del__(self):
         self.get_logger().warn("Shutting down, setting us activate to off")
         request = SetGPIOValues.Request()
-        request.gpio.name.append(self.get_parameter("us_enable").get_parameter_value().integer_value)
+        request.gpio.name.append(self.get_parameter("us_activate").get_parameter_value().integer_value)
         request.gpio.value.append(0)
         self.client_daq_output.call_async(request)
 
-    def callback_enable(self, request: std_srvs.srv.SetBool.Request, response: std_srvs.srv.SetBool.Response):
+    def callback_activate(self, request: std_srvs.srv.SetBool.Request, response: std_srvs.srv.SetBool.Response):
         """
-        Service callback to open the gripper
+        Service callback to activate the US cutter
         :param request: Service request
         :type request: std_srvs.srv.SetBool.Request
         :param response: returned response
@@ -51,11 +55,27 @@ class USCutterController(Node):
 
         if request.data:
             self.get_logger().info("Request to activate US cutter received")
-            gpio_request.gpio.value.append(1)
+            if self.enable:
+                gpio_request.gpio.value.append(1)
+            else:
+                self.get_logger().warn("US cutter has not been enabled, enable first to allow activation")
         else:
             self.get_logger().info("Request to deactivate US cutter received")
             gpio_request.gpio.value.append(0)
         self.client_daq_output.call_async(gpio_request)
+        response.success = True
+        return response
+
+    def callback_enable(self, request: std_srvs.srv.SetBool.Request, response: std_srvs.srv.SetBool.Response):
+        """
+        Service callback to enable the US cutter (not activate the blade)
+        :param request: Service request
+        :type request: std_srvs.srv.SetBool.Request
+        :param response: returned response
+        :type response: std_srvs.srv.SetBool.Response
+        :return: acknowledgement it was processed (not successful)
+        """
+        self.enable = request.data
         response.success = True
         return response
 

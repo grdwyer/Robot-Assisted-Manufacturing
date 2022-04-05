@@ -29,4 +29,34 @@
             <statustip>A Python GUI plugin to load and execute toolpaths.</statustip>
         </qtgui>
     </class>
+    <class name="ImplantHolder" type="ram_gui.implant_holder.ImplantHolder" base_class_type="rqt_gui_py::Plugin">
+        <description>
+            A Python GUI plugin to interact with the gripper
+        </description>
+        <qtgui>
+            <group>
+                <label>Robot Assisted Manufacturing Tools</label>
+                <icon type="theme">folder</icon>
+                <statustip>Plugins related to the Robot Assisted Manufacturing project.</statustip>
+            </group>
+            <label>Implant Holder</label>
+            <icon type="theme">applications-other</icon>
+            <statustip>A Python GUI plugin to interact with the implant handler.</statustip>
+        </qtgui>
+    </class>
+    <class name="USCutter" type="ram_gui.us_cutter.USCutter" base_class_type="rqt_gui_py::Plugin">
+        <description>
+            A Python GUI plugin to interact with the US cutter
+        </description>
+        <qtgui>
+            <group>
+                <label>Robot Assisted Manufacturing Tools</label>
+                <icon type="theme">folder</icon>
+                <statustip>Plugins related to the Robot Assisted Manufacturing project.</statustip>
+            </group>
+            <label>US Cutter</label>
+            <icon type="theme">applications-other</icon>
+            <statustip>A Python GUI plugin to interact with the US cutter.</statustip>
+        </qtgui>
+    </class>
 </library>
