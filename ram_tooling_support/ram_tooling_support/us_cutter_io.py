@@ -51,7 +51,7 @@ class USCutterController(Node):
         :return: acknowledgement it was processed (not successful)
         """
         gpio_request = SetGPIOValues.Request()
-        gpio_request.gpio.name.append(self.get_parameter("us_enable").get_parameter_value().integer_value)
+        gpio_request.gpio.name.append(self.get_parameter("us_activate").get_parameter_value().integer_value)
 
         if request.data:
             self.get_logger().info("Request to activate US cutter received")
