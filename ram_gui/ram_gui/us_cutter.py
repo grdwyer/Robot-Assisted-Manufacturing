@@ -40,13 +40,11 @@ class USCutter(Plugin):
         self.client_activate = self._node.create_client(SetBool, "/us_cutter_controller/activate")
 
     def cb_activate_pressed(self):
-        self._node.get_logger().info("pressed")
         request = SetBool.Request()
         request.data = True
         self.client_activate.call_async(request)
 
     def cb_activate_released(self):
-        self._node.get_logger().info("released")
         request = SetBool.Request()
         request.data = False
         self.client_activate.call_async(request)
