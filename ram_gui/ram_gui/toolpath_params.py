@@ -70,39 +70,63 @@ class ToolpathParams(Plugin):
         self._widget.debugWaitTimeSpinBox.valueChanged.connect(self.cb_debug_wait)
 
     def cb_cart_vel(self):
-        val = self._widget.cartesianVelocityDoubleSpinBox.value() * 0.001
-        param = Parameter(name=self._param_list[0], value=val)
-        self.param_client.set_parameters([param])
+        try:
+            val = self._widget.cartesianVelocityDoubleSpinBox.value() * 0.001
+            param = Parameter(name=self._param_list[0], value=val)
+            self.param_client.set_parameters([param])
+        except Exception as e:
+            self._node.get_logger().warn(e)
 
     def cb_cart_acc(self):
-        param = Parameter(name=self._param_list[1], value=self._widget.cartesianAccelerationDoubleSpinBox.value()
-                                                          * 0.001)
-        self.param_client.set_parameters([param])
+        try:
+            param = Parameter(name=self._param_list[1], value=self._widget.cartesianAccelerationDoubleSpinBox.value()
+                                                              * 0.001)
+            self.param_client.set_parameters([param])
+        except Exception as e:
+            self._node.get_logger().warn(e)
 
     def cb_tool_offset(self):
-        param = Parameter(name=self._param_list[2], value=self._widget.toolpathHeightOffsetDoubleSpinBox.value()
-                                                          * 0.001)
-        self.param_client.set_parameters([param])
+        try:
+            param = Parameter(name=self._param_list[2], value=self._widget.toolpathHeightOffsetDoubleSpinBox.value()
+                                                              * 0.001)
+            self.param_client.set_parameters([param])
+        except Exception as e:
+            self._node.get_logger().warn(e)
 
     def cb_approach_offset(self):
-        param = Parameter(name=self._param_list[3], value=self._widget.approachOffsetDoubleSpinBox.value() * 0.001)
-        self.param_client.set_parameters([param])
+        try:
+            param = Parameter(name=self._param_list[3], value=self._widget.approachOffsetDoubleSpinBox.value() * 0.001)
+            self.param_client.set_parameters([param])
+        except Exception as e:
+            self._node.get_logger().warn(e)
 
     def cb_retreat_offset(self):
-        param = Parameter(name=self._param_list[4], value=self._widget.retreatOffsetDoubleSpinBox.value() * 0.001)
-        self.param_client.set_parameters([param])
+        try:
+            param = Parameter(name=self._param_list[4], value=self._widget.retreatOffsetDoubleSpinBox.value() * 0.001)
+            self.param_client.set_parameters([param])
+        except Exception as e:
+            self._node.get_logger().warn(e)
 
     def cb_retreat_height(self):
-        param = Parameter(name=self._param_list[5], value=self._widget.retreatHeightDoubleSpinBox.value() * 0.001)
-        self.param_client.set_parameters([param])
+        try:
+            param = Parameter(name=self._param_list[5], value=self._widget.retreatHeightDoubleSpinBox.value() * 0.001)
+            self.param_client.set_parameters([param])
+        except Exception as e:
+            self._node.get_logger().warn(e)
 
     def cb_debug_mode(self):
-        param = Parameter(name=self._param_list[6], value=self._widget.debugModeCheckBox.isChecked())
-        self.param_client.set_parameters([param])
+        try:
+            param = Parameter(name=self._param_list[6], value=self._widget.debugModeCheckBox.isChecked())
+            self.param_client.set_parameters([param])
+        except Exception as e:
+            self._node.get_logger().warn(e)
 
     def cb_debug_wait(self):
-        param = Parameter(name=self._param_list[7], value=self._widget.debugWaitTimeSpinBox.value())
-        self.param_client.set_parameters([param])
+        try:
+            param = Parameter(name=self._param_list[7], value=self._widget.debugWaitTimeSpinBox.value())
+            self.param_client.set_parameters([param])
+        except Exception as e:
+            self._node.get_logger().warn(e)
 
     def __del__(self):
         self._node.get_logger().warn("Destroying toolpath parameter plugin")

@@ -181,12 +181,12 @@ bool ServoHelper::enable_servo() {
 
 USCutterHelper::USCutterHelper() {
     node_ = rclcpp::Node::make_shared("us_cutter_helper");
-    client_us_enable_ = node_->create_client<std_srvs::srv::SetBool>("/us_cutter_controller/enable");
+    client_us_enable_ = node_->create_client<std_srvs::srv::SetBool>("/us_cutter_controller/activate");
 }
 
 USCutterHelper::USCutterHelper(rclcpp::Node::SharedPtr &node) {
     node_ = std::move(node);
-    client_us_enable_ = node_->create_client<std_srvs::srv::SetBool>("/us_cutter_controller/enable");
+    client_us_enable_ = node_->create_client<std_srvs::srv::SetBool>("/us_cutter_controller/activate");
 }
 
 bool USCutterHelper::enable(bool open) {
