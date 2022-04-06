@@ -2,3 +2,5 @@
 - git: {local-name: rqt_tf_tools, uri: 'https://github.com/grdwyer/rqt_tf_tools.git', version: main}
 - git: {local-name: trac_ik, uri: 'https://github.com/grdwyer/trac_ik.git', version: moveit_plugin}
 - git: {local-name: iiwa_fri_driver, uri: 'https://github.com/grdwyer/Kuka_iiwa_ROS2_Driver.git', version: foxy}
+- git: {local-name: behavior_tree, uri: 'https://github.com/berkeleyauv/behavior_tree.git', version: master}
+- git: {local-name: groot, uri: 'https://github.com/BehaviorTree/Groot.git', version: master}
