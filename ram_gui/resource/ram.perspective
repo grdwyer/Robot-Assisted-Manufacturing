@@ -4,14 +4,14 @@
     "mainwindow": {
       "keys": {
         "geometry": {
-          "repr(QByteArray.hex)": "QtCore.QByteArray(b'01d9d0cb0003000000000322000000ce000005e2000002ca00000322000000f3000005e2000002ca00000000000000000d7000000322000000f3000005e2000002ca')",
+          "repr(QByteArray.hex)": "QtCore.QByteArray(b'01d9d0cb00030000000000480000001b0000077f0000043700000048000000400000077f000004370000000000000000078000000048000000400000077f00000437')",
           "type": "repr(QByteArray.hex)",
-          "pretty-print": "     \"       \"          p \"      "
+          "pretty-print": "     H     7 H @   7      H @   7"
         },
         "state": {
-          "repr(QByteArray.hex)": "QtCore.QByteArray(b'000000ff00000000fd0000000100000003000002c1000001aefc0100000003fb0000006c007200710074005f007200650063006f006e006600690067007500720065005f005f0050006100720061006d005f005f0031005f005f005f0070006c007500670069006e0063006f006e007400610069006e00650072005f0074006f0070005f00770069006400670065007401000000000000051a0000000000000000fb0000005e00720061006d005f006700750069005f005f0054006f006f006c00700061007400680050006100720061006d0073005f005f0031005f005f0054006f006f006c007000610074006800200050006100720061006d00650074006500720073010000000000000157000000ec00fffffffb0000005c00720061006d005f006700750069005f005f0054006f006f006c0070006100740068004c006f0061006400650072005f005f0031005f005f0054006f006f006c007000610074006800200049006e0074006500720066006100630065010000015d00000164000000dd00ffffff000002c10000000000000004000000040000000800000008fc00000001000000030000000100000036004d0069006e0069006d0069007a006500640044006f0063006b00570069006400670065007400730054006f006f006c0062006100720000000000ffffffff0000000000000000')",
+          "repr(QByteArray.hex)": "QtCore.QByteArray(b'000000ff00000000fd000000010000000300000738000003cefc0100000003fc000000000000015f0000010100fffffffc0200000002fb0000006600720061006d005f006700750069005f005f0049006d0070006c0061006e00740048006f006c006400650072005f005f0031005f005f0049006d0070006c0061006e007400200048006f006c00640065007200200049006e00740065007200660061006300650100000014000000a50000001400fffffffb0000005200720061006d005f006700750069005f005f00550053004300750074007400650072005f005f0031005f005f00550053002000430075007400740065007200200049006e007400650072006600610063006501000000bf000003230000001400fffffffb0000005c00720061006d005f006700750069005f005f0054006f006f006c0070006100740068004c006f0061006400650072005f005f0031005f005f0054006f006f006c007000610074006800200049006e007400650072006600610063006501000001650000016a000000dd00fffffffb0000005e00720061006d005f006700750069005f005f0054006f006f006c00700061007400680050006100720061006d0073005f005f0031005f005f0054006f006f006c007000610074006800200050006100720061006d0065007400650072007301000002d500000463000000ec00ffffff000007380000000000000004000000040000000800000008fc00000001000000030000000100000036004d0069006e0069006d0069007a006500640044006f0063006b00570069006400670065007400730054006f006f006c0062006100720000000000ffffffff0000000000000000')",
           "type": "repr(QByteArray.hex)",
-          "pretty-print": "                 lrqt_reconfigure__Param__1___plugincontainer_top_widget          ^ram_gui__ToolpathParams__1__Toolpath Parameters          \\ram_gui__ToolpathLoader__1__Toolpath Interface                            6MinimizedDockWidgetsToolbar        "
+          "pretty-print": "                   _                                                                                                                    #                                                      e j                                                         c     8                                                      "
         }
       },
       "groups": {
@@ -29,22 +29,22 @@
     "pluginmanager": {
       "keys": {
         "running-plugins": {
-          "repr": "{'ram_gui/ToolpathLoader': [1], 'ram_gui/ToolpathParams': [1]}",
+          "repr": "{'ram_gui/ImplantHolder': [1], 'ram_gui/ToolpathLoader': [1], 'ram_gui/ToolpathParams': [1], 'ram_gui/USCutter': [1]}",
           "type": "repr"
         }
       },
       "groups": {
-        "plugin__ram_gui__ToolpathGui__1": {
+        "plugin__ram_gui__ImplantHolder__1": {
           "keys": {},
           "groups": {
-            "dock_widget__Toolpath Interface": {
+            "dock_widget__Implant Holder Interface": {
               "keys": {
                 "dock_widget_title": {
-                  "repr": "'Toolpath Interface'",
+                  "repr": "'Implant Holder Interface'",
                   "type": "repr"
                 },
                 "dockable": {
-                  "repr": "'true'",
+                  "repr": "True",
                   "type": "repr"
                 },
                 "parent": {
@@ -100,48 +100,21 @@
             }
           }
         },
-        "plugin__rqt_reconfigure__Param__1": {
+        "plugin__ram_gui__USCutter__1": {
           "keys": {},
           "groups": {
-            "dock_widget___plugincontainer_top_widget": {
+            "dock_widget__US Cutter Interface": {
               "keys": {
                 "dock_widget_title": {
-                  "repr": "'Parameter Reconfigure'",
+                  "repr": "'US Cutter Interface'",
                   "type": "repr"
                 },
                 "dockable": {
-                  "repr": "'true'",
+                  "repr": "True",
                   "type": "repr"
                 },
                 "parent": {
                   "repr": "None",
-                  "type": "repr"
-                }
-              },
-              "groups": {}
-            },
-            "plugin": {
-              "keys": {
-                "_splitter": {
-                  "repr(QByteArray.hex)": "QtCore.QByteArray(b'000000ff000000010000000200000136000000c00100000009010000000200')",
-                  "type": "repr(QByteArray.hex)",
-                  "pretty-print": "       6       "
-                },
-                "expanded_nodes": {
-                  "repr": "[]",
-                  "type": "repr"
-                },
-                "selected_nodes": {
-                  "repr": "['/toolpath_planner']",
-                  "type": "repr"
-                },
-                "splitter": {
-                  "repr(QByteArray.hex)": "QtCore.QByteArray(b'000000ff0000000100000002000001120000029a01ffffffff010000000100')",
-                  "type": "repr(QByteArray.hex)",
-                  "pretty-print": "               "
-                },
-                "text": {
-                  "repr": "''",
                   "type": "repr"
                 }
               },

@@ -59,6 +59,8 @@ class USCutterController(Node):
                 gpio_request.gpio.value.append(1)
             else:
                 self.get_logger().warn("US cutter has not been enabled, enable first to allow activation")
+                response.success = False
+                return response
         else:
             self.get_logger().info("Request to deactivate US cutter received")
             gpio_request.gpio.value.append(0)
