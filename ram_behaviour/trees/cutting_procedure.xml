@@ -1,0 +1,14 @@
+<root main_tree_to_execute="MainTree">
+    <BehaviorTree ID="MainTree">
+            <Sequence>
+<!--                Load toolpath-->
+                <TriggerComponent server_name="/toolpath_handler/load_toolpath" server_timeout="100"/>
+                <TriggerComponent server_name="/gripper_controller/close" server_timeout="100"/>
+                <TriggerComponent server_name="/toolpath_planner/toolpath_setup" server_timeout="100"/>
+                <SetBoolComponent server_name="/us_cutter_controller/enable" server_timeout="100" state="true"/>
+                <SetBoolComponent server_name="/us_cutter_controller/activate" server_timeout="100" state="true"/>
+                <TriggerComponent server_name="/toolpath_planner/toolpath_execute" server_timeout="100"/>
+                <SetBoolComponent server_name="/us_cutter_controller/activate" server_timeout="100" state="false"/>
+            </Sequence>
+    </BehaviorTree>
+</root>

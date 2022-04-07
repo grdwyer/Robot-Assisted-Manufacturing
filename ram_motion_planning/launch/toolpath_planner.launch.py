@@ -93,9 +93,6 @@ def generate_launch_description():
     robot_description_kinematics = {'robot_description_kinematics': kinematics_yaml}
     print(robot_description_kinematics)
 
-    # node_config = load_yaml("ram_motion_planning", "config/toolpath_follower_defaults.yaml")
-    # print(node_config)
-
     toolpath_planner_params = os.path.join(
         get_package_share_directory('ram_motion_planning'),
         'config',

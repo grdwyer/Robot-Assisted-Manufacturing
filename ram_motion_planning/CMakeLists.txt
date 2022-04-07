@@ -43,16 +43,16 @@ ament_target_dependencies(ram_helpers
 install(TARGETS ram_helpers
         DESTINATION lib/${PROJECT_NAME})
 
-add_executable(example_program src/example_program.cpp)
-target_include_directories(example_program PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-target_link_libraries(example_program
-        ram_helpers)
-ament_target_dependencies(example_program
-        moveit_ros_planning_interface
-        Boost
-        )
+#add_executable(example_program src/example_program.cpp)
+#target_include_directories(example_program PUBLIC
+#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#  $<INSTALL_INTERFACE:include>)
+#target_link_libraries(example_program
+#        ram_helpers)
+#ament_target_dependencies(example_program
+#        moveit_ros_planning_interface
+#        Boost
+#        )
 
 add_executable(base_toolpath_planner src/base_toolpath_planner.cpp src/run_base_planner.cpp)
 target_include_directories(base_toolpath_planner PUBLIC
@@ -84,7 +84,7 @@ ament_target_dependencies(ompl_demo
         )
 
 install(TARGETS
-        example_program
+#        example_program
         base_toolpath_planner
         ompl_toolpath_planner
         ompl_demo

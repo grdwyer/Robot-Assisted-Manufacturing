@@ -38,5 +38,4 @@ def generate_launch_description():
                                 shell=True,
                                 condition=IfCondition(arg_groot)))
 
-
     return LaunchDescription(declared_arguments + nodes)

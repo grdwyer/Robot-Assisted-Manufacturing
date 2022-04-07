@@ -6,9 +6,7 @@ from rclpy.node import Node
 from rclpy.parameter import Parameter
 from time import sleep
 
-from rcl_interfaces.srv import SetParameters
-from rcl_interfaces.srv import GetParameters
-from std_msgs.msg import Float64, Bool, Int64
+from ram_interfaces.srv import SetToolpathParameters, GetToolpathParameters
 from rqt_reconfigure.param_api import AsyncServiceCallFailed, ParamClient
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
@@ -38,6 +36,8 @@ class ToolpathParams(Plugin):
         self._remote_node_name = "toolpath_planner"
 
         self.param_client = ParamClient(self._node, self._remote_node_name)
+        self.set_parameters = self._node.create_client(SetToolpathParameters, "/toolpath_planner/set_parameters")
+        self.get_parameters = self._node.create_client(SetToolpathParameters, "/toolpath_planner/get_parameters")
         self.load_initial_values()
         self.setup_callbacks()
 
@@ -46,18 +46,21 @@ class ToolpathParams(Plugin):
         Function to load the current parameters within the toolpath planner node.
         :return:
         """
-        initial_values = self.param_client.get_parameters(self._param_list)
-        self._widget.cartesianVelocityDoubleSpinBox.setValue(initial_values[0].get_parameter_value().double_value
+        future = self.get_parameters.call_async(GetToolpathParameters.Request())
+        rclpy.spin_until_future_complete(self._node, future)
+        response = future.result()
+        response = GetToolpathParameters.Response()
+        self._widget.cartesianVelocityDoubleSpinBox.setValue(response.parameters.cartesian_velocity
                                                              * 1000.0)
-        self._widget.cartesianAccelerationDoubleSpinBox.setValue(initial_values[1].get_parameter_value().double_value
+        self._widget.cartesianAccelerationDoubleSpinBox.setValue(response.parameters.cartesian_acceleration
                                                                  * 1000.0)
-        self._widget.toolpathHeightOffsetDoubleSpinBox.setValue(initial_values[2].get_parameter_value().double_value
+        self._widget.toolpathHeightOffsetDoubleSpinBox.setValue(response.parameters.toolpath_height_offset
                                                                 * 1000.0)
-        self._widget.approachOffsetDoubleSpinBox.setValue(initial_values[3].get_parameter_value().double_value * 1000.0)
-        self._widget.retreatOffsetDoubleSpinBox.setValue(initial_values[4].get_parameter_value().double_value * 1000.0)
-        self._widget.retreatHeightDoubleSpinBox.setValue(initial_values[5].get_parameter_value().double_value * 1000.0)
-        self._widget.debugModeCheckBox.setChecked(initial_values[6].get_parameter_value().bool_value)
-        self._widget.debugWaitTimeSpinBox.setValue(initial_values[7].get_parameter_value().integer_value)
+        self._widget.approachOffsetDoubleSpinBox.setValue(response.parameters.approach_offset * 1000.0)
+        self._widget.retreatOffsetDoubleSpinBox.setValue(response.parameters.retreat_offset * 1000.0)
+        self._widget.retreatHeightDoubleSpinBox.setValue(response.parameters.retreat_height * 1000.0)
+        # self._widget.debugModeCheckBox.setChecked(initial_values[6].get_parameter_value().bool_value)
+        # self._widget.debugWaitTimeSpinBox.setValue(initial_values[7].get_parameter_value().integer_value)
 
     def setup_callbacks(self):
         self._widget.cartesianVelocityDoubleSpinBox.valueChanged.connect(self.cb_cart_vel)
@@ -66,8 +69,8 @@ class ToolpathParams(Plugin):
         self._widget.approachOffsetDoubleSpinBox.valueChanged.connect(self.cb_approach_offset)
         self._widget.retreatOffsetDoubleSpinBox.valueChanged.connect(self.cb_retreat_offset)
         self._widget.retreatHeightDoubleSpinBox.valueChanged.connect(self.cb_retreat_height)
-        self._widget.debugModeCheckBox.stateChanged.connect(self.cb_debug_mode)
-        self._widget.debugWaitTimeSpinBox.valueChanged.connect(self.cb_debug_wait)
+        # self._widget.debugModeCheckBox.stateChanged.connect(self.cb_debug_mode)
+        # self._widget.debugWaitTimeSpinBox.valueChanged.connect(self.cb_debug_wait)
 
     def cb_cart_vel(self):
         try:

@@ -15,6 +15,8 @@
 #include <moveit_msgs/msg/display_robot_state.hpp>
 #include <moveit_msgs/msg/display_trajectory.hpp>
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
+#include <ram_interfaces/srv/get_toolpath_parameters.hpp>
+#include <ram_interfaces/srv/set_toolpath_parameters.hpp>
 #include <utility>
 #include <std_srvs/srv/set_bool.hpp>
 #include <std_srvs/srv/trigger.hpp>
@@ -106,6 +108,21 @@ public:
     virtual void callback_execute(std_srvs::srv::Trigger::Request::SharedPtr request,
                           std_srvs::srv::Trigger::Response::SharedPtr response);
 
+    /***
+     * Gets the parameters for planning and executing toolpaths
+     * @param request
+     * @param response
+     */
+    virtual void callback_get_parameters(ram_interfaces::srv::GetToolpathParameters::Request::SharedPtr request,
+                                         ram_interfaces::srv::GetToolpathParameters::Response::SharedPtr response);
+
+    /***
+     * Sets the parameters for planning and executing toolpaths
+     * @param request
+     * @param response
+     */
+    virtual void callback_set_parameters(ram_interfaces::srv::SetToolpathParameters::Request::SharedPtr request,
+                                         ram_interfaces::srv::SetToolpathParameters::Response::SharedPtr response);
 
     // DEBUG functions
     /***
@@ -136,6 +153,8 @@ protected:
 
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_setup_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_execute_;
+    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_get_parameters_;
+    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_set_parameters_;
 
     ram_interfaces::msg::Toolpath toolpath_;
     std::shared_ptr<moveit::planning_interface::MoveGroupInterface> move_group_;

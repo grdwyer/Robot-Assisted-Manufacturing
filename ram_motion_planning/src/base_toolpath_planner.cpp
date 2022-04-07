@@ -34,6 +34,10 @@ BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): N
             std::bind(&BaseToolpathPlanner::callback_setup, this, std::placeholders::_1, std::placeholders::_2));
     service_execute_ = planner_node->create_service<std_srvs::srv::Trigger>(this->get_fully_qualified_name() + std::string("/toolpath_execute"),
             std::bind(&BaseToolpathPlanner::callback_execute, this, std::placeholders::_1, std::placeholders::_2));
+    service_get_parameters_ = planner_node->create_service<std_srvs::srv::Trigger>(this->get_fully_qualified_name() + std::string("/get_parameters"),
+            std::bind(&BaseToolpathPlanner::callback_get_parameters, this, std::placeholders::_1, std::placeholders::_2));
+    service_set_parameters_ = planner_node->create_service<std_srvs::srv::Trigger>(this->get_fully_qualified_name() + std::string("/set_parameters"),
+            std::bind(&BaseToolpathPlanner::callback_set_parameters, this, std::placeholders::_1, std::placeholders::_2));
     publisher_toolpath_poses_ = planner_node->create_publisher<geometry_msgs::msg::PoseArray>(this->get_fully_qualified_name() + std::string("/planned_toolpath"), 10);
     publisher_trajectory_ = planner_node->create_publisher<moveit_msgs::msg::DisplayTrajectory>("/retimed_planned_path", 10);
     //TF2
@@ -491,6 +495,39 @@ void BaseToolpathPlanner::debug_mode_wait() {
     if(this->get_parameter("debug_mode").as_bool()){
         rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
     }
+}
+
+void BaseToolpathPlanner::callback_get_parameters(ram_interfaces::srv::GetToolpathParameters::Request::SharedPtr request,
+                                             ram_interfaces::srv::GetToolpathParameters::Response::SharedPtr response) {
+    response->parameters.approach_offset = this->get_parameter("approach_offset").as_double();
+    response->parameters.retreat_offset = this->get_parameter("retreat_offset").as_double();
+    response->parameters.retreat_height = this->get_parameter("retreat_height").as_double();
+    response->parameters.toolpath_height_offset = this->get_parameter("toolpath_height_offset").as_double();
+    response->parameters.cartesian_velocity = this->get_parameter("cartesian_velocity").as_double();
+    response->parameters.cartesian_acceleration = this->get_parameter("cartesian_acceleration").as_double();
+
+}
+
+void BaseToolpathPlanner::callback_set_parameters(ram_interfaces::srv::SetToolpathParameters::Request::SharedPtr request,
+                                             ram_interfaces::srv::SetToolpathParameters::Response::SharedPtr response) {
+    auto results = this->set_parameters({
+        rclcpp::Parameter("approach_offset", request->parameters.approach_offset),
+        rclcpp::Parameter("retreat_offset", request->parameters.retreat_offset),
+        rclcpp::Parameter("retreat_height", request->parameters.retreat_height),
+        rclcpp::Parameter("toolpath_height_offset", request->parameters.toolpath_height_offset),
+        rclcpp::Parameter("cartesian_velocity", request->parameters.cartesian_velocity),
+        rclcpp::Parameter("cartesian_acceleration", request->parameters.cartesian_acceleration),
+    });
+
+    response->success = true;
+    for(auto &result : results){
+        response->success = result.successful && response->success;
+        if(!result.successful){
+            response->message += response->message;
+            response->message += "\n";
+        }
+    }
+
 }
 
 
