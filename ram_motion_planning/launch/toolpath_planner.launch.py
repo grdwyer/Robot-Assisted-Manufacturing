@@ -111,6 +111,13 @@ def generate_launch_description():
                                         ])
     nodes.append(toolpath_planner)
 
+    toolpath_handler = Node(package='ram_tooling_support',
+                            executable='toolpath_handler',
+                            name='toolpath_handler',
+                            output='screen',
+                            )
+    nodes.append(toolpath_handler)
+
     interface_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(
         get_package_share_directory('ram_motion_planning') + '/launch/ram_interface.launch.py'))
     nodes.append(interface_launch)

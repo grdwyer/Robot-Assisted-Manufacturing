@@ -55,12 +55,17 @@ class ToolpathLoader(Plugin):
         self.loaded_toolpath = Toolpath()
         self.cb_refresh_list()
 
+        self.timer = self._node.create_timer(0.5, self.cb_timer_spin)
+
         # Display stock toolpath
         # svg_file = os.path.join(get_package_share_directory('ram_gui'), 'resource', 'medpor_large.svg')
         # self._widget.graphics_view = QSvgRenderer(svg_file)
         #
         # self.painter = QPainter()
         # self._widget.graphics_view.render(self.painter)
+
+    def cb_timer_spin(self):
+        rclpy.spin_once(self._node)
 
     def set_status(self, message):
         self._widget.label_status.setText(message)
@@ -109,7 +114,7 @@ class ToolpathLoader(Plugin):
         self.future_execute_toolpath = self.client_execute_toolpath.call_async(trigger)
         self.future_execute_toolpath.add_done_callback(self.fcb_execute_toolpath)
 
-    def fcb_load_toolpath(self, fut):
+    def fcb_load_toolpath(self, future):
         if len(self.future_load_toolpath.result().toolpath.path.points) > 0:
             self.loaded_toolpath = self.future_load_toolpath.result().toolpath
             self.set_status("Toolpath handler has loaded the toolpath with {} points"

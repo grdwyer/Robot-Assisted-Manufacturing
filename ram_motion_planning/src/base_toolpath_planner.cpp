@@ -34,9 +34,9 @@ BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): N
             std::bind(&BaseToolpathPlanner::callback_setup, this, std::placeholders::_1, std::placeholders::_2));
     service_execute_ = planner_node->create_service<std_srvs::srv::Trigger>(this->get_fully_qualified_name() + std::string("/toolpath_execute"),
             std::bind(&BaseToolpathPlanner::callback_execute, this, std::placeholders::_1, std::placeholders::_2));
-    service_get_parameters_ = planner_node->create_service<std_srvs::srv::Trigger>(this->get_fully_qualified_name() + std::string("/get_parameters"),
+    service_get_parameters_ = planner_node->create_service<ram_interfaces::srv::GetToolpathParameters>(this->get_fully_qualified_name() + std::string("/get_toolpath_parameters"),
             std::bind(&BaseToolpathPlanner::callback_get_parameters, this, std::placeholders::_1, std::placeholders::_2));
-    service_set_parameters_ = planner_node->create_service<std_srvs::srv::Trigger>(this->get_fully_qualified_name() + std::string("/set_parameters"),
+    service_set_parameters_ = planner_node->create_service<ram_interfaces::srv::SetToolpathParameters>(this->get_fully_qualified_name() + std::string("/set_toolpath_parameters"),
             std::bind(&BaseToolpathPlanner::callback_set_parameters, this, std::placeholders::_1, std::placeholders::_2));
     publisher_toolpath_poses_ = planner_node->create_publisher<geometry_msgs::msg::PoseArray>(this->get_fully_qualified_name() + std::string("/planned_toolpath"), 10);
     publisher_trajectory_ = planner_node->create_publisher<moveit_msgs::msg::DisplayTrajectory>("/retimed_planned_path", 10);
@@ -166,7 +166,7 @@ void BaseToolpathPlanner::run_moveit_executor(){
 }
 
 void BaseToolpathPlanner::configuration_message() {
-    RCLCPP_INFO_STREAM(LOGGER, "Initialising node in " << this->get_fully_qualified_name() <<
+    RCLCPP_INFO_STREAM(LOGGER, "Toolpath planner configuration in node: " << this->get_fully_qualified_name() <<
     "\n\tMoveit planning group: " << this->get_parameter("moveit_planning_group").as_string() <<
     "\n\tTool reference frame: " << this->get_parameter("tool_reference_frame").as_string() <<
     "\n\tEnd-effector reference frame: " << this->get_parameter("end_effector_reference_frame").as_string() <<
@@ -499,13 +499,14 @@ void BaseToolpathPlanner::debug_mode_wait() {
 
 void BaseToolpathPlanner::callback_get_parameters(ram_interfaces::srv::GetToolpathParameters::Request::SharedPtr request,
                                              ram_interfaces::srv::GetToolpathParameters::Response::SharedPtr response) {
+    RCLCPP_INFO_STREAM(LOGGER, "Get toolpath parameters service called");
     response->parameters.approach_offset = this->get_parameter("approach_offset").as_double();
     response->parameters.retreat_offset = this->get_parameter("retreat_offset").as_double();
     response->parameters.retreat_height = this->get_parameter("retreat_height").as_double();
     response->parameters.toolpath_height_offset = this->get_parameter("toolpath_height_offset").as_double();
-    response->parameters.cartesian_velocity = this->get_parameter("cartesian_velocity").as_double();
-    response->parameters.cartesian_acceleration = this->get_parameter("cartesian_acceleration").as_double();
-
+    response->parameters.cartesian_velocity = this->get_parameter("desired_cartesian_velocity").as_double();
+    response->parameters.cartesian_acceleration = this->get_parameter("desired_cartesian_acceleration").as_double();
+    response->success = true;
 }
 
 void BaseToolpathPlanner::callback_set_parameters(ram_interfaces::srv::SetToolpathParameters::Request::SharedPtr request,
@@ -515,10 +516,10 @@ void BaseToolpathPlanner::callback_set_parameters(ram_interfaces::srv::SetToolpa
         rclcpp::Parameter("retreat_offset", request->parameters.retreat_offset),
         rclcpp::Parameter("retreat_height", request->parameters.retreat_height),
         rclcpp::Parameter("toolpath_height_offset", request->parameters.toolpath_height_offset),
-        rclcpp::Parameter("cartesian_velocity", request->parameters.cartesian_velocity),
-        rclcpp::Parameter("cartesian_acceleration", request->parameters.cartesian_acceleration),
+        rclcpp::Parameter("desired_cartesian_velocity", request->parameters.cartesian_velocity),
+        rclcpp::Parameter("desired_cartesian_acceleration", request->parameters.cartesian_acceleration),
     });
-
+    configuration_message();
     response->success = true;
     for(auto &result : results){
         response->success = result.successful && response->success;

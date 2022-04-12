@@ -153,8 +153,8 @@ protected:
 
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_setup_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_execute_;
-    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_get_parameters_;
-    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_set_parameters_;
+    rclcpp::Service<ram_interfaces::srv::GetToolpathParameters>::SharedPtr service_get_parameters_;
+    rclcpp::Service<ram_interfaces::srv::SetToolpathParameters>::SharedPtr service_set_parameters_;
 
     ram_interfaces::msg::Toolpath toolpath_;
     std::shared_ptr<moveit::planning_interface::MoveGroupInterface> move_group_;
