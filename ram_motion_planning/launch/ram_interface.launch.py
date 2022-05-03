@@ -127,8 +127,8 @@ def generate_launch_description():
     rqt_node = Node(package='rqt_gui',
                     executable='rqt_gui',
                     name='rqt',
-                    output='own_log',
-                    arguments=['--force-discover', '-p', rqt_perspective_file]
+                    output='screen',
+                    arguments=['--force-discover', '--perspective-file', rqt_perspective_file]
                     )
     nodes.append(rqt_node)
 

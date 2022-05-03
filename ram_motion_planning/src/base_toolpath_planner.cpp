@@ -511,6 +511,7 @@ void BaseToolpathPlanner::callback_get_parameters(ram_interfaces::srv::GetToolpa
 
 void BaseToolpathPlanner::callback_set_parameters(ram_interfaces::srv::SetToolpathParameters::Request::SharedPtr request,
                                              ram_interfaces::srv::SetToolpathParameters::Response::SharedPtr response) {
+    RCLCPP_INFO_STREAM(LOGGER, "Set toolpath parameters called");
     auto results = this->set_parameters({
         rclcpp::Parameter("approach_offset", request->parameters.approach_offset),
         rclcpp::Parameter("retreat_offset", request->parameters.retreat_offset),
@@ -528,7 +529,7 @@ void BaseToolpathPlanner::callback_set_parameters(ram_interfaces::srv::SetToolpa
             response->message += "\n";
         }
     }
-
+    RCLCPP_INFO_STREAM(LOGGER, "Set toolpath parameters completed");
 }
 
 

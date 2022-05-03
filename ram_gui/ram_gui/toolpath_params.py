@@ -19,7 +19,7 @@ class ToolpathParams(Plugin):
     def __init__(self, context):
         super(ToolpathParams, self).__init__(context)
         self._widget = QWidget()
-        self._node = context.node
+        self._node = Node('toolpath_param_gui', context=context.node.context)
         assert isinstance(self._node, Node)
 
         ui_file = os.path.join(get_package_share_directory('ram_gui'), 'resource', 'toolpath_params.ui')
@@ -56,6 +56,7 @@ class ToolpathParams(Plugin):
         if self.set_parameters.wait_for_service(1.0):
             future = self.set_parameters.call_async(request)
             rclpy.spin_until_future_complete(self._node, future, timeout_sec=2.5)
+            self._node.get_logger().info("Set parameters completed")
             if future.done():
                 response = future.result()
                 if response.success:
@@ -72,6 +73,7 @@ class ToolpathParams(Plugin):
             request = GetToolpathParameters.Request()
             future = self.get_parameters.call_async(request)
             rclpy.spin_until_future_complete(self._node, future, timeout_sec=2.5)
+            self._node.get_logger().info("Get parameters completed")
             if future.done():
                 response = future.result()
                 if response.success:
@@ -91,7 +93,8 @@ class ToolpathParams(Plugin):
         else:
             self._node.get_logger().warn("Service is not available")
 
-    def __del__(self):
+    def shutdown_plugin(self):
         self._node.get_logger().warn("Destroying toolpath parameter plugin")
         self.set_parameters.destroy()
         self.get_parameters.destroy()
+        self._node.destroy_node()
