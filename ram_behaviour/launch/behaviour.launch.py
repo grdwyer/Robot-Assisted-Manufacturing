@@ -26,15 +26,16 @@ def generate_launch_description():
         # Do not declare a node name otherwise it messes with the action node names and will result in
         # duplicate nodes!
         arguments=['--log-level debug'],
+        output='screen',
         parameters=[
             {'loop_timeout': loop_timeout},
             {'bt_file_path': PathJoinSubstitution([get_package_share_directory('ram_behaviour'),
                                           'trees/', arg_tree_file])},
-            {'plugins': ['trigger_component_bt_node', 'set_bool_component_bt_node']}
+            {'plugins': ['trigger_component_bt_node', 'set_bool_component_bt_node', 'request_trigger_component_bt_node']}
         ]
     ))
 
-    nodes.append(ExecuteProcess(cmd=["ros2 run groot Groot"],
+    nodes.append(ExecuteProcess(cmd=["ros2 run groot Groot --mode monitor"],
                                 shell=True,
                                 condition=IfCondition(arg_groot)))
 

@@ -45,6 +45,9 @@ list(APPEND plugin_libs trigger_component_bt_node)
 add_library(set_bool_component_bt_node SHARED plugins/service/set_bool_component.cpp)
 list(APPEND plugin_libs set_bool_component_bt_node)
 
+add_library(request_trigger_component_bt_node SHARED plugins/service/request_trigger_component.cpp)
+list(APPEND plugin_libs request_trigger_component_bt_node)
+
 #add_library(hold_tweezer_bt_node SHARED plugins/service/hold_tweezer.cpp)
 #list(APPEND plugin_libs hold_tweezer_bt_node)
 #

@@ -31,6 +31,7 @@ set(srv_files
         "srv/SetTouchLinks.srv"
         "srv/GetToolpathParameters.srv"
         "srv/SetToolpathParameters.srv"
+        "srv/RequestTrigger.srv"
         # etc
         )
 

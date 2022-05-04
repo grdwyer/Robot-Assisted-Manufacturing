@@ -365,21 +365,21 @@ bool BaseToolpathPlanner::move_to_setup() {
 }
 
 bool BaseToolpathPlanner::execute_trajectory() {
-    bool us_cutter = false;
-    if(us_cutter_helper_->exists()){
-        RCLCPP_WARN_STREAM(LOGGER, "Enabling US cutter");
-        us_cutter = true;
-        us_cutter_helper_->enable(true);
-    }
+//    bool us_cutter = false;
+//    if(us_cutter_helper_->exists()){
+//        RCLCPP_WARN_STREAM(LOGGER, "Enabling US cutter");
+//        us_cutter = true;
+//        us_cutter_helper_->enable(true);
+//    }
     if (!trajectory_toolpath_.joint_trajectory.points.empty()){
         bool success = (move_group_->execute(trajectory_toolpath_) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
         // Remove tool from touch links
         stock_helper_->modify_touch_link("cutting_tool", false); // TODO: param this
         stock_helper_->modify_touch_link("cutting_plate", false); // TODO: param this
-        if(us_cutter){
-            RCLCPP_WARN_STREAM(LOGGER, "Disabling US cutter");
-            us_cutter_helper_->enable(false);
-        }
+//        if(us_cutter){
+//            RCLCPP_WARN_STREAM(LOGGER, "Disabling US cutter");
+//            us_cutter_helper_->enable(false);
+//        }
         return success;
     } else{
         RCLCPP_WARN(LOGGER, "Toolpath trajectory is empty, try construct the plan request first.");

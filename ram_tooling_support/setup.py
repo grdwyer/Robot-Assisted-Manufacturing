@@ -25,7 +25,8 @@ setup(
         'console_scripts': [
             'stock_handler = ram_tooling_support.moveit_stock_handler:main',
             'toolpath_handler = ram_tooling_support.toolpath_handler:main',
-            'us_cutter_controller = ram_tooling_support.us_cutter_io:main'
+            'us_cutter_controller = ram_tooling_support.us_cutter_io:main',
+            'sim_us_cutter_controller = ram_tooling_support.sim_us_cutter:main'
         ],
     },
 )

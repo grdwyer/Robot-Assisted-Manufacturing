@@ -217,6 +217,14 @@ def generate_launch_description():
                                 )
     nodes.append(us_cutter_controller)
 
+    sim_us_cutter_controller = Node(package="ram_tooling_support",
+                                executable="sim_us_cutter_controller",
+                                name="us_cutter_controller",
+                                output="screen",
+                                condition=UnlessCondition(us_cutter)
+                                )
+    nodes.append(sim_us_cutter_controller)
+
     # medpor config file
     stock_config_file = get_package_share_directory('ram_tooling_support') + "/config/medpor_configuration.yaml"
     # print(stock_config_file)

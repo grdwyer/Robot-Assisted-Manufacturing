@@ -4,9 +4,10 @@ from ament_index_python.packages import get_package_share_directory
 import rclpy
 from rclpy.node import Node
 from time import sleep
+import threading
 
 from std_srvs.srv import Trigger
-from ram_interfaces.srv import GetToolpath
+from ram_interfaces.srv import GetToolpath, RequestTrigger
 from ram_interfaces.msg import Toolpath
 from rcl_interfaces.srv import SetParameters
 from rcl_interfaces.msg import Parameter
@@ -22,7 +23,8 @@ class ToolpathLoader(Plugin):
     def __init__(self, context):
         super(ToolpathLoader, self).__init__(context)
         self._widget = QWidget()
-        self._node = context.node
+        self._node = Node('toolpath_loader', context=context.node.context)
+        # self._node = context.node
 
         ui_file = os.path.join(get_package_share_directory('ram_gui'), 'resource', 'toolpath_loader.ui')
         loadUi(ui_file, self._widget)
@@ -44,6 +46,11 @@ class ToolpathLoader(Plugin):
         self.client_setup_toolpath = self._node.create_client(Trigger, "/toolpath_planner/toolpath_setup")
         self.client_execute_toolpath = self._node.create_client(Trigger, "/toolpath_planner/toolpath_execute")
 
+        self.server_request_setup = self._node.create_service(RequestTrigger, '/behaviour/request_setup',
+                                                              self.cb_request_setup)
+        self.server_request_execute = self._node.create_service(RequestTrigger, '/behaviour/request_execute',
+                                                                self.cb_request_execute)
+
         self.future_load_toolpath = rclpy.Future()
         self.future_setup_toolpath = rclpy.Future()
         self.future_execute_toolpath = rclpy.Future()
@@ -55,17 +62,11 @@ class ToolpathLoader(Plugin):
         self.loaded_toolpath = Toolpath()
         self.cb_refresh_list()
 
-        self.timer = self._node.create_timer(0.5, self.cb_timer_spin)
+        self.executor = rclpy.executors.MultiThreadedExecutor(4)
+        self.executor.add_node(self._node)
 
-        # Display stock toolpath
-        # svg_file = os.path.join(get_package_share_directory('ram_gui'), 'resource', 'medpor_large.svg')
-        # self._widget.graphics_view = QSvgRenderer(svg_file)
-        #
-        # self.painter = QPainter()
-        # self._widget.graphics_view.render(self.painter)
-
-    def cb_timer_spin(self):
-        rclpy.spin_once(self._node)
+        self.thread_executor = threading.Thread(target=self.executor.spin)
+        self.thread_executor.start()
 
     def set_status(self, message):
         self._widget.label_status.setText(message)
@@ -103,16 +104,32 @@ class ToolpathLoader(Plugin):
     def cb_setup_toolpath(self):
         # Trigger setup to the toolpath handler
         self.set_status("Planner will now setup toolpath")
-        trigger = Trigger.Request()
-        self.future_setup_toolpath = self.client_setup_toolpath.call_async(trigger)
-        self.future_setup_toolpath.add_done_callback(self.fcb_setup_toolpath)
+        # trigger = Trigger.Request()
+        # self.future_setup_toolpath = self.client_setup_toolpath.call_async(trigger)
+        # self.future_setup_toolpath.add_done_callback(self.fcb_setup_toolpath)
+
+    def cb_request_setup(self, request: RequestTrigger.Request, response: RequestTrigger.Response):
+        if self._widget.button_setup.isChecked():
+            response.trigger = True
+        else:
+            response.trigger = False
+        self._widget.button_setup.setChecked(False)
+        return response
+
+    def cb_request_execute(self, request: RequestTrigger.Request, response: RequestTrigger.Response):
+        if self._widget.button_execute.isChecked():
+            response.trigger = True
+        else:
+            response.trigger = False
+        self._widget.button_execute.setChecked(False)
+        return response
 
     def cb_execute_toolpath(self):
         # Trigger execute to the toolpath handler
         self.set_status("Planner will now execute toolpath")
-        trigger = Trigger.Request()
-        self.future_execute_toolpath = self.client_execute_toolpath.call_async(trigger)
-        self.future_execute_toolpath.add_done_callback(self.fcb_execute_toolpath)
+        # trigger = Trigger.Request()
+        # self.future_execute_toolpath = self.client_execute_toolpath.call_async(trigger)
+        # self.future_execute_toolpath.add_done_callback(self.fcb_execute_toolpath)
 
     def fcb_load_toolpath(self, future):
         if len(self.future_load_toolpath.result().toolpath.path.points) > 0:
@@ -136,7 +153,12 @@ class ToolpathLoader(Plugin):
 
     def __del__(self):
         self._node.get_logger().warn("Destroying toolpath loader plugin")
+        self.executor.shutdown(0.2)
+        self.thread_executor.join(0.2)
         self.client_setup_toolpath.destroy()
         self.client_execute_toolpath.destroy()
         self.client_load_toolpath.destroy()
         self.client_set_path.destroy()
+
+        self.server_request_setup.destroy()
+        self.server_request_execute.destroy()
