@@ -11,4 +11,4 @@ docker run -it \
     --cap-add SYS_NICE \
     --name ram_control \
     gdwyer/ram:$branch-amd64 \
-    ros2 launch ram_motion_planning ram_control.launch.py
+    ros2 launch ram_motion_planning ram_control.launch.py real_gripper:=true us_cutter:=true
