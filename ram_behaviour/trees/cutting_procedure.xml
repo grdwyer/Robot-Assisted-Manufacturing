@@ -11,14 +11,7 @@
             </Sequence>
         </BlackboardCheckBool>
     </BehaviorTree>
-    <!-- ////////// -->
-    <BehaviorTree ID="MainTree">
-        <Sequence>
-            <SetBlackboard output_key="false" value="setup_complete"/>
-            <SubTree ID="SetupToolpath"/>
-            <SubTree ID="ExecuteToolpath"/>
-        </Sequence>
-    </BehaviorTree>
+
     <!-- ////////// -->
     <BehaviorTree ID="SetupToolpath">
         <Sequence>
@@ -26,6 +19,15 @@
             <Action ID="TriggerComponent" server_name="/gripper_controller/close" server_timeout="100"/>
             <Action ID="TriggerComponent" server_name="/toolpath_planner/toolpath_setup" server_timeout="100"/>
             <SetBlackboard output_key="true" value="setup_complete"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+
+    <BehaviorTree ID="MainTree">
+        <Sequence>
+            <SetBlackboard output_key="false" value="setup_complete"/>
+            <SubTree ID="SetupToolpath"/>
+            <SubTree ID="ExecuteToolpath"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->

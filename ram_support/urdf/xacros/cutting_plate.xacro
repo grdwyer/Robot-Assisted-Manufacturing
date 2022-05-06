@@ -4,7 +4,7 @@
   <xacro:macro name="cutting_plate" params="blade_height:=^|0.0025">
 <!--    <xacro:arg name="blade_height" default="0.0025"/>-->
     <xacro:property name="intersection_offset" value="0.00026" /> <!-- If there is a chisel tip this is the offset to the intersection point of the edges-->
-    <link name="cutting_plate">
+    <link name="us_cutter_enclosure">
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
@@ -15,18 +15,32 @@
       <collision>
         <origin xyz="0 0 0" rpy="0 0 ${-pi/2}"/>
         <geometry>
-          <mesh filename="package://ram_support/meshes/tools/collision/us_cutter_enclosure.stl"/>
+          <mesh filename="package://ram_support/meshes/tools/collision/collision_us_cutter_enclosure.stl"/>
         </geometry>
       </collision>
     </link>
 
-    <joint name="cutting_plate_surface_joint" type="fixed">
-      <parent link="cutting_plate"/>
+    <link name="cutting_plate_base">
+<!--      <visual>-->
+<!--        <origin xyz="0 0 -0.005" rpy="0 0 0"/>-->
+<!--        <geometry>-->
+<!--            <box size="0.315 0.315 0.01" />-->
+<!--        </geometry>-->
+<!--      </visual>-->
+
+      <collision>
+        <origin xyz="0 0 -0.005" rpy="0 0 ${-pi/2}"/>
+        <geometry>
+            <box size="0.315 0.315 0.01" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="us_cutter_surface_joint" type="fixed">
+      <parent link="us_cutter_enclosure"/>
       <child link="cutting_plate_base"/>
       <origin xyz="0 0 0" rpy="0 0 0"/>
     </joint>
-
-    <link name="cutting_plate_base"/>
 
   <!-- Cutting tool selected-->
     <link name="cutting_tool">

@@ -251,9 +251,10 @@ bool BaseToolpathPlanner::construct_plan_request() {
     //Add to the waypoints vector for now, look into a nicer way of doing this during the cleanup possibly check the stock size and see if the toolpath already includes the retreat.
     ee_cartesian_path.push_back(retreat_frame);
     ee_cartesian_path.push_back(raised_retreat_frame);
-    stock_helper_->modify_touch_link("cutting_plate", true);
+    stock_helper_->modify_touch_link("cutting_plate_base", true);
     debug_mode_wait();
 
+    // Modify this to move after the toolpath plan is sucessful use set_start_state for the toolpath plan
     approach_pose = tf2::toMsg(approach_frame);
     moveit::planning_interface::MoveGroupInterface::Plan approach_plan;
     move_group_->setPoseTarget(approach_pose);
@@ -269,6 +270,17 @@ bool BaseToolpathPlanner::construct_plan_request() {
     }
 
     interpolate_pose_trajectory(waypoints, 0.0005, tf2Radians(1), interpolated_waypoints);
+
+    // Cutting plate ACM
+    rclcpp::Publisher<moveit_msgs::msg::PlanningScene>::SharedPtr planning_scene_diff_publisher =
+            this->create_publisher<moveit_msgs::msg::PlanningScene>("planning_scene", 1);
+    moveit_msgs::msg::PlanningScene planning_scene;
+    planning_scene.is_diff = true;
+    planning_scene.allowed_collision_matrix.entry_names = {"cutting_plate_base", "gripper_link_left", "gripper_link_right", "gripper_implant_holder"};
+    moveit_msgs::msg::AllowedCollisionEntry acm;
+    acm.enabled.assign(planning_scene.allowed_collision_matrix.entry_names.size(), true);
+    planning_scene.allowed_collision_matrix.entry_values.assign(planning_scene.allowed_collision_matrix.entry_names.size(), acm);
+    planning_scene_diff_publisher->publish(planning_scene);
 
     //TODO: Set start state for cartesian planning
     RCLCPP_INFO_STREAM(LOGGER, "Cartesian planning for toolpath using Waypoints: \n" << interpolated_waypoints);
@@ -287,9 +299,6 @@ bool BaseToolpathPlanner::construct_plan_request() {
                                            this->get_parameter("desired_cartesian_velocity").as_double(),
                                            this->get_parameter("desired_cartesian_acceleration").as_double(),
                                            retimed_plan);
-//    retime_trajectory_constant_velocity(plan, robot_state_,
-//                                       this->get_parameter("desired_cartesian_velocity").as_double(),
-//                                       retimed_plan);
 
     trajectory_toolpath_ = retimed_plan.trajectory_;
     RCLCPP_INFO_STREAM(LOGGER, "Sending retimed trajectory to be displayed");
@@ -300,23 +309,6 @@ bool BaseToolpathPlanner::construct_plan_request() {
     publisher_trajectory_->publish(msg);
     return fraction > 0.99;
     }
-
-bool BaseToolpathPlanner::follow_waypoints_sequentially(std::vector<geometry_msgs::msg::Pose> &waypoints) {
-    for(const auto &pose : waypoints){
-        move_group_->setPoseTarget(pose);
-
-        moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-        if(move_group_->plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS){
-            rclcpp::sleep_for(std::chrono::seconds(2));
-            if(move_group_->execute(my_plan) != moveit::planning_interface::MoveItErrorCode::SUCCESS){
-                RCLCPP_WARN_STREAM(LOGGER, "Could not plan to waypoint at " << pose.position);
-                return false;
-            }
-        }
-    }
-    move_to_setup();
-    return true;
-}
 
 // Doesn't display with RVIZ at the moment, possibly unneeded.
 void BaseToolpathPlanner::display_planned_trajectory(std::vector<geometry_msgs::msg::Pose> &poses) {
@@ -347,9 +339,9 @@ bool BaseToolpathPlanner::move_to_setup() {
     move_group_->setPoseTarget(pose);
 
     // TODO: remove this, it will be handled by the manager
-    stock_helper_->load_stock(true);
-    stock_helper_->attach_stock(true);
-    gripper_helper_->gripper(false);
+//    stock_helper_->load_stock(true);
+//    stock_helper_->attach_stock(true);
+//    gripper_helper_->gripper(false);
 
     moveit::planning_interface::MoveGroupInterface::Plan my_plan;
 
@@ -375,7 +367,7 @@ bool BaseToolpathPlanner::execute_trajectory() {
         bool success = (move_group_->execute(trajectory_toolpath_) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
         // Remove tool from touch links
         stock_helper_->modify_touch_link("cutting_tool", false); // TODO: param this
-        stock_helper_->modify_touch_link("cutting_plate", false); // TODO: param this
+        stock_helper_->modify_touch_link("cutting_plate_base", false); // TODO: param this
 //        if(us_cutter){
 //            RCLCPP_WARN_STREAM(LOGGER, "Disabling US cutter");
 //            us_cutter_helper_->enable(false);

@@ -122,4 +122,9 @@ def generate_launch_description():
         get_package_share_directory('ram_motion_planning') + '/launch/ram_interface.launch.py'))
     nodes.append(interface_launch)
 
+    behaviour_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(
+        get_package_share_directory('ram_behaviour') + '/launch/behaviour.launch.py'),
+        launch_arguments={'tree_file' : 'gui_control.xml'}.items())
+    nodes.append(behaviour_launch)
+
     return LaunchDescription(declared_arguments + nodes)

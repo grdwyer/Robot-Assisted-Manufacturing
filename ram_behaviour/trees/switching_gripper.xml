@@ -2,10 +2,10 @@
     <BehaviorTree ID="MainTree">
             <Sequence>
                 <!-- Test remapping ports between trees -->
-                <Delay delay_msec="500">
+                <Delay delay_msec="2000">
                     <TriggerComponent server_name="/gripper_controller/open" server_timeout="100"/>
                 </Delay>
-                <Delay delay_msec="500">
+                <Delay delay_msec="2000">
                     <TriggerComponent server_name="/gripper_controller/close" server_timeout="100"/>
                 </Delay>
             </Sequence>
