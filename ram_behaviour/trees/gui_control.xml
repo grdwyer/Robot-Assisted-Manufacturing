@@ -8,8 +8,12 @@
                     <Action ID="RequestTriggerComponent" server_name="/behaviour/request_setup" server_timeout="100"/>
                 </Delay>
                 <SetBlackboard output_key="setup_complete" value="false"/>
-                <Action ID="SetBoolComponent" server_name="/stock_handler/load_stock" server_timeout="100" state="true"/>
-                <Action ID="SetBoolComponent" server_name="/stock_handler/attach_stock" server_timeout="100" state="true"/>
+                <ForceSuccess>
+                    <Sequence>
+                        <Action ID="SetBoolComponent" server_name="/stock_handler/load_stock" server_timeout="100" state="true"/>
+                        <Action ID="SetBoolComponent" server_name="/stock_handler/attach_stock" server_timeout="100" state="true"/>
+                    </Sequence>
+                </ForceSuccess>
                 <Action ID="TriggerComponent" server_name="/toolpath_handler/load_toolpath" server_timeout="100"/>
                 <Action ID="TriggerComponent" server_name="/gripper_controller/close" server_timeout="100"/>
                 <Action ID="TriggerComponent" server_name="/toolpath_planner/toolpath_setup" server_timeout="100"/>

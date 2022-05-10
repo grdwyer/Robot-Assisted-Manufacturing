@@ -18,6 +18,10 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <kdl/frames.hpp>
 #include <utility>
+#include <moveit_msgs/srv/get_planning_scene.hpp>
+#include <moveit_msgs/srv/apply_planning_scene.hpp>
+#include <moveit_msgs/msg/planning_scene_components.hpp>
+#include <moveit/collision_detection/collision_matrix.h>
 
 class ToolpathHelper{
 public:
@@ -83,6 +87,19 @@ public:
 private:
     rclcpp::Node::SharedPtr  node_;
     rclcpp::Client<std_srvs::srv::Empty>::SharedPtr client_enable_servo_;
+};
+
+class ACMHelper{
+public:
+    explicit ACMHelper();
+    bool set_acm_entry(std::string first, std::string second, bool allow);
+
+private:
+    rclcpp::Node::SharedPtr  node_;
+    rclcpp::executors::SingleThreadedExecutor executor_;
+    rclcpp::Client<moveit_msgs::srv::GetPlanningScene>::SharedPtr client_get_planning_scene_;
+    rclcpp::Client<moveit_msgs::srv::ApplyPlanningScene>::SharedPtr client_set_planning_scene_;
+
 };
 
 std::ostream& operator<<(std::ostream& os, const geometry_msgs::msg::Point32& point);

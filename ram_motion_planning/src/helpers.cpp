@@ -207,6 +207,49 @@ bool USCutterHelper::exists() {
     return client_us_enable_->wait_for_service(std::chrono::seconds(1));
 }
 
+
+ACMHelper::ACMHelper() : executor_(rclcpp::ExecutorOptions()) {
+    node_ = rclcpp::Node::make_shared("acm_helper");
+    client_set_planning_scene_ = node_->create_client<moveit_msgs::srv::ApplyPlanningScene>("/apply_planning_scene");
+    client_get_planning_scene_ = node_->create_client<moveit_msgs::srv::GetPlanningScene>("/get_planning_scene");
+    executor_.add_node(node_);
+}
+
+bool ACMHelper::set_acm_entry(std::string first, std::string second, bool allow) {
+    if(client_get_planning_scene_->wait_for_service(std::chrono::seconds(5))) {
+        //get current scene
+        auto request = std::make_shared<moveit_msgs::srv::GetPlanningScene::Request>();
+        request->components.components = moveit_msgs::msg::PlanningSceneComponents::ALLOWED_COLLISION_MATRIX;
+        auto future = client_get_planning_scene_->async_send_request(request);
+        auto status = executor_.spin_until_future_complete(future, std::chrono::seconds(5));
+
+        if (status == rclcpp::FutureReturnCode::SUCCESS && future.valid()) {
+            auto response = future.get();
+            //convert to acm object
+            collision_detection::AllowedCollisionMatrix acm(response->scene.allowed_collision_matrix);
+
+            //set value of acm given
+            if (acm.hasEntry(first, second)) {
+                acm.setEntry(first, second, allow);
+            };
+
+            //apply planning scene
+            auto request_apply = std::make_shared<moveit_msgs::srv::ApplyPlanningScene::Request>();
+            request_apply->scene.is_diff = true;
+            moveit_msgs::msg::AllowedCollisionMatrix msg;
+            acm.getMessage(msg);
+            request_apply->scene.allowed_collision_matrix = msg;
+            auto future_apply = client_set_planning_scene_->async_send_request(request_apply);
+            status = executor_.spin_until_future_complete(future_apply, std::chrono::seconds(5));
+            return future_apply.get()->success;
+        }
+        return false;
+    }
+    else{
+        return false;
+    }
+}
+
 std::ostream& operator<<(std::ostream& os, const geometry_msgs::msg::Point32& point)
 {
     os << "X:" << point.x << ", Y: " << point.y << ", Z: " << point.z;
@@ -259,4 +302,3 @@ std::ostream& operator<<(std::ostream& os, const geometry_msgs::msg::TransformSt
 
     return os;
 }
-

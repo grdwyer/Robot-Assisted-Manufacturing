@@ -27,6 +27,7 @@ BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): N
     stock_helper_ = std::make_shared<StockHelper>(stock_node);
     gripper_helper_ = std::make_shared<GripperHelper>(gripper_node);
     us_cutter_helper_ = std::make_shared<USCutterHelper>(us_cutter_node);
+    acm_helper_ = std::make_shared<ACMHelper>();
 
     // TODO: put service names into node namespace
     auto planner_node = this->create_sub_node("planner");
@@ -272,15 +273,10 @@ bool BaseToolpathPlanner::construct_plan_request() {
     interpolate_pose_trajectory(waypoints, 0.0005, tf2Radians(1), interpolated_waypoints);
 
     // Cutting plate ACM
-    rclcpp::Publisher<moveit_msgs::msg::PlanningScene>::SharedPtr planning_scene_diff_publisher =
-            this->create_publisher<moveit_msgs::msg::PlanningScene>("planning_scene", 1);
-    moveit_msgs::msg::PlanningScene planning_scene;
-    planning_scene.is_diff = true;
-    planning_scene.allowed_collision_matrix.entry_names = {"cutting_plate_base", "gripper_link_left", "gripper_link_right", "gripper_implant_holder"};
-    moveit_msgs::msg::AllowedCollisionEntry acm;
-    acm.enabled.assign(planning_scene.allowed_collision_matrix.entry_names.size(), true);
-    planning_scene.allowed_collision_matrix.entry_values.assign(planning_scene.allowed_collision_matrix.entry_names.size(), acm);
-    planning_scene_diff_publisher->publish(planning_scene);
+//    "cutting_plate_base", "gripper_link_left", "gripper_link_right", "gripper_implant_holder"
+    acm_helper_->set_acm_entry("cutting_plate_base", "gripper_link_left", true);
+    acm_helper_->set_acm_entry("cutting_plate_base", "gripper_link_right", true);
+    acm_helper_->set_acm_entry("cutting_plate_base", "gripper_implant_holder", true);
 
     //TODO: Set start state for cartesian planning
     RCLCPP_INFO_STREAM(LOGGER, "Cartesian planning for toolpath using Waypoints: \n" << interpolated_waypoints);

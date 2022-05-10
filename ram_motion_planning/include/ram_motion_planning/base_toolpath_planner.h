@@ -150,6 +150,7 @@ protected:
     std::shared_ptr<StockHelper> stock_helper_;
     std::shared_ptr<GripperHelper> gripper_helper_;
     std::shared_ptr<USCutterHelper> us_cutter_helper_;
+    std::shared_ptr<ACMHelper> acm_helper_;
 
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_setup_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_execute_;

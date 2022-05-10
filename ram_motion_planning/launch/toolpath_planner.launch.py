@@ -109,7 +109,7 @@ def generate_launch_description():
                                         robot_description_semantic,
                                         robot_description_kinematics
                                         ])
-    nodes.append(toolpath_planner)
+    # nodes.append(toolpath_planner)
 
     toolpath_handler = Node(package='ram_tooling_support',
                             executable='toolpath_handler',

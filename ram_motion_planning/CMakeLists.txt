@@ -83,10 +83,19 @@ ament_target_dependencies(ompl_demo
         Boost
         )
 
+add_executable(run_acm_helper src/run_acm_helper.cpp)
+target_link_libraries(run_acm_helper
+        ram_helpers
+        )
+ament_target_dependencies(run_acm_helper
+        rclcpp
+        )
+
 install(TARGETS
 #        example_program
         base_toolpath_planner
         ompl_toolpath_planner
+        run_acm_helper
         ompl_demo
         RUNTIME DESTINATION lib/${PROJECT_NAME}
         INCLUDES DESTINATION include
