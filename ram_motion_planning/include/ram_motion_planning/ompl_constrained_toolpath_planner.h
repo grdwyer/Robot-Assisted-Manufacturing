@@ -14,7 +14,7 @@ class OMPLToolpathPlanner : public BaseToolpathPlanner{
 //    using BaseToolpathPlanner::BaseToolpathPlanner;
 public:
     OMPLToolpathPlanner(const rclcpp::NodeOptions & options);
-    bool construct_plan_request();
+    bool construct_toolpath_plan();
     bool plan_between_points(const moveit::core::RobotStatePtr& start_state, geometry_msgs::msg::Pose& start, geometry_msgs::msg::Pose& end, moveit::planning_interface::MoveGroupInterface::Plan& plan);
     bool append_plans(moveit::planning_interface::MoveGroupInterface::Plan& first, moveit::planning_interface::MoveGroupInterface::Plan& second);
     void display_line(const geometry_msgs::msg::Pose& pose, const rosidl_runtime_cpp::BoundedVector<double, 3, std::allocator<double>>& dimensions);

@@ -17,6 +17,7 @@
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
 #include <ram_interfaces/srv/get_toolpath_parameters.hpp>
 #include <ram_interfaces/srv/set_toolpath_parameters.hpp>
+#include <ram_interfaces/srv/set_toolpath.hpp>
 #include <utility>
 #include <std_srvs/srv/set_bool.hpp>
 #include <std_srvs/srv/trigger.hpp>
@@ -61,7 +62,13 @@ public:
      * @brief formulates the toolpath into a motion planning request for moveit
      * @return
      */
-    virtual bool construct_plan_request();
+    virtual bool construct_toolpath_plan();
+
+    /***
+     * @brief formulates the toolpath into a motion planning request for moveit
+     * @return
+     */
+    virtual bool construct_approach_plan();
 
     /***
      * Helper function to move to the initial position and load the stock material
@@ -72,7 +79,7 @@ public:
      * Executes the planned trajectory
      * @return
      */
-    virtual bool execute_trajectory();
+    virtual bool execute_trajectory(moveit_msgs::msg::RobotTrajectory &trajectory);
 
     /***
      * @brief Uses TF to get the transform between the EE link and the stock material (or held part)
@@ -88,25 +95,42 @@ public:
      */
     bool process_toolpath(std::vector<KDL::Frame> &ee_cartesian_path);
 
+    bool generate_cartesian_trajectory(std::vector<KDL::Frame> &ee_cartesian_path);
+
     /***
      * Callback for setup service
-     * this will:
-     *   load toolpath
-     *   move to setup
-     *   plan
+     * this will plan the trajectory for the toolpath provided the approach has been planned already.
      * @param request
      * @param response
      */
-    virtual void callback_setup(std_srvs::srv::Trigger::Request::SharedPtr request,
-                        std_srvs::srv::Trigger::Response::SharedPtr response);
+    virtual void callback_setup_toolpath(ram_interfaces::srv::SetToolpath::Request::SharedPtr request,
+                                ram_interfaces::srv::SetToolpath::Response::SharedPtr response);
+
+    /***
+     * Callback for setup service
+     * this will plan the motion to the approach position of the toolpath, will take the first position of the toolapth
+     * and transform it by the approach offset and plan to that
+     * @param request
+     * @param response
+     */
+    virtual void callback_setup_approach(ram_interfaces::srv::SetToolpath::Request::SharedPtr request,
+                                         ram_interfaces::srv::SetToolpath::Response::SharedPtr response);
+
+    /***
+     * Callback for execute service, this will execute the planned toolpath trajectory
+     * @param request
+     * @param response
+     */
+    virtual void callback_execute_toolpath(std_srvs::srv::Trigger::Request::SharedPtr request,
+                                           std_srvs::srv::Trigger::Response::SharedPtr response);
 
     /***
      * Callback for execute service, this will execute the planned trajectory
      * @param request
      * @param response
      */
-    virtual void callback_execute(std_srvs::srv::Trigger::Request::SharedPtr request,
-                          std_srvs::srv::Trigger::Response::SharedPtr response);
+    virtual void callback_execute_approach(std_srvs::srv::Trigger::Request::SharedPtr request,
+                                           std_srvs::srv::Trigger::Response::SharedPtr response);
 
     /***
      * Gets the parameters for planning and executing toolpaths
@@ -125,24 +149,16 @@ public:
                                          ram_interfaces::srv::SetToolpathParameters::Response::SharedPtr response);
 
     // DEBUG functions
-    /***
-     * Plan to go to each point sequentially, useful for sim debugging should take this out before using hardware
-     * @param waypoints
-     * @return
-     */
-    bool follow_waypoints_sequentially(std::vector<geometry_msgs::msg::Pose> &waypoints);
 
     /***
     * @brief sends trajectory to be displayed in rviz
     */
     void display_planned_trajectory(std::vector<geometry_msgs::msg::Pose> &poses);
 
-    void run();
 
 protected:
     void setup_parameters();
     void run_moveit_executor();
-    void run_helper_executor();
 
     void debug_mode_wait();
 
@@ -152,17 +168,22 @@ protected:
     std::shared_ptr<USCutterHelper> us_cutter_helper_;
     std::shared_ptr<ACMHelper> acm_helper_;
 
-    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_setup_;
-    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_execute_;
+    rclcpp::Service<ram_interfaces::srv::SetToolpath>::SharedPtr service_setup_toolpath_;
+    rclcpp::Service<ram_interfaces::srv::SetToolpath>::SharedPtr service_setup_approach_;
+    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_execute_toolpath_;
+    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_execute_approach_;
+
     rclcpp::Service<ram_interfaces::srv::GetToolpathParameters>::SharedPtr service_get_parameters_;
     rclcpp::Service<ram_interfaces::srv::SetToolpathParameters>::SharedPtr service_set_parameters_;
 
     ram_interfaces::msg::Toolpath toolpath_;
+    std::vector<KDL::Frame> ee_cartesian_path_;
     std::shared_ptr<moveit::planning_interface::MoveGroupInterface> move_group_;
 
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
     moveit::core::RobotStatePtr robot_state_;
     moveit_msgs::msg::RobotTrajectory trajectory_toolpath_;
+    moveit_msgs::msg::RobotTrajectory trajectory_approach_;
 
     //rviz pose array publisher
     rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr publisher_toolpath_poses_;

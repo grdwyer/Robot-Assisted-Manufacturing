@@ -25,6 +25,8 @@ find_package(std_srvs REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(rclcpp_action REQUIRED)
+find_package(moveit_common REQUIRED)
+find_package(moveit_ros_planning_interface REQUIRED)
 
 
 set(dependencies
@@ -36,6 +38,7 @@ set(dependencies
         std_srvs
         behavior_tree
         ram_interfaces
+        moveit_ros_planning_interface
         )
 
 ## Plugins
@@ -48,32 +51,9 @@ list(APPEND plugin_libs set_bool_component_bt_node)
 add_library(request_trigger_component_bt_node SHARED plugins/service/request_trigger_component.cpp)
 list(APPEND plugin_libs request_trigger_component_bt_node)
 
-#add_library(hold_tweezer_bt_node SHARED plugins/service/hold_tweezer.cpp)
-#list(APPEND plugin_libs hold_tweezer_bt_node)
-#
-#add_library(orient_sample_holder_bt_node SHARED plugins/service/orient_sample_holder.cpp)
-#list(APPEND plugin_libs orient_sample_holder_bt_node)
-#
-#add_library(random_cut_bt_node SHARED plugins/service/random_cut.cpp)
-#list(APPEND plugin_libs random_cut_bt_node)
-#
-##add_library(random_move_bt_node SHARED plugins/service/random_move.cpp)
-##list(APPEND plugin_libs random_move_bt_node)
-#
-#add_library(release_tweezer_bt_node SHARED plugins/service/release_tweezer.cpp)
-#list(APPEND plugin_libs release_tweezer_bt_node)
-#
-#add_library(display_markers_bt_node SHARED plugins/service/display_markers.cpp)
-#list(APPEND plugin_libs display_markers_bt_node)
-#
-#add_library(remove_markers_bt_node SHARED plugins/service/remove_markers.cpp)
-#list(APPEND plugin_libs remove_markers_bt_node)
-#
-#add_library(get_cut_from_interface_bt_node SHARED plugins/service/get_cut_from_interface.cpp)
-#list(APPEND plugin_libs get_cut_from_interface_bt_node)
-#
-#add_library(get_move_from_interface_bt_node SHARED plugins/service/get_move_from_interface.cpp)
-#list(APPEND plugin_libs get_move_from_interface_bt_node)
+add_library(modify_acm_component_bt_node SHARED plugins/service/modify_acm_component.cpp)
+list(APPEND plugin_libs modify_acm_component_bt_node)
+
 
 ## Plugin deps
 foreach(bt_plugin ${plugin_libs})

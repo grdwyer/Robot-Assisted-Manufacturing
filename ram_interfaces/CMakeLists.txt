@@ -28,6 +28,7 @@ set(msg_files
 
 set(srv_files
         "srv/GetToolpath.srv"
+        "srv/SetToolpath.srv"
         "srv/SetTouchLinks.srv"
         "srv/GetToolpathParameters.srv"
         "srv/SetToolpathParameters.srv"
