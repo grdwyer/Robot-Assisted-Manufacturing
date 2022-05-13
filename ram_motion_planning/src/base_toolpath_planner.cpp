@@ -19,16 +19,6 @@ BaseToolpathPlanner::BaseToolpathPlanner(const rclcpp::NodeOptions & options): N
     move_group_->setPlanningTime(this->get_parameter("moveit_planning_time").as_double());
     move_group_->setNumPlanningAttempts(this->get_parameter("moveit_planning_attempts").as_int());
 
-    auto toolpath_node = this->create_sub_node("toolpath");
-    auto stock_node = this->create_sub_node("stock");
-    auto gripper_node = this->create_sub_node("gripper");
-    auto us_cutter_node = this->create_sub_node("us_cutter");
-    toolpath_helper_ = std::make_shared<ToolpathHelper>();
-    stock_helper_ = std::make_shared<StockHelper>(stock_node);
-    gripper_helper_ = std::make_shared<GripperHelper>(gripper_node);
-    us_cutter_helper_ = std::make_shared<USCutterHelper>(us_cutter_node);
-    acm_helper_ = std::make_shared<ACMHelper>();
-
     // TODO: put service names into node namespace
     auto planner_node = this->create_sub_node("planner");
     service_setup_toolpath_ = planner_node->create_service<ram_interfaces::srv::SetToolpath>(this->get_fully_qualified_name() + std::string("/setup_toolpath"),
@@ -188,14 +178,6 @@ void BaseToolpathPlanner::configuration_message() {
     "\n\tRetreat pose offset: " << this->get_parameter("retreat_offset").as_double() <<
     "\n\tRetreat pose height: " << this->get_parameter("retreat_height").as_double()
     );
-}
-
-bool BaseToolpathPlanner::load_toolpath() {
-    // load the toolpath
-    RCLCPP_INFO(LOGGER, "Loading toolpath");
-    auto success =toolpath_helper_->load_toolpath();
-    toolpath_helper_->get_toolpath(toolpath_);
-    return success;
 }
 
 bool BaseToolpathPlanner::construct_toolpath_plan() {

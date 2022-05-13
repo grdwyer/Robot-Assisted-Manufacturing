@@ -52,13 +52,6 @@ public:
     void configuration_message();
 
     /***
-     * @brief function to load toolpath from the toolpath handler
-     * Load toolpath currently a polygon message and
-     * @return
-     */
-    bool load_toolpath();
-
-    /***
      * @brief formulates the toolpath into a motion planning request for moveit
      * @return
      */
