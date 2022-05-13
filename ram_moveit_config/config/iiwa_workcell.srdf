@@ -26,12 +26,18 @@
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
     <end_effector name="gripper" parent_link="iiwa_link_ee" group="gripper"/>
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
-    <disable_collisions link1="cutting_plate" link2="iiwa_link_0" reason="Never"/>
-    <disable_collisions link1="cutting_plate" link2="iiwa_link_1" reason="Never"/>
-    <disable_collisions link1="cutting_plate" link2="iiwa_link_2" reason="Never"/>
-    <disable_collisions link1="cutting_plate" link2="iiwa_link_3" reason="Never"/>
-    <disable_collisions link1="cutting_plate" link2="iiwa_mounting_plate" reason="Never"/>
-    <disable_collisions link1="cutting_plate" link2="optical_table" reason="Adjacent"/>
+    <disable_collisions link1="us_cutter_enclosure" link2="iiwa_link_0" reason="Never"/>
+    <disable_collisions link1="us_cutter_enclosure" link2="iiwa_link_1" reason="Never"/>
+    <disable_collisions link1="us_cutter_enclosure" link2="iiwa_link_2" reason="Never"/>
+    <disable_collisions link1="us_cutter_enclosure" link2="iiwa_link_3" reason="Never"/>
+    <disable_collisions link1="us_cutter_enclosure" link2="iiwa_mounting_plate" reason="Never"/>
+    <disable_collisions link1="us_cutter_enclosure" link2="optical_table" reason="Adjacent"/>
+    <disable_collisions link1="cutting_plate_base" link2="iiwa_link_0" reason="Never"/>
+    <disable_collisions link1="cutting_plate_base" link2="iiwa_link_1" reason="Never"/>
+    <disable_collisions link1="cutting_plate_base" link2="iiwa_link_2" reason="Never"/>
+    <disable_collisions link1="cutting_plate_base" link2="iiwa_link_3" reason="Never"/>
+    <disable_collisions link1="cutting_plate_base" link2="iiwa_mounting_plate" reason="Never"/>
+    <disable_collisions link1="cutting_plate_base" link2="optical_table" reason="Adjacent"/>
     <disable_collisions link1="gripper_link_iiwa_attachment" link2="gripper_link_main_body" reason="Adjacent"/>
     <disable_collisions link1="gripper_link_left" link2="gripper_link_main_body" reason="Adjacent"/>
     <disable_collisions link1="gripper_link_left" link2="gripper_implant_support" reason="Adjacent"/>

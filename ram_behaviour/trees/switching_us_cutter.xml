@@ -1,0 +1,19 @@
+<root main_tree_to_execute="MainTree">
+    <BehaviorTree ID="MainTree">
+            <Sequence>
+                <!-- Test remapping ports between trees -->
+                <Delay delay_msec="2000">
+                    <SetBoolComponent server_name="/us_cutter_controller/enable" server_timeout="100" state="true"/>
+                </Delay>
+                <Delay delay_msec="500">
+                    <SetBoolComponent server_name="/us_cutter_controller/activate" server_timeout="100" state="true"/>
+                </Delay>
+                <Delay delay_msec="500">
+                    <SetBoolComponent server_name="/us_cutter_controller/activate" server_timeout="100" state="false"/>
+                </Delay>
+                <Delay delay_msec="500">
+                    <SetBoolComponent server_name="/us_cutter_controller/enable" server_timeout="100" state="false"/>
+                </Delay>
+            </Sequence>
+    </BehaviorTree>
+</root>

@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Fallback>
+            <Sequence name="setup">
+                <Delay delay_msec="100">
+                    <Action ID="RequestTriggerComponent" server_name="/behaviour/request_setup" server_timeout="100"/>
+                </Delay>
+                <SetBlackboard output_key="setup_complete" value="false"/>
+                <ForceSuccess>
+                    <Sequence>
+                        <Action ID="SetBoolComponent" server_name="/stock_handler/load_stock" server_timeout="100" state="true"/>
+                        <Action ID="SetBoolComponent" server_name="/stock_handler/attach_stock" server_timeout="100" state="true"/>
+                    </Sequence>
+                </ForceSuccess>
+                <Action ID="TriggerComponent" server_name="/toolpath_handler/load_toolpath" server_timeout="100"/>
+                <Action ID="GetToolpathComponent" server_name="/toolpath_handler/get_toolpath" server_timeout="100" toolpath="{toolpath}"/>
+                <Action ID="TriggerComponent" server_name="/gripper_controller/close" server_timeout="100"/>
+                <Sequence>
+                    <Action ID="ModifyStockTouchLinksComponent" allow="true" link="cutting_plate_base" server_name="/stock_handler/set_touch_links" server_timeout="100"/>
+                    <Action ID="ModifyingACMComponent" allow="true" first="cutting_plate_base" second="gripper_link_right" server_name="/apply_planning_scene" server_timeout="100"/>
+                    <Action ID="ModifyingACMComponent" allow="true" first="cutting_plate_base" second="gripper_link_left" server_name="/apply_planning_scene" server_timeout="100"/>
+                    <Action ID="ModifyingACMComponent" allow="true" first="cutting_plate_base" second="gripper_implant_holder" server_name="/apply_planning_scene" server_timeout="100"/>
+                </Sequence>
+                <Action ID="SetToolpathComponent" server_name="/toolpath_planner/setup_approach" server_timeout="100" toolpath="{toolpath}"/>
+                <Action ID="ModifyStockTouchLinksComponent" allow="true" link="cutting_tool" server_name="/stock_handler/set_touch_links" server_timeout="100"/>
+                <Action ID="SetToolpathComponent" server_name="/toolpath_planner/setup_toolpath" server_timeout="100" toolpath="{toolpath}"/>
+                <SetBlackboard output_key="setup_complete" value="true"/>
+            </Sequence>
+            <Sequence name="execute">
+                <Delay delay_msec="100">
+                    <Action ID="RequestTriggerComponent" server_name="/behaviour/request_execute" server_timeout="100"/>
+                </Delay>
+                <BlackboardCheckBool return_on_mismatch="false" value_A="${setup_complete}" value_B="true">
+                    <Sequence>
+                        <Action ID="TriggerComponent" server_name="/toolpath_planner/execute_approach" server_timeout="100"/>
+                        <Delay delay_msec="1000">
+                            <Sequence>
+                                <Action ID="SetBoolComponent" server_name="/us_cutter_controller/enable" server_timeout="100" state="true"/>
+                                <Action ID="SetBoolComponent" server_name="/us_cutter_controller/activate" server_timeout="100" state="true"/>
+                                <Action ID="TriggerComponent" server_name="/toolpath_planner/execute_toolpath" server_timeout="100"/>
+                            </Sequence>
+                        </Delay>
+                        <Action ID="SetBoolComponent" server_name="/us_cutter_controller/activate" server_timeout="100" state="false"/>
+                        <Sequence>
+                            <Action ID="ModifyStockTouchLinksComponent" allow="false" link="cutting_plate_base" server_name="/stock_handler/set_touch_links" server_timeout="100"/>
+                            <Action ID="ModifyStockTouchLinksComponent" allow="false" link="cutting_tool" server_name="/stock_handler/set_touch_links" server_timeout="100"/>
+                            <Action ID="ModifyingACMComponent" allow="false" first="cutting_plate_base" second="gripper_link_right" server_name="/apply_planning_scene" server_timeout="100"/>
+                            <Action ID="ModifyingACMComponent" allow="false" first="cutting_plate_base" second="gripper_link_left" server_name="/apply_planning_scene" server_timeout="100"/>
+                            <Action ID="ModifyingACMComponent" allow="false" first="cutting_plate_base" second="gripper_implant_holder" server_name="/apply_planning_scene" server_timeout="100"/>
+                        </Sequence>
+                        <SetBlackboard output_key="setup_complete" value="false"/>
+                    </Sequence>
+                </BlackboardCheckBool>
+            </Sequence>
+        </Fallback>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="GetToolpathComponent">
+            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <input_port name="server_timeout" type="std::chrono::duration&lt;long, std::ratio&lt;1l, 1000l&gt; &gt;"/>
+            <output_port name="toolpath" type="ram_interfaces::msg::Toolpath_&lt;std::allocator&lt;void&gt; &gt;"/>
+        </Action>
+        <Action ID="ModifyStockTouchLinksComponent">
+            <input_port name="allow" type="bool"/>
+            <input_port name="link" type="std::string"/>
+            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <input_port name="server_timeout" type="std::chrono::duration&lt;long, std::ratio&lt;1l, 1000l&gt; &gt;"/>
+        </Action>
+        <Action ID="ModifyingACMComponent">
+            <input_port name="allow" type="bool"/>
+            <input_port name="first" type="std::string"/>
+            <input_port name="second" type="std::string"/>
+            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <input_port name="server_timeout" type="std::chrono::duration&lt;long, std::ratio&lt;1l, 1000l&gt; &gt;"/>
+        </Action>
+        <Action ID="RequestTriggerComponent">
+            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <input_port name="server_timeout" type="std::chrono::duration&lt;long, std::ratio&lt;1l, 1000l&gt; &gt;"/>
+        </Action>
+        <Action ID="SetBoolComponent">
+            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <input_port name="server_timeout" type="std::chrono::duration&lt;long, std::ratio&lt;1l, 1000l&gt; &gt;"/>
+            <input_port name="state" type="bool"/>
+        </Action>
+        <Action ID="SetToolpathComponent">
+            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <input_port name="server_timeout" type="std::chrono::duration&lt;long, std::ratio&lt;1l, 1000l&gt; &gt;"/>
+            <input_port name="toolpath" type="ram_interfaces::msg::Toolpath_&lt;std::allocator&lt;void&gt; &gt;"/>
+        </Action>
+        <Action ID="TriggerComponent">
+            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <input_port name="server_timeout" type="std::chrono::duration&lt;long, std::ratio&lt;1l, 1000l&gt; &gt;"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
+

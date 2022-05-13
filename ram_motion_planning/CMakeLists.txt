@@ -17,7 +17,6 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(moveit_common REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 # This shouldn't be necessary (required by moveit_simple_controller_manager)
 find_package(rosidl_default_runtime REQUIRED)
@@ -43,16 +42,16 @@ ament_target_dependencies(ram_helpers
 install(TARGETS ram_helpers
         DESTINATION lib/${PROJECT_NAME})
 
-add_executable(example_program src/example_program.cpp)
-target_include_directories(example_program PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-target_link_libraries(example_program
-        ram_helpers)
-ament_target_dependencies(example_program
-        moveit_ros_planning_interface
-        Boost
-        )
+#add_executable(example_program src/example_program.cpp)
+#target_include_directories(example_program PUBLIC
+#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#  $<INSTALL_INTERFACE:include>)
+#target_link_libraries(example_program
+#        ram_helpers)
+#ament_target_dependencies(example_program
+#        moveit_ros_planning_interface
+#        Boost
+#        )
 
 add_executable(base_toolpath_planner src/base_toolpath_planner.cpp src/run_base_planner.cpp)
 target_include_directories(base_toolpath_planner PUBLIC
@@ -65,16 +64,16 @@ ament_target_dependencies(base_toolpath_planner
         Boost
         )
 
-add_executable(ompl_toolpath_planner src/ompl_constrained_toolpath_planner.cpp src/base_toolpath_planner.cpp src/run_ompl_planner.cpp)
-target_include_directories(ompl_toolpath_planner PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>)
-target_link_libraries(ompl_toolpath_planner
-        ram_helpers)
-ament_target_dependencies(ompl_toolpath_planner
-        moveit_ros_planning_interface
-        Boost
-        )
+#add_executable(ompl_toolpath_planner src/ompl_constrained_toolpath_planner.cpp src/base_toolpath_planner.cpp src/run_ompl_planner.cpp)
+#target_include_directories(ompl_toolpath_planner PUBLIC
+#        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#        $<INSTALL_INTERFACE:include>)
+#target_link_libraries(ompl_toolpath_planner
+#        ram_helpers)
+#ament_target_dependencies(ompl_toolpath_planner
+#        moveit_ros_planning_interface
+#        Boost
+#        )
 
 add_executable(ompl_demo src/ompl_demo.cpp)
 
@@ -83,10 +82,19 @@ ament_target_dependencies(ompl_demo
         Boost
         )
 
+#add_executable(run_acm_helper src/run_acm_helper.cpp)
+#target_link_libraries(run_acm_helper
+#        ram_helpers
+#        )
+#ament_target_dependencies(run_acm_helper
+#        rclcpp
+#        )
+
 install(TARGETS
-        example_program
+#        example_program
         base_toolpath_planner
-        ompl_toolpath_planner
+#        ompl_toolpath_planner
+#        run_acm_helper
         ompl_demo
         RUNTIME DESTINATION lib/${PROJECT_NAME}
         INCLUDES DESTINATION include

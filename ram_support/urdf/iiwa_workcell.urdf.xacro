@@ -52,7 +52,7 @@
 
     <joint name="cutting_plate_base_joint" type="fixed">
         <parent link="optical_table_back_left_bolt"/>
-        <child link="cutting_plate"/>
+        <child link="us_cutter_enclosure"/>
 <!--        <origin xyz="0.0 0.2 0.30" rpy="0.0 -${pi/2} 0"/>-->
         <origin xyz="-0.17351 -0.237 0.1109" rpy="0 0 0"/>
     </joint>

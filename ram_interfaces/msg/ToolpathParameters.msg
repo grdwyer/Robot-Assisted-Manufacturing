@@ -1,0 +1,6 @@
+float64 cartesian_velocity
+float64 cartesian_acceleration
+float64 toolpath_height_offset
+float64 approach_offset
+float64 retreat_offset
+float64 retreat_height

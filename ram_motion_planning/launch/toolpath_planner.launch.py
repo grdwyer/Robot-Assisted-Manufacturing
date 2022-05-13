@@ -93,9 +93,6 @@ def generate_launch_description():
     robot_description_kinematics = {'robot_description_kinematics': kinematics_yaml}
     print(robot_description_kinematics)
 
-    # node_config = load_yaml("ram_motion_planning", "config/toolpath_follower_defaults.yaml")
-    # print(node_config)
-
     toolpath_planner_params = os.path.join(
         get_package_share_directory('ram_motion_planning'),
         'config',
@@ -114,8 +111,20 @@ def generate_launch_description():
                                         ])
     nodes.append(toolpath_planner)
 
+    toolpath_handler = Node(package='ram_tooling_support',
+                            executable='toolpath_handler',
+                            name='toolpath_handler',
+                            output='screen',
+                            )
+    nodes.append(toolpath_handler)
+
     interface_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(
         get_package_share_directory('ram_motion_planning') + '/launch/ram_interface.launch.py'))
     nodes.append(interface_launch)
+
+    behaviour_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(
+        get_package_share_directory('ram_behaviour') + '/launch/behaviour.launch.py'),
+        launch_arguments={'tree_file' : 'gui_control.xml', 'groot' : 'true'}.items())
+    nodes.append(behaviour_launch)
 
     return LaunchDescription(declared_arguments + nodes)

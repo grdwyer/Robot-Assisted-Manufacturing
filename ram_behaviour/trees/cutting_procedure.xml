@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="MainTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="ExecuteToolpath">
+        <BlackboardCheckBool return_on_mismatch="false" value_A="${setup_complete}" value_B="true">
+            <Sequence>
+                <Action ID="SetBoolComponent" server_name="/us_cutter_controller/enable" server_timeout="100" state="true"/>
+                <Action ID="SetBoolComponent" server_name="/us_cutter_controller/activate" server_timeout="100" state="true"/>
+                <Action ID="TriggerComponent" server_name="/toolpath_planner/toolpath_execute" server_timeout="100"/>
+                <Action ID="SetBoolComponent" server_name="/us_cutter_controller/activate" server_timeout="100" state="false"/>
+            </Sequence>
+        </BlackboardCheckBool>
+    </BehaviorTree>
+
+    <!-- ////////// -->
+    <BehaviorTree ID="SetupToolpath">
+        <Sequence>
+            <Action ID="TriggerComponent" server_name="/toolpath_handler/load_toolpath" server_timeout="100"/>
+            <Action ID="TriggerComponent" server_name="/gripper_controller/close" server_timeout="100"/>
+            <Action ID="TriggerComponent" server_name="/toolpath_planner/toolpath_setup" server_timeout="100"/>
+            <SetBlackboard output_key="true" value="setup_complete"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+
+    <BehaviorTree ID="MainTree">
+        <Sequence>
+            <SetBlackboard output_key="false" value="setup_complete"/>
+            <SubTree ID="SetupToolpath"/>
+            <SubTree ID="ExecuteToolpath"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <SubTree ID="ExecuteToolpath"/>
+        <Action ID="RequestTriggerComponent">
+            <input_port name="server_name">service topic to call</input_port>
+            <input_port name="server_timeout">timeout on service call in milliseconds</input_port>
+        </Action>
+        <Action ID="SetBoolComponent">
+            <input_port name="server_name">service topic to call</input_port>
+            <input_port name="server_timeout">timeout on service call in milliseconds</input_port>
+            <input_port name="state"/>
+        </Action>
+        <SubTree ID="SetupToolpath"/>
+        <Action ID="TriggerComponent">
+            <input_port name="server_name">service topic to call</input_port>
+            <input_port name="server_timeout">timeout on service call in milliseconds</input_port>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
+

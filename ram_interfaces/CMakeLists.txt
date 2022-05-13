@@ -22,12 +22,17 @@ find_package(geometry_msgs REQUIRED)
 
 set(msg_files
         "msg/Toolpath.msg"
+        "msg/ToolpathParameters.msg"
         # etc
         )
 
 set(srv_files
         "srv/GetToolpath.srv"
+        "srv/SetToolpath.srv"
         "srv/SetTouchLinks.srv"
+        "srv/GetToolpathParameters.srv"
+        "srv/SetToolpathParameters.srv"
+        "srv/RequestTrigger.srv"
         # etc
         )
 

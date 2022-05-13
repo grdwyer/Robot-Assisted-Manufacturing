@@ -18,7 +18,10 @@ RUN apt-get update && apt-get install -y \
     libbullet-dev \
     libasio-dev \
     libtinyxml2-dev \
-    libcunit1-dev
+    libcunit1-dev \
+    qtbase5-dev libqt5svg5-dev libzmq3-dev libdw-dev \ 
+    ros-$ROSDISTRO-example-interfaces \
+    ros-$ROSDISTRO-behaviortree-cpp-v3
 
 #############################################
 # Tesseract and SCXML deps from CRS project #

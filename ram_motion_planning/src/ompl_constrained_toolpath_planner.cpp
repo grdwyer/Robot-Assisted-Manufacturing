@@ -23,7 +23,7 @@ OMPLToolpathPlanner::OMPLToolpathPlanner(const rclcpp::NodeOptions & options) : 
 ////    state->printStatePositions();
 }
 
-bool OMPLToolpathPlanner::construct_plan_request() {
+bool OMPLToolpathPlanner::construct_toolpath_plan() {
     // Needs to create a trajectory in trajectory_toolpath_ and modify the touch link to
     RCLCPP_INFO_STREAM(LOGGER, "Constructing request\n\tusing toolpath: " << toolpath_ <<
                                                                           "\n\tTool reference frame: " << this->get_parameter("tool_reference_frame").as_string() <<
@@ -304,7 +304,7 @@ void OMPLToolpathPlanner::callback_setup(std_srvs::srv::Trigger::Request::Shared
                                          std_srvs::srv::Trigger::Response::SharedPtr response) {
     if(load_toolpath()){
         if(move_to_setup()){
-            if(construct_plan_request()){
+            if(construct_toolpath_plan()){
                 response->success = true;
                 response->message = "Toolpath fully setup";
             } else{

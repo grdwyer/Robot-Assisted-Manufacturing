@@ -17,6 +17,7 @@ setup(
         (os.path.join('share', package_name), glob('launch/*.launch.py')),
         (os.path.join('share', package_name, 'resource'), glob('resource/*.ui')),
         (os.path.join('share', package_name, 'resource'), glob('resource/*.svg')),
+        (os.path.join('share', package_name, 'resource'), glob('resource/*.perspective'))
     ],
     install_requires=['setuptools'],
     zip_safe=True,

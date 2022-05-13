@@ -51,12 +51,18 @@
       <property name="text">
        <string>Setup Toolpath</string>
       </property>
+      <property name="checkable">
+        <bool>true</bool>
+      </property>
      </widget>
     </item>
     <item>
      <widget class="QPushButton" name="button_execute">
       <property name="text">
        <string>Execute Toolpath</string>
+      </property>
+      <property name="checkable">
+        <bool>true</bool>
       </property>
      </widget>
     </item>
