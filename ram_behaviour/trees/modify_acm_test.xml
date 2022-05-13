@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="MainTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="MainTree">
+        <Fallback>
+            <Sequence name="setup">
+                <Delay delay_msec="100">
+                    <Action ID="RequestTriggerComponent" server_name="/behaviour/request_setup" server_timeout="100"/>
+                </Delay>
+                <Action ID="ModifyingACMComponent" allow="true" first="cutting_plate_base" second="gripper_link_left" server_name="/apply_planning_scene" server_timeout="100"/>
+            </Sequence>
+            <Sequence name="execute">
+                <Delay delay_msec="100">
+                    <Action ID="RequestTriggerComponent" server_name="/behaviour/request_execute" server_timeout="100"/>
+                </Delay>
+                <Action ID="ModifyingACMComponent" allow="false" first="cutting_plate_base" second="gripper_link_left" server_name="/apply_planning_scene" server_timeout="100"/>
+            </Sequence>
+        </Fallback>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="ModifyStockTouchLinksComponent">
+            <input_port name="allow" type="bool">to allow collisions</input_port>
+            <input_port name="link" type="std::string">link name</input_port>
+            <input_port name="server_name" type="std::string" default="/stock_handler/set_touch_links">Action server name</input_port>
+            <input_port name="server_timeout" type="std::chrono::duration&lt;long, std::ratio&lt;1l, 1000l&gt; &gt;" default="100"/>
+        </Action>
+        <Action ID="ModifyingACMComponent">
+            <input_port name="allow" type="bool">to allow collisions</input_port>
+            <input_port name="first" type="std::string">first link name</input_port>
+            <input_port name="second" type="std::string">second link name</input_port>
+            <input_port name="server_name" type="std::string" default="/apply_planning_scene">Action server name</input_port>
+            <input_port name="server_timeout" type="std::chrono::duration&lt;long, std::ratio&lt;1l, 1000l&gt; &gt;" default="100"/>
+        </Action>
+        <Action ID="RequestTriggerComponent">
+            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <input_port name="server_timeout" type="std::chrono::duration&lt;long, std::ratio&lt;1l, 1000l&gt; &gt;"/>
+        </Action>
+        <Action ID="SetBoolComponent">
+            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <input_port name="server_timeout" type="std::chrono::duration&lt;long, std::ratio&lt;1l, 1000l&gt; &gt;"/>
+            <input_port name="state" type="bool"/>
+        </Action>
+        <Action ID="TriggerComponent">
+            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <input_port name="server_timeout" type="std::chrono::duration&lt;long, std::ratio&lt;1l, 1000l&gt; &gt;"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
+

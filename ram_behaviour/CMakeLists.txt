@@ -54,6 +54,15 @@ list(APPEND plugin_libs request_trigger_component_bt_node)
 add_library(modify_acm_component_bt_node SHARED plugins/service/modify_acm_component.cpp)
 list(APPEND plugin_libs modify_acm_component_bt_node)
 
+add_library(modify_stock_touch_links_component_bt_node SHARED plugins/service/modify_stock_touch_links.cpp)
+list(APPEND plugin_libs modify_stock_touch_links_component_bt_node)
+
+add_library(get_toolpath_component_bt_node SHARED plugins/service/get_toolpath.cpp)
+list(APPEND plugin_libs get_toolpath_component_bt_node)
+
+add_library(set_toolpath_component_bt_node SHARED plugins/service/set_toolpath.cpp)
+list(APPEND plugin_libs set_toolpath_component_bt_node)
+
 
 ## Plugin deps
 foreach(bt_plugin ${plugin_libs})

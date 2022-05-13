@@ -31,7 +31,9 @@ def generate_launch_description():
             {'loop_timeout': loop_timeout},
             {'bt_file_path': PathJoinSubstitution([get_package_share_directory('ram_behaviour'),
                                           'trees/', arg_tree_file])},
-            {'plugins': ['trigger_component_bt_node', 'set_bool_component_bt_node', 'request_trigger_component_bt_node']}
+            {'plugins': ['trigger_component_bt_node', 'set_bool_component_bt_node', 'request_trigger_component_bt_node',
+                         'modify_stock_touch_links_component_bt_node', 'modify_acm_component_bt_node',
+                         'get_toolpath_component_bt_node', 'set_toolpath_component_bt_node']}
         ]
     ))
 

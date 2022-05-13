@@ -112,7 +112,10 @@ std::ostream& operator<<(std::ostream& os, const std::vector<geometry_msgs::msg:
 
 std::ostream& operator<<(std::ostream& os, const std::vector<KDL::Frame>& waypoints);
 
+std::ostream& operator<<(std::ostream& os, const KDL::Frame& frame);
+
 std::ostream& operator<<(std::ostream& os, const geometry_msgs::msg::TransformStamped& trans);
 
+std::ostream& operator<<(std::ostream& os, const sensor_msgs::msg::JointState & joint_state);
 
 #endif //RAM_MOTION_PLANNING_HELPERS_H

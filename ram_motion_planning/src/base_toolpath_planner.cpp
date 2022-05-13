@@ -199,7 +199,7 @@ bool BaseToolpathPlanner::load_toolpath() {
 }
 
 bool BaseToolpathPlanner::construct_toolpath_plan() {
-    RCLCPP_INFO_STREAM(LOGGER, "Constructing request\n\tusing toolpath: " << toolpath_ <<
+    RCLCPP_INFO_STREAM(LOGGER, "Constructing toolpath plan request\n\tusing toolpath: " << toolpath_ <<
                                "\n\tTool reference frame: " << this->get_parameter("tool_reference_frame").as_string() <<
                                "\n\tEnd-effector reference frame: " << this->get_parameter("end_effector_reference_frame").as_string() <<
                                "\n\tPart reference frame: " << this->get_parameter("part_reference_frame").as_string() << "\n\n");
@@ -207,23 +207,11 @@ bool BaseToolpathPlanner::construct_toolpath_plan() {
     move_group_->setPoseReferenceFrame(this->get_parameter("tool_reference_frame").as_string());
     move_group_->setEndEffectorLink(this->get_parameter("end_effector_reference_frame").as_string());
 
+    //TODO: cartesian trajectory has already been processed need to put in a check that it hasn't changed but it seems unlikely it would.
     // processes the toolpath to the robot frame and adds the approach and retreat poses the toolpath
-    generate_cartesian_trajectory(ee_cartesian_path_);
-
-//    stock_helper_->modify_touch_link("cutting_plate_base", true);
-//    debug_mode_wait();
-//
-//    // Modify this to move after the toolpath plan is sucessful use set_start_state for the toolpath plan
-//    geometry_msgs::msg::Pose approach_pose;
-//    approach_pose = tf2::toMsg(ee_cartesian_path_.front());
-//    moveit::planning_interface::MoveGroupInterface::Plan approach_plan;
-//
-//    move_group_->setPoseTarget(approach_pose);
-//    if(move_group_->plan(approach_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS){
-//        trajectory_approach_ = approach_plan.trajectory_;
-//    }
-//    stock_helper_->modify_touch_link("cutting_tool", true);
-//    debug_mode_wait();
+//    if(!generate_cartesian_trajectory(ee_cartesian_path_)){
+//        return false;
+//    };
 
     std::vector<geometry_msgs::msg::Pose> waypoints, interpolated_waypoints;
     for(const auto & frame : ee_cartesian_path_){
@@ -232,22 +220,20 @@ bool BaseToolpathPlanner::construct_toolpath_plan() {
 
     interpolate_pose_trajectory(waypoints, 0.0005, tf2Radians(1), interpolated_waypoints);
 
-    // Cutting plate ACM
-//    "cutting_plate_base", "gripper_link_left", "gripper_link_right", "gripper_implant_holder"
-//    acm_helper_->set_acm_entry("cutting_plate_base", "gripper_link_left", true);
-//    acm_helper_->set_acm_entry("cutting_plate_base", "gripper_link_right", true);
-//    acm_helper_->set_acm_entry("cutting_plate_base", "gripper_implant_holder", true);
-
-    //TODO: Set start state for toolpath planning
+    //Set start state for toolpath planning as the approach pose
     robot_state_ = move_group_->getCurrentState(2.0);
     moveit_msgs::msg::RobotState approach_state;
-    moveit::core::robotStateToRobotStateMsg(*robot_state_, approach_state, true);
-    approach_state.joint_state.position.clear();
-    std::copy(trajectory_approach_.joint_trajectory.points.back().positions.begin(), trajectory_approach_.joint_trajectory.points.back().positions.end(), approach_state.joint_state.position.begin());
-    approach_state.joint_state.name.clear();
-    std::copy(trajectory_approach_.joint_trajectory.joint_names.begin(), trajectory_approach_.joint_trajectory.joint_names.end(), approach_state.joint_state.name.begin());
 
+    if(robot_state_.get() != nullptr){
+        moveit::core::robotStateToRobotStateMsg(*robot_state_, approach_state, true);
+    }
+    approach_state.joint_state.position.clear();
+    approach_state.joint_state.name.clear();
+    approach_state.joint_state.position.assign(trajectory_approach_.joint_trajectory.points.back().positions.begin(), trajectory_approach_.joint_trajectory.points.back().positions.end());
+    approach_state.joint_state.name.assign(trajectory_approach_.joint_trajectory.joint_names.begin(), trajectory_approach_.joint_trajectory.joint_names.end());
+    RCLCPP_INFO_STREAM(LOGGER, "Approach state set to " << approach_state.joint_state);
     move_group_->setStartState(approach_state);
+
     RCLCPP_INFO_STREAM(LOGGER, "Cartesian planning for toolpath using Waypoints: \n" << interpolated_waypoints);
     const double jump_threshold = 0.0;
     const double eef_step = 0.001;
@@ -303,11 +289,6 @@ bool BaseToolpathPlanner::move_to_setup() {
     pose.position.z = 0.01;
     move_group_->setPoseTarget(pose);
 
-    // TODO: remove this, it will be handled by the manager
-//    stock_helper_->load_stock(true);
-//    stock_helper_->attach_stock(true);
-//    gripper_helper_->gripper(false);
-
     moveit::planning_interface::MoveGroupInterface::Plan my_plan;
 
     bool success = (move_group_->plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
@@ -323,10 +304,7 @@ bool BaseToolpathPlanner::move_to_setup() {
 
 bool BaseToolpathPlanner::execute_trajectory(moveit_msgs::msg::RobotTrajectory &trajectory) {
     if (!trajectory.joint_trajectory.points.empty()){
-        bool success = (move_group_->execute(trajectory_toolpath_) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-        // Remove tool from touch links
-        stock_helper_->modify_touch_link("cutting_tool", false); // TODO: param this
-        stock_helper_->modify_touch_link("cutting_plate_base", false); // TODO: param this
+        bool success = (move_group_->execute(trajectory) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
         return success;
     } else{
         RCLCPP_WARN(LOGGER, "Toolpath trajectory is empty, try construct the plan request first.");
@@ -336,26 +314,38 @@ bool BaseToolpathPlanner::execute_trajectory(moveit_msgs::msg::RobotTrajectory &
 
 void BaseToolpathPlanner::callback_setup_toolpath(ram_interfaces::srv::SetToolpath::Request::SharedPtr request,
                                                   ram_interfaces::srv::SetToolpath::Response::SharedPtr response) {
-    toolpath_ = request->toolpath; //TODO: compare toolpath given to stored
-    if(construct_toolpath_plan()){
-        response->success = true;
-        response->message = "Toolpath fully setup";
+    if(!request->toolpath.path.points.empty()) {
+//        toolpath_ = request->toolpath; //TODO: compare toolpath given to stored
+        if(construct_toolpath_plan()){
+            response->success = true;
+            response->message = "Toolpath fully setup";
+        } else{
+            response->success = false;
+            response->message = "Toolpath failed to plan";
+        }
     } else{
+        RCLCPP_WARN_STREAM(LOGGER, "Empty toolpath has been given");
         response->success = false;
-        response->message = "Toolpath failed to plan";
+        response->message = "Empty toolpath has been given";
     }
-
 }
 
 void BaseToolpathPlanner::callback_setup_approach(ram_interfaces::srv::SetToolpath::Request::SharedPtr request,
                                                   ram_interfaces::srv::SetToolpath::Response::SharedPtr response) {
-    toolpath_ = request->toolpath;
-    if(construct_approach_plan()){
-        response->success = true;
-        response->message = "Plan to approach generated";
+    if(!request->toolpath.path.points.empty()) {
+        toolpath_ = request->toolpath;
+        ee_cartesian_path_.clear();
+        if (construct_approach_plan()) {
+            response->success = true;
+            response->message = "Plan to approach generated";
+        } else {
+            response->success = false;
+            response->message = "Unable to generate plan to approach";
+        }
     } else{
+        RCLCPP_WARN_STREAM(LOGGER, "Empty toolpath has been given");
         response->success = false;
-        response->message = "Unable to generate plan to approach";
+        response->message = "Empty toolpath has been given";
     }
 }
 
@@ -411,7 +401,6 @@ bool BaseToolpathPlanner::process_toolpath(std::vector<KDL::Frame> &ee_cartesian
     }
     RCLCPP_INFO_STREAM(LOGGER, "EE Toolpath: \n" << ee_toolpath);
 
-
     for(unsigned long i=0; i < ee_toolpath.size(); i++){
         if(i != ee_toolpath.size()-1){
             //determine orientation to go to next point
@@ -450,7 +439,12 @@ bool BaseToolpathPlanner::process_toolpath(std::vector<KDL::Frame> &ee_cartesian
             rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
         }
     }
-    return !ee_cartesian_path.empty() && ee_cartesian_path.size() == toolpath_.path.points.size();
+    if(!ee_cartesian_path.empty() && ee_cartesian_path.size() == toolpath_.path.points.size()){
+        return true;
+    }
+    RCLCPP_WARN_STREAM(LOGGER, "Toolpath provided with " << toolpath_.path.points.size() <<
+    " points but ee trajectory generated with " << ee_cartesian_path.size() << " points\n");
+    return false;
 }
 
 void BaseToolpathPlanner::debug_mode_wait() {
@@ -501,18 +495,19 @@ bool BaseToolpathPlanner::generate_cartesian_trajectory(std::vector<KDL::Frame> 
 
     // Flip the pose about the x axis to have the gripper upside down
     // Tool base - flipped on the x (should be paramed), reorient - rotation to face the next point, tool pose - resultant pose to convert to pose msg
-
-    bool success = process_toolpath(ee_cartesian_path_);
+    bool success = process_toolpath(ee_cartesian_path);
     if(!success){
         RCLCPP_ERROR_STREAM(LOGGER, "Toolpath was not processed correctly");
+        ee_cartesian_path.clear();
         return false;
     }
 
     // Determine an approach pose for the toolpath
     KDL::Frame initial_path_frame, approach_frame;
-    initial_path_frame = ee_cartesian_path_.front();
+    initial_path_frame = ee_cartesian_path.front();
     double approach_offset = std::max(this->get_parameter("approach_offset").as_double(), 0.001);
-    approach_frame = KDL::Frame(KDL::Vector(-approach_offset,0,0)) * initial_path_frame; // TODO: param this
+    approach_frame = KDL::Frame(KDL::Vector(-approach_offset,0,0)) * initial_path_frame;
+    ee_cartesian_path.insert(ee_cartesian_path.begin(), approach_frame);
 
     if(this->get_parameter("debug_mode").as_bool()) {
         tf_trans = tf2::kdlToTransform(approach_frame);
@@ -528,7 +523,7 @@ bool BaseToolpathPlanner::generate_cartesian_trajectory(std::vector<KDL::Frame> 
     KDL::Frame end_path_frame, retreat_frame, raised_retreat_frame;
     double retreat_offset = std::max(this->get_parameter("retreat_offset").as_double(), 0.001);
     double retreat_height = std::max(this->get_parameter("retreat_height").as_double(), 0.001);
-    end_path_frame = ee_cartesian_path_.back();
+    end_path_frame = ee_cartesian_path.back();
     retreat_frame = KDL::Frame(KDL::Vector(retreat_offset/2,0,0)) * end_path_frame;
     raised_retreat_frame = KDL::Frame(KDL::Vector(retreat_offset,0,retreat_height)) * end_path_frame;
 
@@ -541,13 +536,13 @@ bool BaseToolpathPlanner::generate_cartesian_trajectory(std::vector<KDL::Frame> 
     }
 
     //Add to the waypoints vector for now, look into a nicer way of doing this during the cleanup possibly check the stock size and see if the toolpath already includes the retreat.
-    ee_cartesian_path_.push_back(retreat_frame);
-    ee_cartesian_path_.push_back(raised_retreat_frame);
+    ee_cartesian_path.push_back(retreat_frame);
+    ee_cartesian_path.push_back(raised_retreat_frame);
     return true;
 }
 
 bool BaseToolpathPlanner::construct_approach_plan() {
-    RCLCPP_INFO_STREAM(LOGGER, "Constructing request\n\tusing toolpath: " << toolpath_ <<
+    RCLCPP_INFO_STREAM(LOGGER, "Constructing approach plan request\n\tusing toolpath: " << toolpath_ <<
                                                                           "\n\tTool reference frame: " << this->get_parameter("tool_reference_frame").as_string() <<
                                                                           "\n\tEnd-effector reference frame: " << this->get_parameter("end_effector_reference_frame").as_string() <<
                                                                           "\n\tPart reference frame: " << this->get_parameter("part_reference_frame").as_string() << "\n\n");
@@ -556,15 +551,16 @@ bool BaseToolpathPlanner::construct_approach_plan() {
     move_group_->setEndEffectorLink(this->get_parameter("end_effector_reference_frame").as_string());
 
     // processes the toolpath to the robot frame and adds the approach and retreat poses the toolpath
-    generate_cartesian_trajectory(ee_cartesian_path_);
-
-    stock_helper_->modify_touch_link("cutting_plate_base", true); //TODO: move to btree plugin
+    if(!generate_cartesian_trajectory(ee_cartesian_path_)){
+        return false;
+    };
 
     // Modify this to move after the toolpath plan is sucessful use set_start_state for the toolpath plan
     geometry_msgs::msg::Pose approach_pose;
     approach_pose = tf2::toMsg(ee_cartesian_path_.front());
+    RCLCPP_INFO_STREAM(LOGGER, "Moving to approach pose at " << ee_cartesian_path_.front());
     moveit::planning_interface::MoveGroupInterface::Plan approach_plan;
-
+    move_group_->setStartStateToCurrentState();
     move_group_->setPoseTarget(approach_pose);
     if(move_group_->plan(approach_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS){
         trajectory_approach_ = approach_plan.trajectory_;

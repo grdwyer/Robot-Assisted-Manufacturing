@@ -286,9 +286,15 @@ std::ostream& operator<<(std::ostream& os, const std::vector<KDL::Frame>& waypoi
 {
     os << "Positions: \n";
     for(const auto &frame : waypoints ){
-        os << "\t" << "X:" << frame.p.x() << ", Y: " << frame.p.y() << ", Z: " << frame.p.z() << "\n";
+        os << frame << "\n";
     }
 
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const KDL::Frame& frame)
+{
+    os << "\t" << "X:" << frame.p.x() << ", Y: " << frame.p.y() << ", Z: " << frame.p.z();
     return os;
 }
 
@@ -300,5 +306,18 @@ std::ostream& operator<<(std::ostream& os, const geometry_msgs::msg::TransformSt
     "\n\tY: " << trans.transform.rotation.y << "\n\tZ: " << trans.transform.rotation.z << "\n\tW: " <<
     trans.transform.rotation.w << "\n";
 
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const sensor_msgs::msg::JointState & joint_state){
+    os << std::endl;
+    for( const auto &name : joint_state.name){
+        os << name << "\t";
+    }
+    os << std::endl;
+    for( const auto &position : joint_state.position){
+        os << position << "\t";
+    }
+    os << std::endl;
     return os;
 }

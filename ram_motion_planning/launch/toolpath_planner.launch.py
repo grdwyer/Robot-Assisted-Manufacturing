@@ -109,7 +109,7 @@ def generate_launch_description():
                                         robot_description_semantic,
                                         robot_description_kinematics
                                         ])
-    # nodes.append(toolpath_planner)
+    nodes.append(toolpath_planner)
 
     toolpath_handler = Node(package='ram_tooling_support',
                             executable='toolpath_handler',
@@ -124,7 +124,7 @@ def generate_launch_description():
 
     behaviour_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(
         get_package_share_directory('ram_behaviour') + '/launch/behaviour.launch.py'),
-        launch_arguments={'tree_file' : 'gui_control.xml'}.items())
+        launch_arguments={'tree_file' : 'gui_control.xml', 'groot' : 'true'}.items())
     nodes.append(behaviour_launch)
 
     return LaunchDescription(declared_arguments + nodes)
