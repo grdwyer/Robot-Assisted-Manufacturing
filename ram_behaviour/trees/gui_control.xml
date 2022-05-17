@@ -24,7 +24,10 @@
                     <Action ID="ModifyingACMComponent" allow="true" first="cutting_plate_base" second="gripper_implant_holder" server_name="/apply_planning_scene" server_timeout="100"/>
                 </Sequence>
                 <Action ID="SetToolpathComponent" server_name="/toolpath_planner/setup_approach" server_timeout="100" toolpath="{toolpath}"/>
-                <Action ID="ModifyStockTouchLinksComponent" allow="true" link="cutting_tool" server_name="/stock_handler/set_touch_links" server_timeout="100"/>
+                <Sequence>
+                    <Action ID="ModifyingACMComponent" allow="true" first="cutting_tool" second="gripper_implant_holder" server_name="/apply_planning_scene" server_timeout="100"/>
+                    <Action ID="ModifyStockTouchLinksComponent" allow="true" link="cutting_tool" server_name="/stock_handler/set_touch_links" server_timeout="100"/>
+                </Sequence>
                 <Action ID="SetToolpathComponent" server_name="/toolpath_planner/setup_toolpath" server_timeout="100" toolpath="{toolpath}"/>
                 <SetBlackboard output_key="setup_complete" value="true"/>
             </Sequence>
