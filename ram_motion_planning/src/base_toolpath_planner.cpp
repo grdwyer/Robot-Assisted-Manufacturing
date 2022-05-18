@@ -86,7 +86,7 @@ void BaseToolpathPlanner::setup_parameters(){
     parameter_descriptor.description = "Time to wait in milliseconds between each step when in debug mode.";
     parameter_descriptor.type = rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER;
     parameter_descriptor.additional_constraints = "";
-    this->declare_parameter<int>("debug_wait_time", 500, parameter_descriptor);
+    this->declare_parameter<int>("debug_wait_time", 50, parameter_descriptor);
 
     parameter_descriptor.name = "debug_mode";
     parameter_descriptor.description = "Outputs extra information and pauses longer in each processing step.";
@@ -507,7 +507,7 @@ bool BaseToolpathPlanner::generate_cartesian_trajectory(std::vector<KDL::Frame> 
     double retreat_height = std::max(this->get_parameter("retreat_height").as_double(), 0.001);
     end_path_frame = ee_cartesian_path.back();
     retreat_frame = KDL::Frame(KDL::Vector(retreat_offset/2,0,0)) * end_path_frame;
-    raised_retreat_frame = KDL::Frame(KDL::Vector(retreat_offset,0,retreat_height)) * end_path_frame;
+    raised_retreat_frame = KDL::Frame(KDL::Vector(retreat_offset,0, retreat_height)) * end_path_frame;
 
     if(this->get_parameter("debug_mode").as_bool()) {
         tf_trans = tf2::kdlToTransform(retreat_frame);
