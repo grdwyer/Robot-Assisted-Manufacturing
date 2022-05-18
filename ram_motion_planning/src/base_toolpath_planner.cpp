@@ -208,6 +208,9 @@ bool BaseToolpathPlanner::construct_toolpath_plan() {
 
     if(robot_state_.get() != nullptr){
         moveit::core::robotStateToRobotStateMsg(*robot_state_, approach_state, true);
+    } else{
+        RCLCPP_WARN_STREAM(LOGGER, "Cannot get the current state of the robot to set the start state and retime the trajectory");
+        return false;
     }
     approach_state.joint_state.position.clear();
     approach_state.joint_state.name.clear();
@@ -222,16 +225,20 @@ bool BaseToolpathPlanner::construct_toolpath_plan() {
     double fraction = move_group_->computeCartesianPath(waypoints, eef_step, jump_threshold, trajectory_toolpath_);
     RCLCPP_INFO(LOGGER, "Visualizing Cartesian path (%.2f%% acheived)", fraction * 100.0);
     moveit::planning_interface::MoveGroupInterface::Plan plan, retimed_plan;
-    robot_state_ = move_group_->getCurrentState(2.0);
+
     plan.trajectory_ = trajectory_toolpath_;
 
     RCLCPP_INFO_STREAM(LOGGER, "Retiming trajectory for trapezoidal velocity profile of: \n\tMax Velocity: "
     << this->get_parameter("desired_cartesian_velocity").as_double() << "\n\tMax Acceleration: "
     << this->get_parameter("desired_cartesian_acceleration").as_double());
-    retime_trajectory_trapezoidal_velocity(plan, robot_state_,
+    moveit::core::robotStateMsgToRobotState(approach_state, *robot_state_, true);
+
+    if(!retime_trajectory_trapezoidal_velocity(plan, robot_state_,
                                            this->get_parameter("desired_cartesian_velocity").as_double(),
                                            this->get_parameter("desired_cartesian_acceleration").as_double(),
-                                           retimed_plan);
+                                           retimed_plan)){
+
+    };
 
     trajectory_toolpath_ = retimed_plan.trajectory_;
     RCLCPP_INFO_STREAM(LOGGER, "Sending retimed trajectory to be displayed");
