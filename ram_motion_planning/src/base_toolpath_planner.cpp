@@ -511,7 +511,7 @@ bool BaseToolpathPlanner::generate_cartesian_trajectory(std::vector<KDL::Frame> 
     geometry_msgs::msg::Pose retreat_pose;
     KDL::Frame end_path_frame, retreat_frame, raised_retreat_frame;
     double retreat_offset = std::max(this->get_parameter("retreat_offset").as_double(), 0.001);
-    double retreat_height = std::max(this->get_parameter("retreat_height").as_double(), 0.001);
+    double retreat_height = std::max(this->get_parameter("retreat_height").as_double() - this->get_parameter("toolpath_height_offset").as_double(), 0.001 - this->get_parameter("toolpath_height_offset").as_double());
     end_path_frame = ee_cartesian_path.back();
     retreat_frame = KDL::Frame(KDL::Vector(retreat_offset/2,0,0)) * end_path_frame;
     raised_retreat_frame = KDL::Frame(KDL::Vector(retreat_offset,0, retreat_height)) * end_path_frame;
