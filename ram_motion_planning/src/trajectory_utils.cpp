@@ -219,7 +219,7 @@ bool retime_trajectory_trapezoidal_velocity(moveit::planning_interface::MoveGrou
         retimed_plan.trajectory_.joint_trajectory.points[i].time_from_start = new_time_from_start;
 
     }
-    return false;
+    return true;
 }
 
 void interpolate_pose_trajectory(std::vector<geometry_msgs::msg::PoseStamped> &original, double max_distance,

@@ -124,7 +124,7 @@ def generate_launch_description():
 
     behaviour_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(
         get_package_share_directory('ram_behaviour') + '/launch/behaviour.launch.py'),
-        launch_arguments={'tree_file' : 'gui_control_subtree.xml', 'groot' : 'true'}.items())
+        launch_arguments={'tree_file' : 'gui_control.xml', 'groot' : 'true'}.items())
     nodes.append(behaviour_launch)
 
     return LaunchDescription(declared_arguments + nodes)
