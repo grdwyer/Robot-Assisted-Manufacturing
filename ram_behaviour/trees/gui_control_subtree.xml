@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Fallback>
+            <Sequence name="Setup Toolpath Selection">
+                <Delay delay_msec="100">
+                    <Action ID="RequestTriggerComponent" server_name="/behaviour/request_setup" server_timeout="100"/>
+                </Delay>
+                <SubTree ID="setup_toolpath" __shared_blackboard="true"/>
+            </Sequence>
+            <Sequence name="Execute Toolpath Selection">
+                <Delay delay_msec="100">
+                    <Action ID="RequestTriggerComponent" server_name="/behaviour/request_execute" server_timeout="100"/>
+                </Delay>
+                <SubTree ID="execute_toolpath" __shared_blackboard="true"/>
+            </Sequence>
+        </Fallback>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="allow_collisions">
+        <Sequence>
+            <Action ID="ModifyStockTouchLinksComponent" allow="true" link="cutting_plate_base" server_name="/stock_handler/set_touch_links" server_timeout="100"/>
+            <Action ID="ModifyingACMComponent" allow="true" first="cutting_plate_base" second="gripper_link_right" server_name="/apply_planning_scene" server_timeout="100"/>
+            <Action ID="ModifyingACMComponent" allow="true" first="cutting_plate_base" second="gripper_link_left" server_name="/apply_planning_scene" server_timeout="100"/>
+            <Action ID="ModifyingACMComponent" allow="true" first="cutting_plate_base" second="gripper_implant_holder" server_name="/apply_planning_scene" server_timeout="100"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="execute_toolpath">
+        <Sequence name="execute">
+            <BlackboardCheckBool return_on_mismatch="false" value_A="${setup_complete}" value_B="true">
+                <Sequence>
+                    <Action ID="TriggerComponent" server_name="/toolpath_planner/execute_approach" server_timeout="100"/>
+                    <Delay delay_msec="1000">
+                        <Sequence>
+                            <Action ID="SetBoolComponent" server_name="/us_cutter_controller/enable" server_timeout="100" state="true"/>
+                            <Action ID="SetBoolComponent" server_name="/us_cutter_controller/activate" server_timeout="100" state="true"/>
+                            <Action ID="TriggerComponent" server_name="/toolpath_planner/execute_toolpath" server_timeout="100"/>
+                        </Sequence>
+                    </Delay>
+                    <Action ID="SetBoolComponent" server_name="/us_cutter_controller/activate" server_timeout="100" state="false"/>
+                    <SubTree ID="reset_collisions" __shared_blackboard="true"/>
+                    <SetBlackboard output_key="setup_complete" value="false"/>
+                </Sequence>
+            </BlackboardCheckBool>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="fake_pickup_stock">
+        <Sequence>
+            <ForceSuccess>
+                <Sequence>
+                    <Action ID="SetBoolComponent" server_name="/stock_handler/load_stock" server_timeout="100" state="true"/>
+                    <Action ID="SetBoolComponent" server_name="/stock_handler/attach_stock" server_timeout="100" state="true"/>
+                </Sequence>
+            </ForceSuccess>
+            <Action ID="TriggerComponent" server_name="/gripper_controller/close" server_timeout="100"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="reset_collisions">
+        <Sequence>
+            <Action ID="ModifyStockTouchLinksComponent" allow="false" link="cutting_plate_base" server_name="/stock_handler/set_touch_links" server_timeout="100"/>
+            <Action ID="ModifyStockTouchLinksComponent" allow="false" link="cutting_tool" server_name="/stock_handler/set_touch_links" server_timeout="100"/>
+            <Action ID="ModifyingACMComponent" allow="false" first="cutting_plate_base" second="gripper_link_right" server_name="/apply_planning_scene" server_timeout="100"/>
+            <Action ID="ModifyingACMComponent" allow="false" first="cutting_plate_base" second="gripper_link_left" server_name="/apply_planning_scene" server_timeout="100"/>
+            <Action ID="ModifyingACMComponent" allow="false" first="cutting_plate_base" second="gripper_implant_holder" server_name="/apply_planning_scene" server_timeout="100"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="setup_toolpath">
+        <Sequence name="setup">
+            <SetBlackboard output_key="setup_complete" value="false"/>
+            <SubTree ID="fake_pickup_stock" __shared_blackboard="true"/>
+            <Action ID="TriggerComponent" server_name="/toolpath_handler/load_toolpath" server_timeout="100"/>
+            <Action ID="GetToolpathComponent" server_name="/toolpath_handler/get_toolpath" server_timeout="100" toolpath="{toolpath}"/>
+            <SubTree ID="allow_collisions" __shared_blackboard="true"/>
+            <Action ID="SetToolpathComponent" server_name="/toolpath_planner/setup_approach" server_timeout="100" toolpath="{toolpath}"/>
+            <Action ID="ModifyStockTouchLinksComponent" allow="true" link="cutting_tool" server_name="/stock_handler/set_touch_links" server_timeout="100"/>
+            <Action ID="SetToolpathComponent" server_name="/toolpath_planner/setup_toolpath" server_timeout="100" toolpath="{toolpath}"/>
+            <SetBlackboard output_key="setup_complete" value="true"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="GetToolpathComponent">
+            <input_port default="/toolpath_handler/get_component" name="server_name">Server name</input_port>
+            <input_port default="100" name="server_timeout"/>
+            <output_port name="toolpath"/>
+        </Action>
+        <Action ID="ModifyStockTouchLinksComponent">
+            <input_port name="allow"/>
+            <input_port name="link"/>
+            <input_port default="/stock_handler/set_touch_links" name="server_name">Server name</input_port>
+            <input_port default="100" name="server_timeout"/>
+        </Action>
+        <Action ID="ModifyingACMComponent">
+            <input_port name="allow"/>
+            <input_port name="first"/>
+            <input_port name="second"/>
+            <input_port default="/apply_planning_scene" name="server_name">Server name</input_port>
+            <input_port default="100" name="server_timeout"/>
+        </Action>
+        <Action ID="RequestTriggerComponent">
+            <input_port name="server_name">Server name</input_port>
+            <input_port name="server_timeout"/>
+        </Action>
+        <Action ID="SetBoolComponent">
+            <input_port name="server_name">Server name</input_port>
+            <input_port name="server_timeout"/>
+            <input_port name="state"/>
+        </Action>
+        <Action ID="SetToolpathComponent">
+            <input_port name="server_name">Server name</input_port>
+            <input_port name="server_timeout"/>
+            <input_port name="toolpath"/>
+        </Action>
+        <Action ID="TriggerComponent">
+            <input_port name="server_name">Server name</input_port>
+            <input_port name="server_timeout"/>
+        </Action>
+        <SubTree ID="allow_collisions">
+            <input_port default="true" name="__shared_blackboard">If false, the Subtree has an isolated blackboard and needs port remapping</input_port>
+        </SubTree>
+        <SubTree ID="execute_toolpath">
+            <input_port default="true" name="__shared_blackboard">If false, the Subtree has an isolated blackboard and needs port remapping</input_port>
+        </SubTree>
+        <SubTree ID="fake_pickup_stock">
+            <input_port default="true" name="__shared_blackboard">If false, the Subtree has an isolated blackboard and needs port remapping</input_port>
+        </SubTree>
+        <SubTree ID="reset_collisions">
+            <input_port default="true" name="__shared_blackboard">If false, the Subtree has an isolated blackboard and needs port remapping</input_port>
+        </SubTree>
+        <SubTree ID="setup_toolpath">
+            <input_port default="true" name="__shared_blackboard">If false, the Subtree has an isolated blackboard and needs port remapping</input_port>
+        </SubTree>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
+
