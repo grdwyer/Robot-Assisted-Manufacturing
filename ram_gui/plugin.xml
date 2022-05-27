@@ -1,7 +1,7 @@
 <library path="ram_gui">
-    <class name="ToolpathLoader" type="ram_gui.toolpath_loader.ToolpathLoader" base_class_type="rqt_gui_py::Plugin">
+    <class name="ProcedureController" type="ram_gui.procedure_controller.ProcedureController" base_class_type="rqt_gui_py::Plugin">
         <description>
-            A Python GUI plugin to load and execute toolpaths
+            A Python GUI plugin to execute procedures though behaviour trees
         </description>
         <qtgui>
             <group>
@@ -9,9 +9,9 @@
                 <icon type="theme">folder</icon>
                 <statustip>Plugins related to the Robot Assisted Manufacturing project.</statustip>
             </group>
-            <label>Toolpath Loader</label>
+            <label>Procedure Controller</label>
             <icon type="theme">applications-other</icon>
-            <statustip>A Python GUI plugin to load and execute toolpaths.</statustip>
+            <statustip>A Python GUI plugin to execute procedures though behaviour trees.</statustip>
         </qtgui>
     </class>
     <class name="ToolpathParams" type="ram_gui.toolpath_params.ToolpathParams" base_class_type="rqt_gui_py::Plugin">

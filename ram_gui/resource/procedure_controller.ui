@@ -37,22 +37,12 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QComboBox" name="list_toolpaths"/>
-    </item>
-    <item>
-     <widget class="QPushButton" name="button_load">
-      <property name="text">
-       <string>Load Toolpath</string>
-      </property>
-     </widget>
-    </item>
-    <item>
      <widget class="QPushButton" name="button_setup">
       <property name="text">
        <string>Setup Toolpath</string>
       </property>
       <property name="checkable">
-        <bool>true</bool>
+       <bool>true</bool>
       </property>
      </widget>
     </item>
@@ -62,37 +52,11 @@
        <string>Execute Toolpath</string>
       </property>
       <property name="checkable">
-        <bool>true</bool>
+       <bool>true</bool>
       </property>
      </widget>
     </item>
    </layout>
-  </widget>
-  <widget class="QPushButton" name="button_refresh_list">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>21</y>
-     <width>89</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Refresh</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="button_set_directory">
-   <property name="geometry">
-    <rect>
-     <x>168</x>
-     <y>21</y>
-     <width>111</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Set directory</string>
-   </property>
   </widget>
  </widget>
  <resources/>

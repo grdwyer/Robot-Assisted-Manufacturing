@@ -218,11 +218,11 @@ def generate_launch_description():
     nodes.append(us_cutter_controller)
 
     sim_us_cutter_controller = Node(package="ram_tooling_support",
-                                executable="sim_us_cutter_controller",
-                                name="us_cutter_controller",
-                                output="screen",
-                                condition=UnlessCondition(us_cutter)
-                                )
+                                    executable="sim_us_cutter_controller",
+                                    name="us_cutter_controller",
+                                    output="screen",
+                                    condition=UnlessCondition(us_cutter)
+                                    )
     nodes.append(sim_us_cutter_controller)
 
     # medpor config file
@@ -235,12 +235,5 @@ def generate_launch_description():
                          parameters=[stock_config_file]
                          )
     nodes.append(stock_handler)
-
-    toolpath_handler = Node(package='ram_tooling_support',
-                            executable='toolpath_handler',
-                            name='toolpath_handler',
-                            output='log',
-                            )
-    nodes.append(toolpath_handler)
 
     return LaunchDescription(declared_arguments + nodes)

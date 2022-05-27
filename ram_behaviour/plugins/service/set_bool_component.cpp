@@ -20,10 +20,10 @@ public:
     BT::NodeStatus handle_response(std_srvs::srv::SetBool::Response::SharedPtr response) override
     {
         if(response->success){
-            RCLCPP_INFO(_node->get_logger(),  "SetBool component request completed\n" + response->message);
+            RCLCPP_INFO_STREAM(_node->get_logger(),  "SetBool request to " << _server_name << " completed\n" << response->message);
             return BT::NodeStatus::SUCCESS;
         } else{
-            RCLCPP_WARN(_node->get_logger(),  "SetBool component request failed\n" + response->message);
+            RCLCPP_WARN_STREAM(_node->get_logger(),  "SetBool request to " << _server_name << " failed\n" << response->message);
             return BT::NodeStatus::FAILURE;
         }
     }

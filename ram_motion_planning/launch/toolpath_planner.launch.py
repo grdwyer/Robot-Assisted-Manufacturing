@@ -111,12 +111,19 @@ def generate_launch_description():
                                         ])
     nodes.append(toolpath_planner)
 
-    toolpath_handler = Node(package='ram_tooling_support',
-                            executable='toolpath_handler',
-                            name='toolpath_handler',
-                            output='screen',
-                            )
-    nodes.append(toolpath_handler)
+    # toolpath_handler = Node(package='ram_tooling_support',
+    #                         executable='toolpath_handler',
+    #                         name='toolpath_handler',
+    #                         output='screen',
+    #                         )
+    # nodes.append(toolpath_handler)
+
+    # toolpath_server = Node(package='toolpath_reader',
+    #                        executable='toolpath_server',
+    #                        name='toolpath_handler',
+    #                        output='screen',
+    #                        )
+    # nodes.append(toolpath_server)
 
     interface_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(
         get_package_share_directory('ram_motion_planning') + '/launch/ram_interface.launch.py'))
@@ -124,7 +131,7 @@ def generate_launch_description():
 
     behaviour_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(
         get_package_share_directory('ram_behaviour') + '/launch/behaviour.launch.py'),
-        launch_arguments={'tree_file' : 'gui_control.xml', 'groot' : 'true'}.items())
+        launch_arguments={'tree_file': 'gui_control.xml', 'groot': 'true'}.items())
     nodes.append(behaviour_launch)
 
     return LaunchDescription(declared_arguments + nodes)

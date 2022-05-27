@@ -19,12 +19,12 @@ public:
 
     BT::NodeStatus handle_response(ram_interfaces::srv::GetToolpath::Response::SharedPtr response) override
     {
-        if(!response->toolpath.path.points.empty()){
-            RCLCPP_INFO_STREAM(_node->get_logger(),  "Get toolpath component returned true with a toolpath " << response->toolpath.path.points.size() << " points long\n");
+        if(response->success){
+            RCLCPP_INFO_STREAM(_node->get_logger(),  "Get toolpath request to " << _server_name << " returned true with a toolpath " << response->toolpath.path.points.size() << " points long\n");
             setOutput<ram_interfaces::msg::Toolpath>("toolpath", response->toolpath);
             return BT::NodeStatus::SUCCESS;
         } else{
-            RCLCPP_WARN(_node->get_logger(),  "Get toolpath component returned false\n");
+            RCLCPP_WARN_STREAM(_node->get_logger(),  "Get toolpath request to " << _server_name << " returned false with the following message\n" << response->message);
             return BT::NodeStatus::FAILURE;
         }
     }
