@@ -29,6 +29,7 @@
 #include <functional>
 #include <kdl/frames.hpp>
 #include <math.h>
+#include <angles/angles.h>
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>

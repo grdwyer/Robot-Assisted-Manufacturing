@@ -140,7 +140,7 @@ bool retime_trajectory_trapezoidal_velocity(moveit::planning_interface::MoveGrou
 
     // Calculate the total distance travelled, this is to know when to decelerate .
     for(const auto &dist : distance_between_points){
-        total_distance += dist;
+        total_distance += fabs(dist);
     }
     // Calculate the distance needed to accelerate and decelerate at the required value
     distance_acceleration = pow(desired_velocity,2) / (2 * desired_acceleration);
