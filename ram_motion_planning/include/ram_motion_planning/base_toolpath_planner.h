@@ -22,7 +22,7 @@
 #include <std_srvs/srv/set_bool.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <iostream>
-#include <ram_motion_planning/helpers.h>
+#include <ram_motion_planning/logging.h>
 #include <ram_motion_planning/trajectory_utils.h>
 #include <ram_interfaces/msg/toolpath.hpp>
 #include <rosidl_runtime_cpp/traits.hpp>
@@ -33,7 +33,7 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/transform_broadcaster.h>
-#include <tf2_kdl/tf2_kdl.h>
+#include <tf2_kdl/tf2_kdl.hpp>
 
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_state/robot_state.h>
@@ -154,12 +154,6 @@ protected:
     void run_moveit_executor();
 
     void debug_mode_wait();
-
-    std::shared_ptr<ToolpathHelper> toolpath_helper_;
-    std::shared_ptr<StockHelper> stock_helper_;
-    std::shared_ptr<GripperHelper> gripper_helper_;
-    std::shared_ptr<USCutterHelper> us_cutter_helper_;
-    std::shared_ptr<ACMHelper> acm_helper_;
 
     rclcpp::Service<ram_interfaces::srv::SetToolpath>::SharedPtr service_setup_toolpath_;
     rclcpp::Service<ram_interfaces::srv::SetToolpath>::SharedPtr service_setup_approach_;

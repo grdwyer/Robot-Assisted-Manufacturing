@@ -15,10 +15,10 @@ public:
     BT::NodeStatus handle_response(ram_interfaces::srv::RequestTrigger::Response::SharedPtr response) override
     {
         if(response->trigger){
-            RCLCPP_DEBUG(_node->get_logger(),  "Request Trigger component returned true\n" + response->message);
+            RCLCPP_DEBUG_STREAM(_node->get_logger(),  "Request Trigger component returned true\n" << response->message);
             return BT::NodeStatus::SUCCESS;
         } else{
-            RCLCPP_DEBUG(_node->get_logger(),  "Request Trigger component returned false\n" + response->message);
+            RCLCPP_DEBUG_STREAM(_node->get_logger(),  "Request Trigger component returned false\n" << response->message);
             return BT::NodeStatus::FAILURE;
         }
     }

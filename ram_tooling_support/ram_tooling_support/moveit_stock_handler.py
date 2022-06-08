@@ -76,7 +76,7 @@ class StockHandler(Node):
         self.setup_params()
 
         # Stock description publisher
-        qos = QoSProfile(depth=1, durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL)
+        qos = QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL)
         self.publisher_stock_description = self.create_publisher(std_msgs.msg.String, 'stock_description', qos)
         msg = std_msgs.msg.String()
         msg.data = self.get_parameter("stock_description").get_parameter_value().string_value
@@ -106,8 +106,8 @@ class StockHandler(Node):
 
         # the robot
         self.declare_parameter("stock_frame", "implant")
-        self.declare_parameter("touch_links")
-        self.declare_parameter("stock_description")
+        self.declare_parameter("touch_links", rclpy.Parameter.Type.STRING)
+        self.declare_parameter("stock_description", rclpy.Parameter.Type.STRING)
 
         stock_path = os.path.join(get_package_share_directory("ram_support"), 'meshes/stock/collision/medpor_large.stl')
         self.declare_parameter("stock_mesh_path", stock_path)

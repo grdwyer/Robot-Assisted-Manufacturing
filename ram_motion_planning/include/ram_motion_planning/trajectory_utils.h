@@ -9,7 +9,7 @@
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <geometry_msgs/msg/pose_stamped.h>
 #include <eigen3/Eigen/Geometry>
-#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_eigen/tf2_eigen.hpp>
 
 // Utilities
 bool append_plans(moveit::planning_interface::MoveGroupInterface::Plan &first,

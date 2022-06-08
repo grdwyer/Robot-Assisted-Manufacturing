@@ -21,10 +21,10 @@ public:
     BT::NodeStatus handle_response(ram_interfaces::srv::SetTouchLinks::Response::SharedPtr response) override
     {
         if(response->success){
-            RCLCPP_INFO(_node->get_logger(),  "Modify stock touch links component request completed\n" + response->message);
+            RCLCPP_INFO_STREAM(_node->get_logger(),  "Modify stock touch links component request completed\n" << response->message);
             return BT::NodeStatus::SUCCESS;
         } else{
-            RCLCPP_WARN(_node->get_logger(),  "Modify stock touch links component request failed\n" + response->message);
+            RCLCPP_WARN_STREAM(_node->get_logger(),  "Modify stock touch links component request failed\n" << response->message);
             return BT::NodeStatus::FAILURE;
         }
     }

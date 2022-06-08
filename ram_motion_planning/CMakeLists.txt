@@ -30,13 +30,13 @@ find_package(tf2_eigen REQUIRED)
 
 include_directories(include)
 
-add_library(ram_helpers src/helpers.cpp src/trajectory_utils.cpp)
+add_library(ram_helpers src/trajectory_utils.cpp src/logging.cpp)
 ament_target_dependencies(ram_helpers
         rclcpp
-        ram_interfaces
         std_srvs
         moveit_ros_planning_interface
         tf2_eigen
+        ram_interfaces
         )
 
 install(TARGETS ram_helpers
@@ -53,13 +53,15 @@ install(TARGETS ram_helpers
 #        Boost
 #        )
 
-add_executable(base_toolpath_planner src/base_toolpath_planner.cpp src/run_base_planner.cpp)
+add_executable(base_toolpath_planner src/base_toolpath_planner.cpp src/run_base_planner.cpp include/ram_motion_planning/logging.h)
 target_include_directories(base_toolpath_planner PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 target_link_libraries(base_toolpath_planner
         ram_helpers)
 ament_target_dependencies(base_toolpath_planner
+        ram_interfaces
+        tf2_kdl
         moveit_ros_planning_interface
         Boost
         )

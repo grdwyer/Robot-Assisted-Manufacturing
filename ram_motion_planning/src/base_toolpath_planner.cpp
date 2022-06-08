@@ -280,9 +280,9 @@ bool BaseToolpathPlanner::move_to_setup() {
 
     moveit::planning_interface::MoveGroupInterface::Plan my_plan;
 
-    bool success = (move_group_->plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    bool success = (move_group_->plan(my_plan) == moveit::core::MoveItErrorCode::SUCCESS);
     if(success){
-        if(move_group_->execute(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS){
+        if(move_group_->execute(my_plan) == moveit::core::MoveItErrorCode::SUCCESS){
             return true;
         }
     } else{
@@ -293,7 +293,7 @@ bool BaseToolpathPlanner::move_to_setup() {
 
 bool BaseToolpathPlanner::execute_trajectory(moveit_msgs::msg::RobotTrajectory &trajectory) {
     if (!trajectory.joint_trajectory.points.empty()){
-        bool success = (move_group_->execute(trajectory) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+        bool success = (move_group_->execute(trajectory) == moveit::core::MoveItErrorCode::SUCCESS);
         return success;
     } else{
         RCLCPP_WARN(LOGGER, "Toolpath trajectory is empty, try construct the plan request first.");
@@ -551,7 +551,7 @@ bool BaseToolpathPlanner::construct_approach_plan() {
     moveit::planning_interface::MoveGroupInterface::Plan approach_plan;
     move_group_->setStartStateToCurrentState();
     move_group_->setPoseTarget(approach_pose);
-    if(move_group_->plan(approach_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS){
+    if(move_group_->plan(approach_plan) == moveit::core::MoveItErrorCode::SUCCESS){
         trajectory_approach_ = approach_plan.trajectory_;
         return true;
     }

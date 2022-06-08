@@ -19,9 +19,12 @@ RUN apt-get update && apt-get install -y \
     libasio-dev \
     libtinyxml2-dev \
     libcunit1-dev \
-    qtbase5-dev libqt5svg5-dev libzmq3-dev libdw-dev \ 
-    ros-$ROSDISTRO-example-interfaces \
-    ros-$ROSDISTRO-behaviortree-cpp-v3
+    qtbase5-dev \
+    libqt5svg5-dev \
+    libzmq3-dev \
+    libdw-dev \
+    libboost-dev \
+    ros-$ROSDISTRO-example-interfaces
 
 #############################################
 # Tesseract and SCXML deps from CRS project #
@@ -70,7 +73,7 @@ RUN ["/bin/bash", "-c", "source /opt/ros/$ROSDISTRO/setup.bash &&\
     source /moveit_ws/install/setup.bash &&\
     vcs import src < ./src/ram/dependencies.rosinstall &&\
     vcs pull src || true &&\
-    colcon build --symlink-install \
+    colcon build --symlink-install || true\
     "]
 
 RUN ["/bin/bash", "-c", "cp /dev_ws/src/ram/.docker/entrypoint.sh / && chmod 777 /entrypoint.sh"]
