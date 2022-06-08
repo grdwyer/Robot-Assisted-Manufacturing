@@ -1,4 +1,4 @@
-ARG ROSDISTRO=foxy
+ARG ROSDISTRO=humble
 
 FROM gdwyer/ros:$ROSDISTRO
 
