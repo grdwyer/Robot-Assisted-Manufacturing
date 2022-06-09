@@ -403,15 +403,6 @@ bool BaseToolpathPlanner::process_toolpath(std::vector<KDL::Frame> &ee_cartesian
         // Debug tf frames
         if(this->get_parameter("debug_mode").as_bool()) {
             tf2_ros::TransformBroadcaster broadcaster(this);
-            // Run the marker across each untransformed
-            for (const auto &frame : ee_toolpath) {
-                tf_trans = tf2::kdlToTransform(frame);
-                tf_trans.header.frame_id = move_group_->getEndEffectorLink();
-                tf_trans.header.stamp = this->get_clock()->now();
-                tf_trans.child_frame_id = "ee_toolpath_point";
-                broadcaster.sendTransform(tf_trans);
-                rclcpp::sleep_for(std::chrono::milliseconds(this->get_parameter("debug_wait_time").as_int()));
-            }
             // Frame on the implant
             tf_trans = tf2::kdlToTransform(tool_pose);
             tf_trans.header.frame_id = move_group_->getEndEffectorLink();

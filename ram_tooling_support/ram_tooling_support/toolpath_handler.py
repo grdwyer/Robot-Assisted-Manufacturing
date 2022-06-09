@@ -38,7 +38,6 @@ class ToolPathHandler(Node):
         #                  reliability=QoSReliabilityPolicy.RELIABLE)
         self.pub_marker = self.create_publisher(Marker, "/{}/marker_toolpath".format(self.get_name()), 10)
 
-        qos = QoSProfile(depth=1, durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL)
         self.srv_toolpath = self.create_service(GetToolpath, "/{}/get_toolpath".format(self.get_name()),
                                                 self.callback_get_toolpath)
         self.declare_parameter("toolpath_frame", "implant")

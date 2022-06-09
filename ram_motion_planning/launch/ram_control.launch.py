@@ -163,10 +163,10 @@ def generate_launch_description():
     load_controllers = []
     for controller in ["iiwa_arm_controller", "joint_state_controller", "gripper_forward_command_controller_position"]:
         load_controllers += [
-            ExecuteProcess(
-                cmd=["ros2 run controller_manager spawner.py {}".format(controller)],
-                shell=True,
-                output="screen",
+            Node(
+                package="controller_manager",
+                executable="spawner",
+                arguments=[controller, "-c", "/controller_manager"]
             )
         ]
     nodes += load_controllers
