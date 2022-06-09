@@ -63,6 +63,17 @@ RUN ["/bin/bash", "-c", "rm -rf /var/lib/apt/lists/*"]
 #     colcon build --symlink-install --continue-on-error --cmake-args -Wno-dev -DBoost_DEBUG=ON -DBoost_NO_BOOST_CMAKE=ON; \
 #     fi"]
 
+# Build behaviortree library
+WORKDIR /tmp
+RUN ["/bin/bash", "-c", "git clone https://github.com/BehaviorTree/BehaviorTree.CPP.git &&\
+    cd BehaviorTree.CPP && \
+    mkdir build; cd build && \
+    cmake .. && \
+    make && \
+    make install &&\
+    ldconfig \
+    "]
+
 # copy packages across
 RUN mkdir -p /dev_ws/src/ram
 COPY . /dev_ws/src/ram/

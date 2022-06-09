@@ -76,7 +76,7 @@ bool OMPLToolpathPlanner::construct_toolpath_plan() {
     approach_pose = tf2::toMsg(approach_frame);
     moveit::planning_interface::MoveGroupInterface::Plan approach_plan;
     move_group_->setPoseTarget(approach_pose);
-    if(move_group_->plan(approach_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS){
+    if(move_group_->plan(approach_plan) == moveit::core::MoveItErrorCode::SUCCESS){
         move_group_->execute(approach_plan);
     }
     stock_helper_->modify_touch_link("cutting_tool", true);
@@ -181,7 +181,7 @@ bool OMPLToolpathPlanner::plan_between_points(const moveit::core::RobotStatePtr&
     move_group_->setPoseTarget(end);
 //    move_group_->setPathConstraints(path_constraints);
 
-    const bool plan_success = (move_group_->plan(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    const bool plan_success = (move_group_->plan(plan) == moveit::core::MoveItErrorCode::SUCCESS);
     RCLCPP_INFO(LOGGER, "Plan between 2 points %s", plan_success ? "SUCCEEDED" : "FAILED");
     return plan_success;
 }

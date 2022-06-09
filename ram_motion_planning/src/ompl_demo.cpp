@@ -91,7 +91,7 @@ public:
         move_group_->setPathConstraints(path_constraints);
 
         moveit::planning_interface::MoveGroupInterface::Plan plan1;
-        const bool plan_success = (move_group_->plan(plan1) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+        const bool plan_success = (move_group_->plan(plan1) == moveit::core::MoveItErrorCode::SUCCESS);
         RCLCPP_INFO(LOGGER, "Plan 1 (box constraint) %s", plan_success ? "SUCCEEDED" : "FAILED");
 
         move_group_->move();
@@ -118,7 +118,7 @@ public:
         move_group_->setPathConstraints(path_constraints);
 
         moveit::planning_interface::MoveGroupInterface::Plan plan2;
-        const bool plan_success = (move_group_->plan(plan2) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+        const bool plan_success = (move_group_->plan(plan2) == moveit::core::MoveItErrorCode::SUCCESS);
         RCLCPP_INFO(LOGGER, "Plan 2 (plane equality constraint) %s", plan_success ? "SUCCEEDED" : "FAILED");
 
         move_group_->move();
@@ -159,7 +159,7 @@ public:
 
         // Plan and move
         moveit::planning_interface::MoveGroupInterface::Plan plan1;
-        const bool plan_success = (move_group_->plan(plan1) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+        const bool plan_success = (move_group_->plan(plan1) == moveit::core::MoveItErrorCode::SUCCESS);
         RCLCPP_INFO(LOGGER, "Plan 1 (box constraint) %s", plan_success ? "SUCCEEDED" : "FAILED");
 
         move_group_->move();
@@ -215,7 +215,7 @@ public:
         move_group_->setPathConstraints(path_constraints);
 
         moveit::planning_interface::MoveGroupInterface::Plan plan3;
-        const bool plan_success = (move_group_->plan(plan3) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+        const bool plan_success = (move_group_->plan(plan3) == moveit::core::MoveItErrorCode::SUCCESS);
         RCLCPP_INFO(LOGGER, "Plan 3 (line equality constraint) %s", plan_success ? "SUCCEEDED" : "FAILED");
     }
 
@@ -242,7 +242,7 @@ public:
         move_group_->setPathConstraints(path_constraints);
 
         moveit::planning_interface::MoveGroupInterface::Plan plan4;
-        const bool plan_success = (move_group_->plan(plan4) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+        const bool plan_success = (move_group_->plan(plan4) == moveit::core::MoveItErrorCode::SUCCESS);
         RCLCPP_INFO(LOGGER, "Plan 4 (verticle plane equality constraint) %s", plan_success ? "SUCCEEDED" : "FAILED");
     }
 
