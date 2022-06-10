@@ -41,8 +41,8 @@ class GripperController(Node):
 
         self.gripper_open = True
 
-        self.declare_parameter("open_solenoid")
-        self.declare_parameter("close_solenoid")
+        self.declare_parameter("open_solenoid", rclpy.Parameter.Type.INTEGER)
+        self.declare_parameter("close_solenoid", rclpy.Parameter.Type.INTEGER)
 
         success = self.client_daq_output.wait_for_service(20)
         if success:
