@@ -12,6 +12,8 @@
 
   <depend>ram_interfaces</depend>
   <depend>moveit_ros_planning_interface</depend>
+  <depend>tf2</depend>
+  <depend>ros2_trajectory_utilities</depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 

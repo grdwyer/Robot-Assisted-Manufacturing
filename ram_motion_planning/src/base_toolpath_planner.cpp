@@ -200,7 +200,7 @@ bool BaseToolpathPlanner::construct_toolpath_plan() {
         waypoints.push_back(tf2::toMsg(frame));
     }
 
-    interpolate_pose_trajectory(waypoints, 0.0005, tf2Radians(1), interpolated_waypoints);
+    trajectory_utilities::interpolate_pose_trajectory(waypoints, 0.0005, tf2Radians(1), interpolated_waypoints);
 
     //Set start state for toolpath planning as the approach pose
     robot_state_ = move_group_->getCurrentState(2.0);
@@ -232,15 +232,21 @@ bool BaseToolpathPlanner::construct_toolpath_plan() {
     << this->get_parameter("desired_cartesian_velocity").as_double() << "\n\tMax Acceleration: "
     << this->get_parameter("desired_cartesian_acceleration").as_double());
     moveit::core::robotStateMsgToRobotState(approach_state, *robot_state_, true);
+    std::string jmg_name = this->get_parameter("moveit_planning_group").as_string();
+    std::string ee_link = this->get_parameter("end_effector_reference_frame").as_string();
 
-    if(!retime_trajectory_trapezoidal_velocity(plan, robot_state_,
-                                           this->get_parameter("desired_cartesian_velocity").as_double(),
-                                           this->get_parameter("desired_cartesian_acceleration").as_double(),
-                                           retimed_plan)){
-
+    if(!trajectory_utilities::retime_trajectory_trapezoidal_velocity(plan,
+                                                                     robot_state_,
+                                                                     this->get_parameter("desired_cartesian_velocity").as_double(),
+                                                                     this->get_parameter("desired_cartesian_acceleration").as_double(),
+                                                                     this->get_parameter("moveit_planning_group").as_string(),
+                                                                     this->get_parameter("end_effector_reference_frame").as_string(),
+                                                                     retimed_plan)){
+        RCLCPP_WARN_STREAM(LOGGER, "Trajectory failed to be retimed for constrained cartesian velocity");
+        return false;
     };
 
-    trajectory_toolpath_ = retimed_plan.trajectory_;
+
     RCLCPP_INFO_STREAM(LOGGER, "Sending retimed trajectory to be displayed");
     moveit_msgs::msg::DisplayTrajectory msg;
     msg.model_id = "iiwa_workcell";

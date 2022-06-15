@@ -23,7 +23,8 @@
 #include <std_srvs/srv/trigger.hpp>
 #include <iostream>
 #include <ram_motion_planning/logging.h>
-#include <ram_motion_planning/trajectory_utils.h>
+#include <ros2_trajectory_utilities/moveit_plans.h>
+#include <ros2_trajectory_utilities/interpolation.h>
 #include <ram_interfaces/msg/toolpath.hpp>
 #include <rosidl_runtime_cpp/traits.hpp>
 #include <functional>

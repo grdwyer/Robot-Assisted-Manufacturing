@@ -4,4 +4,5 @@
 - git: {local-name: iiwa_fri_driver, uri: 'https://github.com/grdwyer/Kuka_iiwa_ROS2_Driver.git', version: humble}
 - git: {local-name: behavior_tree, uri: 'https://github.com/grdwyer/behavior_tree.git', version: humble}
 - git: {local-name: groot, uri: 'https://github.com/BehaviorTree/Groot.git', version: master}
+- git: {local-name: ros2_trajectory_utilities, uri: 'https://github.com/grdwyer/ros2_trajectory_utilities.git', version: main}
 #- git: {local-name: BehaviorTree.CPP, uri: 'https://github.com/BehaviorTree/BehaviorTree.CPP.git', version: master}

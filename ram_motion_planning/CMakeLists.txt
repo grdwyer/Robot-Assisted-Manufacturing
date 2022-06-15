@@ -27,43 +27,20 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_kdl REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_eigen REQUIRED)
+find_package(ros2_trajectory_utilities)
 
 include_directories(include)
 
-add_library(ram_helpers src/trajectory_utils.cpp src/logging.cpp)
-ament_target_dependencies(ram_helpers
-        rclcpp
-        std_srvs
-        moveit_ros_planning_interface
-        tf2_eigen
-        ram_interfaces
-        )
-
-install(TARGETS ram_helpers
-        DESTINATION lib/${PROJECT_NAME})
-
-#add_executable(example_program src/example_program.cpp)
-#target_include_directories(example_program PUBLIC
-#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#  $<INSTALL_INTERFACE:include>)
-#target_link_libraries(example_program
-#        ram_helpers)
-#ament_target_dependencies(example_program
-#        moveit_ros_planning_interface
-#        Boost
-#        )
-
-add_executable(base_toolpath_planner src/base_toolpath_planner.cpp src/run_base_planner.cpp include/ram_motion_planning/logging.h)
+add_executable(base_toolpath_planner src/base_toolpath_planner.cpp src/run_base_planner.cpp src/logging.cpp)
 target_include_directories(base_toolpath_planner PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-target_link_libraries(base_toolpath_planner
-        ram_helpers)
 ament_target_dependencies(base_toolpath_planner
         ram_interfaces
         tf2_kdl
         moveit_ros_planning_interface
         Boost
+        ros2_trajectory_utilities
         )
 
 #add_executable(ompl_toolpath_planner src/ompl_constrained_toolpath_planner.cpp src/base_toolpath_planner.cpp src/run_ompl_planner.cpp)
@@ -84,13 +61,6 @@ ament_target_dependencies(ompl_demo
         Boost
         )
 
-#add_executable(run_acm_helper src/run_acm_helper.cpp)
-#target_link_libraries(run_acm_helper
-#        ram_helpers
-#        )
-#ament_target_dependencies(run_acm_helper
-#        rclcpp
-#        )
 
 install(TARGETS
 #        example_program
